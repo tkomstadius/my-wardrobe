@@ -74,8 +74,8 @@ export function CategoryPage() {
           <Text size="2" color="gray">
             No {title.toLowerCase()} yet. Add your first item!
           </Text>
-          <Link to="/add-item">
-            <Button size="2" style={{ marginTop: '16px' }}>
+          <Link to="/add-item" className={styles.addItemLink}>
+            <Button size="2">
               Add Item
             </Button>
           </Link>

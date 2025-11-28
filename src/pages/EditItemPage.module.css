@@ -1,28 +1,170 @@
 .container {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
+  padding: 20px;
+  max-width: 600px;
+  margin: 0 auto;
+  min-height: 100vh;
 }
 
 .header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-bottom: 24px;
 }
 
 .title {
-  font-size: 1.5rem;
-  font-weight: 600;
+  font-size: 24px;
+  font-weight: 700;
+  margin: 0;
   color: var(--gray-12);
 }
 
-.placeholder {
-  padding: 2rem;
+.spacer {
+  width: 80px;
+}
+
+.errorState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
   text-align: center;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* Image Section */
+.imageSection {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.imagePreviewContainer {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--gray-4);
+}
+
+.imagePreview {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.changeImageButton {
+  position: absolute;
+  bottom: 16px;
+  right: 16px;
+  cursor: pointer;
+}
+
+.uploadPlaceholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  aspect-ratio: 1;
+  border: 2px dashed var(--gray-6);
+  border-radius: 12px;
+  background: var(--gray-3);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.uploadPlaceholder:hover {
+  border-color: var(--gray-7);
+  background: var(--gray-4);
+}
+
+.fileInput {
+  display: none;
+}
+
+.compressionBanner {
+  padding: 8px 12px;
+  background: var(--green-3);
+  border: 1px solid var(--green-6);
+  border-radius: 8px;
+  text-align: center;
+}
+
+/* Form Fields */
+.fields {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.label {
+  font-size: 14px;
+  font-weight: 600;
   color: var(--gray-11);
 }
 
-.itemId {
-  margin-top: 0.5rem;
-  font-size: 0.875rem;
+/* Error Message */
+.errorMessage {
+  padding: 12px;
+  background: var(--red-3);
+  border: 1px solid var(--red-6);
+  border-radius: 8px;
+}
+
+/* Actions */
+.actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.saveButton {
+  flex: 1;
+}
+
+/* Dialog Actions */
+.dialogActions {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.dialogButton {
+  flex: 1;
+}
+
+/* Mobile adjustments */
+@media (max-width: 768px) {
+  .container {
+    padding: 16px;
+  }
+
+  .header {
+    margin-bottom: 20px;
+  }
+
+  .title {
+    font-size: 20px;
+  }
+
+  .actions {
+    flex-direction: column-reverse;
+  }
+
+  .actions button {
+    width: 100%;
+  }
 }

@@ -16,6 +16,10 @@
   color: var(--gray-12);
 }
 
+.spacer {
+  width: 32px;
+}
+
 .form {
   display: flex;
   flex-direction: column;

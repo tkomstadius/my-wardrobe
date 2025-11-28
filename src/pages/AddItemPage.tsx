@@ -131,7 +131,7 @@ export function AddItemPage() {
           <ArrowLeftIcon />
         </Button>
         <h2 className={styles.title}>Add Item</h2>
-        <div style={{ width: "32px" }} /> {/* Spacer for center alignment */}
+        <div className={styles.spacer} />
       </div>
 
       <form className={styles.form} onSubmit={handleSubmit}>
