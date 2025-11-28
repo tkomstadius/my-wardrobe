@@ -9,7 +9,9 @@ import styles from './CategoryPage.module.css';
 const CATEGORY_TITLES: Record<ItemCategory, string> = {
   tops: 'Tops',
   bottoms: 'Bottoms',
+  dresses: 'Dresses/Jumpsuits',
   outerwear: 'Outerwear',
+  shoes: 'Shoes',
   accessories: 'Accessories',
 };
 
@@ -19,7 +21,7 @@ export function CategoryPage() {
 
   // Validate category
   const isValidCategory = (cat: string | undefined): cat is ItemCategory => {
-    return cat !== undefined && ['tops', 'bottoms', 'outerwear', 'accessories'].includes(cat);
+    return cat !== undefined && ['tops', 'bottoms', 'dresses', 'outerwear', 'shoes', 'accessories'].includes(cat);
   };
 
   if (!isValidCategory(category)) {

@@ -1,15 +1,17 @@
-import { PlusIcon } from '@radix-ui/react-icons';
-import { Button, Text } from '@radix-ui/themes';
-import { Link } from 'react-router';
-import { useWardrobe } from '../contexts/WardrobeContext';
-import type { ItemCategory } from '../types/wardrobe';
-import styles from './HomePage.module.css';
+import { PlusIcon } from "@radix-ui/react-icons";
+import { Button, Text } from "@radix-ui/themes";
+import { Link } from "react-router";
+import { useWardrobe } from "../contexts/WardrobeContext";
+import type { ItemCategory } from "../types/wardrobe";
+import styles from "./HomePage.module.css";
 
 const CATEGORIES: Array<{ id: ItemCategory; title: string }> = [
-  { id: 'tops', title: 'Tops' },
-  { id: 'bottoms', title: 'Bottoms' },
-  { id: 'outerwear', title: 'Outerwear' },
-  { id: 'accessories', title: 'Accessories' },
+  { id: "tops", title: "Tops" },
+  { id: "bottoms", title: "Bottoms" },
+  { id: "dresses", title: "Dresses/Jumpsuits" },
+  { id: "outerwear", title: "Outerwear" },
+  { id: "shoes", title: "Shoes" },
+  { id: "accessories", title: "Accessories" },
 ];
 
 export function HomePage() {
@@ -87,7 +89,7 @@ function CategoryCard({ title, count, category, items }: CategoryCardProps) {
         <div className={styles.categoryContent}>
           <h3 className={styles.categoryTitle}>{title}</h3>
           <p className={styles.categoryCount}>
-            {count} {count === 1 ? 'item' : 'items'}
+            {count} {count === 1 ? "item" : "items"}
           </p>
         </div>
       </div>

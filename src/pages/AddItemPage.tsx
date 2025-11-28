@@ -226,7 +226,9 @@ export function AddItemPage() {
               <Select.Content>
                 <Select.Item value="tops">Tops</Select.Item>
                 <Select.Item value="bottoms">Bottoms</Select.Item>
+                <Select.Item value="dresses">Dresses/Jumpsuits</Select.Item>
                 <Select.Item value="outerwear">Outerwear</Select.Item>
+                <Select.Item value="shoes">Shoes</Select.Item>
                 <Select.Item value="accessories">Accessories</Select.Item>
               </Select.Content>
             </Select.Root>
