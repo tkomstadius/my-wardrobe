@@ -262,14 +262,15 @@ export function EditItemPage() {
 
           <div className={styles.field}>
             <span className={styles.label}>Brand</span>
-            <TextField.Root
+            <input
+              type="text"
               placeholder="e.g., Nike, Zara, H&M"
               value={formData.brand}
               onChange={(e) =>
                 setFormData({ ...formData, brand: e.target.value })
               }
-              size="3"
               list="brand-suggestions-edit"
+              className={styles.input}
             />
             <datalist id="brand-suggestions-edit">
               {getAllBrands().map((brand) => (
