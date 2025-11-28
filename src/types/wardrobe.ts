@@ -10,10 +10,13 @@ export interface WardrobeItem {
   id: string;
   imageUrl: string;
   type: string;
-  color: string;
+  color?: string;
   brand?: string;
   category: ItemCategory;
   wearCount: number;
+  price?: number;
+  isSecondHand?: boolean;
+  purchaseDate?: Date;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -21,7 +24,11 @@ export interface WardrobeItem {
 export interface NewWardrobeItem {
   imageUrl: string;
   type: string;
-  color: string;
+  color?: string;
   brand?: string;
   category: ItemCategory;
+  wearCount?: number;
+  price?: number;
+  isSecondHand?: boolean;
+  purchaseDate?: Date;
 }

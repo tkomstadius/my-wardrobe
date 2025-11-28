@@ -74,6 +74,37 @@
   font-weight: 500;
 }
 
+.metadata {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+  font-size: 12px;
+}
+
+.price {
+  color: var(--green-11);
+  font-weight: 600;
+}
+
+.badge {
+  background: var(--amber-4);
+  color: var(--amber-11);
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+.wearCount {
+  color: var(--gray-10);
+  font-weight: 500;
+}
+
+.date {
+  color: var(--gray-10);
+  font-size: 11px;
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .content {
@@ -88,4 +119,3 @@
     font-size: 13px;
   }
 }
-

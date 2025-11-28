@@ -59,10 +59,13 @@ export async function saveItem(item: {
   id: string;
   imageUrl: string;
   type: string;
-  color: string;
+  color?: string;
   brand?: string;
   category: ItemCategory;
   wearCount: number;
+  price?: number;
+  isSecondHand?: boolean;
+  purchaseDate?: Date;
   createdAt: Date;
   updatedAt: Date;
 }): Promise<void> {
@@ -83,6 +86,9 @@ export async function saveItem(item: {
       brand: item.brand,
       category: item.category,
       wearCount: item.wearCount,
+      price: item.price,
+      isSecondHand: item.isSecondHand,
+      purchaseDate: item.purchaseDate?.toISOString(),
       createdAt: item.createdAt.toISOString(),
       updatedAt: item.updatedAt.toISOString(),
     };
@@ -102,10 +108,13 @@ export async function loadAllItems(): Promise<
     id: string;
     imageUrl: string;
     type: string;
-    color: string;
+    color?: string;
     brand?: string;
     category: ItemCategory;
     wearCount: number;
+    price?: number;
+    isSecondHand?: boolean;
+    purchaseDate?: Date;
     createdAt: Date;
     updatedAt: Date;
   }>
@@ -130,6 +139,11 @@ export async function loadAllItems(): Promise<
           brand: dbItem.brand,
           category: dbItem.category as ItemCategory,
           wearCount: dbItem.wearCount,
+          price: dbItem.price,
+          isSecondHand: dbItem.isSecondHand,
+          purchaseDate: dbItem.purchaseDate
+            ? new Date(dbItem.purchaseDate)
+            : undefined,
           createdAt: new Date(dbItem.createdAt),
           updatedAt: new Date(dbItem.updatedAt),
         }))

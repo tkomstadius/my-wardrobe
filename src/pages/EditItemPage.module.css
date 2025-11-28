@@ -146,6 +146,27 @@
   flex: 1;
 }
 
+.checkboxField {
+  display: flex;
+  align-items: center;
+  padding: 12px 0;
+}
+
+.checkboxLabel {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--gray-12);
+}
+
+.checkbox {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+}
+
 /* Mobile adjustments */
 @media (max-width: 768px) {
   .container {

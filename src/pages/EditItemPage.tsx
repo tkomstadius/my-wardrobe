@@ -15,13 +15,17 @@ import styles from "./EditItemPage.module.css";
 export function EditItemPage() {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
-  const { getItemById, updateItem, deleteItem } = useWardrobe();
+  const { getItemById, updateItem, deleteItem, getAllBrands } = useWardrobe();
 
   const [formData, setFormData] = useState({
     type: "",
     color: "",
     brand: "",
     category: "tops" as ItemCategory,
+    price: "",
+    isSecondHand: false,
+    purchaseDate: "",
+    wearCount: "",
   });
   const [imagePreview, setImagePreview] = useState<string>("");
   const [error, setError] = useState("");
@@ -45,9 +49,15 @@ export function EditItemPage() {
     // Pre-fill form with existing data
     setFormData({
       type: item.type,
-      color: item.color,
+      color: item.color || "",
       brand: item.brand || "",
       category: item.category,
+      price: item.price !== undefined ? item.price.toString() : "",
+      isSecondHand: item.isSecondHand || false,
+      purchaseDate: item.purchaseDate
+        ? new Date(item.purchaseDate).toISOString().split("T")[0] ?? ""
+        : "",
+      wearCount: item.wearCount.toString(),
     });
     setImagePreview(item.imageUrl);
   }, [id, getItemById]);
@@ -102,20 +112,23 @@ export function EditItemPage() {
       return;
     }
 
-    if (!formData.color.trim()) {
-      setError("Please enter the item color");
-      return;
-    }
-
     setIsSaving(true);
 
     try {
       await updateItem(id!, {
         imageUrl: imagePreview,
         type: formData.type.trim(),
-        color: formData.color.trim(),
+        color: formData.color.trim() || undefined,
         brand: formData.brand.trim() || undefined,
         category: formData.category,
+        price: formData.price ? Number.parseFloat(formData.price) : undefined,
+        isSecondHand: formData.isSecondHand,
+        purchaseDate: formData.purchaseDate
+          ? new Date(formData.purchaseDate)
+          : undefined,
+        wearCount: formData.wearCount
+          ? Number.parseInt(formData.wearCount, 10)
+          : 0,
       });
 
       // Navigate back to category page
@@ -256,7 +269,13 @@ export function EditItemPage() {
                 setFormData({ ...formData, brand: e.target.value })
               }
               size="3"
+              list="brand-suggestions-edit"
             />
+            <datalist id="brand-suggestions-edit">
+              {getAllBrands().map((brand) => (
+                <option key={brand} value={brand} />
+              ))}
+            </datalist>
           </div>
 
           <div className={styles.field}>
@@ -277,6 +296,58 @@ export function EditItemPage() {
                 <Select.Item value="accessories">Accessories</Select.Item>
               </Select.Content>
             </Select.Root>
+          </div>
+
+          <div className={styles.field}>
+            <span className={styles.label}>Price</span>
+            <TextField.Root
+              type="number"
+              placeholder="e.g., 49.99"
+              value={formData.price}
+              onChange={(e) =>
+                setFormData({ ...formData, price: e.target.value })
+              }
+              size="3"
+            />
+          </div>
+
+          <div className={styles.field}>
+            <span className={styles.label}>Purchase Date</span>
+            <TextField.Root
+              type="date"
+              value={formData.purchaseDate}
+              onChange={(e) =>
+                setFormData({ ...formData, purchaseDate: e.target.value })
+              }
+              size="3"
+            />
+          </div>
+
+          <div className={styles.field}>
+            <span className={styles.label}>Wear Count</span>
+            <TextField.Root
+              type="number"
+              placeholder="0"
+              value={formData.wearCount}
+              onChange={(e) =>
+                setFormData({ ...formData, wearCount: e.target.value })
+              }
+              size="3"
+            />
+          </div>
+
+          <div className={styles.checkboxField}>
+            <label className={styles.checkboxLabel}>
+              <input
+                type="checkbox"
+                checked={formData.isSecondHand}
+                onChange={(e) =>
+                  setFormData({ ...formData, isSecondHand: e.target.checked })
+                }
+                className={styles.checkbox}
+              />
+              <span>Second Hand / Thrifted</span>
+            </label>
           </div>
         </div>
 

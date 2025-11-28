@@ -14,7 +14,7 @@ import styles from "./AddItemPage.module.css";
 
 export function AddItemPage() {
   const navigate = useNavigate();
-  const { addItem } = useWardrobe();
+  const { addItem, getAllBrands } = useWardrobe();
   const [imagePreview, setImagePreview] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string>("");
@@ -24,6 +24,10 @@ export function AddItemPage() {
     color: "",
     brand: "",
     category: "tops" as ItemCategory,
+    price: "",
+    isSecondHand: false,
+    purchaseDate: "",
+    initialWearCount: "",
   });
 
   const handleImageCapture = async () => {
@@ -98,25 +102,28 @@ export function AddItemPage() {
       return;
     }
 
-    if (!formData.color.trim()) {
-      setError("Please enter the item color");
-      return;
-    }
+    setIsSubmitting(true);
 
     try {
-      setIsSubmitting(true);
-
       // Save item to context (which persists to IndexedDB)
       await addItem({
         imageUrl: imagePreview,
         type: formData.type.trim(),
-        color: formData.color.trim(),
+        color: formData.color.trim() || undefined,
         brand: formData.brand.trim() || undefined,
         category: formData.category,
+        price: formData.price ? Number.parseFloat(formData.price) : undefined,
+        isSecondHand: formData.isSecondHand,
+        purchaseDate: formData.purchaseDate
+          ? new Date(formData.purchaseDate)
+          : undefined,
+        wearCount: formData.initialWearCount
+          ? Number.parseInt(formData.initialWearCount, 10)
+          : undefined,
       });
 
-      // Navigate back to home
-      navigate("/");
+      // Navigate to category page
+      navigate(`/category/${formData.category}`);
     } catch (err) {
       console.error("Failed to save item:", err);
       setError("Failed to save item. Please try again.");
@@ -211,7 +218,13 @@ export function AddItemPage() {
               onChange={(e) =>
                 setFormData({ ...formData, brand: e.target.value })
               }
+              list="brand-suggestions"
             />
+            <datalist id="brand-suggestions">
+              {getAllBrands().map((brand) => (
+                <option key={brand} value={brand} />
+              ))}
+            </datalist>
           </div>
 
           <div className={styles.field}>
@@ -232,6 +245,58 @@ export function AddItemPage() {
                 <Select.Item value="accessories">Accessories</Select.Item>
               </Select.Content>
             </Select.Root>
+          </div>
+
+          <div className={styles.field}>
+            <span className={styles.label}>Price</span>
+            <TextField.Root
+              type="number"
+              placeholder="e.g., 49.99"
+              value={formData.price}
+              onChange={(e) =>
+                setFormData({ ...formData, price: e.target.value })
+              }
+              size="3"
+            />
+          </div>
+
+          <div className={styles.field}>
+            <span className={styles.label}>Purchase Date</span>
+            <TextField.Root
+              type="date"
+              value={formData.purchaseDate}
+              onChange={(e) =>
+                setFormData({ ...formData, purchaseDate: e.target.value })
+              }
+              size="3"
+            />
+          </div>
+
+          <div className={styles.field}>
+            <span className={styles.label}>Initial Wear Count</span>
+            <TextField.Root
+              type="number"
+              placeholder="0"
+              value={formData.initialWearCount}
+              onChange={(e) =>
+                setFormData({ ...formData, initialWearCount: e.target.value })
+              }
+              size="3"
+            />
+          </div>
+
+          <div className={styles.checkboxField}>
+            <label className={styles.checkboxLabel}>
+              <input
+                type="checkbox"
+                checked={formData.isSecondHand}
+                onChange={(e) =>
+                  setFormData({ ...formData, isSecondHand: e.target.checked })
+                }
+                className={styles.checkbox}
+              />
+              <span>Second Hand / Thrifted</span>
+            </label>
           </div>
         </div>
 
