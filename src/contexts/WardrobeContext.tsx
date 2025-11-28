@@ -14,6 +14,7 @@ interface WardrobeContextValue {
   addItem: (newItem: NewWardrobeItem) => Promise<WardrobeItem>;
   updateItem: (id: string, updates: Partial<WardrobeItem>) => Promise<void>;
   deleteItem: (id: string) => Promise<void>;
+  incrementWearCount: (id: string) => Promise<void>;
   getItemById: (id: string) => WardrobeItem | undefined;
   getItemsByCategory: (category: string) => WardrobeItem[];
   getAllBrands: () => string[];
@@ -94,6 +95,27 @@ export function WardrobeProvider({ children }: WardrobeProviderProps) {
     setItems((prev) => prev.filter((item) => item.id !== id));
   };
 
+  const incrementWearCount = async (id: string): Promise<void> => {
+    const itemToUpdate = items.find((item) => item.id === id);
+    if (!itemToUpdate) {
+      throw new Error("Item not found");
+    }
+
+    const updatedItem = {
+      ...itemToUpdate,
+      wearCount: itemToUpdate.wearCount + 1,
+      updatedAt: new Date(),
+    };
+
+    // Save to IndexedDB first
+    await saveItem(updatedItem);
+
+    // Then update state
+    setItems((prev) =>
+      prev.map((item) => (item.id === id ? updatedItem : item))
+    );
+  };
+
   const getItemById = (id: string): WardrobeItem | undefined => {
     return items.find((item) => item.id === id);
   };
@@ -117,6 +139,7 @@ export function WardrobeProvider({ children }: WardrobeProviderProps) {
     addItem,
     updateItem,
     deleteItem,
+    incrementWearCount,
     getItemById,
     getItemsByCategory,
     getAllBrands,

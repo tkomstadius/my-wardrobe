@@ -39,6 +39,38 @@
   display: block;
 }
 
+.quickWearButton {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  opacity: 1;
+  transition: transform 0.2s ease;
+  background: var(--accent-9);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  z-index: 10;
+}
+
+.quickWearButton:active {
+  transform: scale(0.95);
+}
+
+/* On desktop, hide button until hover */
+@media (min-width: 769px) and (hover: hover) {
+  .quickWearButton {
+    opacity: 0;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+  }
+
+  .card:hover .quickWearButton {
+    opacity: 1;
+  }
+
+  .quickWearButton:hover {
+    transform: scale(1.1);
+    background: var(--accent-10);
+  }
+}
+
 .content {
   padding: 12px;
   flex: 1;
@@ -98,6 +130,12 @@
 .wearCount {
   color: var(--gray-10);
   font-weight: 500;
+}
+
+.costPerWear {
+  color: var(--blue-11);
+  font-weight: 600;
+  font-size: 11px;
 }
 
 .date {

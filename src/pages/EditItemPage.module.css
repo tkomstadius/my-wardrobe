@@ -192,6 +192,21 @@
   color: var(--gray-9);
 }
 
+/* Wear Count Section */
+.wearCountContainer {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.wearCountInput {
+  flex: 1;
+}
+
+.markWornButton {
+  white-space: nowrap;
+}
+
 /* Mobile adjustments */
 @media (max-width: 768px) {
   .container {

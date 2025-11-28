@@ -15,7 +15,7 @@ import styles from "./EditItemPage.module.css";
 export function EditItemPage() {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
-  const { getItemById, updateItem, deleteItem, getAllBrands } = useWardrobe();
+  const { getItemById, updateItem, deleteItem, getAllBrands, incrementWearCount } = useWardrobe();
 
   const [formData, setFormData] = useState({
     type: "",
@@ -150,6 +150,25 @@ export function EditItemPage() {
     } catch (err) {
       console.error("Failed to delete item:", err);
       setError("Failed to delete item. Please try again.");
+    }
+  };
+
+  const handleMarkAsWorn = async () => {
+    if (!id) return;
+
+    try {
+      await incrementWearCount(id);
+      // Update the form data to reflect the new wear count
+      const updatedItem = getItemById(id);
+      if (updatedItem) {
+        setFormData((prev) => ({
+          ...prev,
+          wearCount: updatedItem.wearCount.toString(),
+        }));
+      }
+    } catch (err) {
+      console.error("Failed to increment wear count:", err);
+      setError("Failed to update wear count. Please try again.");
     }
   };
 
@@ -326,15 +345,27 @@ export function EditItemPage() {
 
           <div className={styles.field}>
             <span className={styles.label}>Wear Count</span>
-            <TextField.Root
-              type="number"
-              placeholder="0"
-              value={formData.wearCount}
-              onChange={(e) =>
-                setFormData({ ...formData, wearCount: e.target.value })
-              }
-              size="3"
-            />
+            <div className={styles.wearCountContainer}>
+              <TextField.Root
+                type="number"
+                placeholder="0"
+                value={formData.wearCount}
+                onChange={(e) =>
+                  setFormData({ ...formData, wearCount: e.target.value })
+                }
+                size="3"
+                className={styles.wearCountInput}
+              />
+              <Button
+                type="button"
+                variant="soft"
+                size="3"
+                onClick={handleMarkAsWorn}
+                className={styles.markWornButton}
+              >
+                Mark as Worn
+              </Button>
+            </div>
           </div>
 
           <div className={styles.checkboxField}>
