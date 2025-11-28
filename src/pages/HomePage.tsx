@@ -69,26 +69,28 @@ interface CategoryCardProps {
   items: Array<{ imageUrl: string; id: string }>;
 }
 
-function CategoryCard({ title, count, items }: CategoryCardProps) {
+function CategoryCard({ title, count, category, items }: CategoryCardProps) {
   const hasItems = items.length > 0;
 
   return (
-    <div className={styles.categoryCard}>
-      {hasItems && (
-        <div className={styles.categoryPreview}>
-          {items.slice(0, 4).map((item) => (
-            <div key={item.id} className={styles.previewImage}>
-              <img src={item.imageUrl} alt="" />
-            </div>
-          ))}
+    <Link to={`/category/${category}`} className={styles.categoryCardLink}>
+      <div className={styles.categoryCard}>
+        {hasItems && (
+          <div className={styles.categoryPreview}>
+            {items.slice(0, 4).map((item) => (
+              <div key={item.id} className={styles.previewImage}>
+                <img src={item.imageUrl} alt="" />
+              </div>
+            ))}
+          </div>
+        )}
+        <div className={styles.categoryContent}>
+          <h3 className={styles.categoryTitle}>{title}</h3>
+          <p className={styles.categoryCount}>
+            {count} {count === 1 ? 'item' : 'items'}
+          </p>
         </div>
-      )}
-      <div className={styles.categoryContent}>
-        <h3 className={styles.categoryTitle}>{title}</h3>
-        <p className={styles.categoryCount}>
-          {count} {count === 1 ? 'item' : 'items'}
-        </p>
       </div>
-    </div>
+    </Link>
   );
 }

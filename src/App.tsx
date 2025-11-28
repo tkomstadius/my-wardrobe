@@ -1,6 +1,7 @@
 import { Route, Routes } from 'react-router';
 import { MainLayout } from './components/layout/MainLayout';
 import { AddItemPage } from './pages/AddItemPage';
+import { CategoryPage } from './pages/CategoryPage';
 import { EditItemPage } from './pages/EditItemPage';
 import { HomePage } from './pages/HomePage';
 
@@ -10,6 +11,7 @@ function App() {
       <Route path="/" element={<MainLayout />}>
         <Route index element={<HomePage />} />
         <Route path="add-item" element={<AddItemPage />} />
+        <Route path="category/:category" element={<CategoryPage />} />
         <Route path="edit-item/:id" element={<EditItemPage />} />
       </Route>
     </Routes>

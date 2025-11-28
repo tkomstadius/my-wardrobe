@@ -31,6 +31,12 @@
   gap: 1rem;
 }
 
+.categoryCardLink {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+
 .categoryCard {
   background-color: var(--gray-3);
   border: 1px solid var(--gray-6);
