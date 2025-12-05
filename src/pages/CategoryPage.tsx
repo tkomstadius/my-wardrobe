@@ -21,7 +21,10 @@ export function CategoryPage() {
 
   // Validate category
   const isValidCategory = (cat: string | undefined): cat is ItemCategory => {
-    return cat !== undefined && ['tops', 'bottoms', 'dresses', 'outerwear', 'shoes', 'accessories'].includes(cat);
+    return (
+      cat !== undefined &&
+      ['tops', 'bottoms', 'dresses', 'outerwear', 'shoes', 'accessories'].includes(cat)
+    );
   };
 
   if (!isValidCategory(category)) {

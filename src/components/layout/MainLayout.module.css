@@ -1,9 +1,14 @@
 .layout {
   min-height: 100vh;
-  min-height: 100dvh;
   display: flex;
   flex-direction: column;
   background-color: var(--gray-1);
+}
+
+@supports (min-height: 100dvh) {
+  .layout {
+    min-height: 100dvh;
+  }
 }
 
 .header {
@@ -28,4 +33,5 @@
   max-width: 768px;
   margin: 0 auto;
   padding: 1rem;
+  padding-bottom: calc(9rem + env(safe-area-inset-bottom));
 }

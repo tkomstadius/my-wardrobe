@@ -21,7 +21,7 @@ const DEFAULT_OPTIONS: Required<CompressionOptions> = {
  */
 export async function compressImage(
   dataURL: string,
-  options: CompressionOptions = {}
+  options: CompressionOptions = {},
 ): Promise<string> {
   const opts = { ...DEFAULT_OPTIONS, ...options };
 
@@ -45,32 +45,32 @@ export async function compressImage(
         }
 
         // Create canvas and draw resized image
-        const canvas = document.createElement("canvas");
+        const canvas = document.createElement('canvas');
         canvas.width = width;
         canvas.height = height;
 
-        const ctx = canvas.getContext("2d");
+        const ctx = canvas.getContext('2d');
         if (!ctx) {
-          reject(new Error("Failed to get canvas context"));
+          reject(new Error('Failed to get canvas context'));
           return;
         }
 
         // Use better image smoothing for quality
         ctx.imageSmoothingEnabled = true;
-        ctx.imageSmoothingQuality = "high";
+        ctx.imageSmoothingQuality = 'high';
 
         // Draw the image
         ctx.drawImage(img, 0, 0, width, height);
 
         // Convert to compressed JPEG
-        const compressedDataURL = canvas.toDataURL("image/jpeg", opts.quality);
+        const compressedDataURL = canvas.toDataURL('image/jpeg', opts.quality);
         resolve(compressedDataURL);
       } catch (error) {
         reject(error);
       }
     };
 
-    img.onerror = () => reject(new Error("Failed to load image"));
+    img.onerror = () => reject(new Error('Failed to load image'));
     img.src = dataURL;
   });
 }
@@ -82,7 +82,7 @@ export async function compressImage(
  */
 export function getDataURLSize(dataURL: string): number {
   // Remove data URL prefix to get pure base64
-  const base64 = dataURL.split(",")[1];
+  const base64 = dataURL.split(',')[1];
   if (!base64) return 0;
 
   // Calculate size: base64 is ~4/3 of original binary size
@@ -97,10 +97,10 @@ export function getDataURLSize(dataURL: string): number {
  * @returns Formatted string (e.g., "1.5 MB")
  */
 export function formatBytes(bytes: number): string {
-  if (bytes === 0) return "0 Bytes";
+  if (bytes === 0) return '0 Bytes';
 
   const k = 1024;
-  const sizes = ["Bytes", "KB", "MB", "GB"];
+  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
 
   return `${(bytes / k ** i).toFixed(2)} ${sizes[i]}`;
@@ -112,10 +112,7 @@ export function formatBytes(bytes: number): string {
  * @param compressedDataURL - Compressed image data URL
  * @returns Compression statistics
  */
-export function getCompressionStats(
-  originalDataURL: string,
-  compressedDataURL: string
-) {
+export function getCompressionStats(originalDataURL: string, compressedDataURL: string) {
   const originalSize = getDataURLSize(originalDataURL);
   const compressedSize = getDataURLSize(compressedDataURL);
   const savedBytes = originalSize - compressedSize;

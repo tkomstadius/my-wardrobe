@@ -1,10 +1,10 @@
-import { PlusIcon } from "@radix-ui/react-icons";
-import { IconButton } from "@radix-ui/themes";
-import { Link } from "react-router";
-import { useWardrobe } from "../../contexts/WardrobeContext";
-import type { WardrobeItem } from "../../types/wardrobe";
-import { formatDateDisplay } from "../../utils/dateFormatter";
-import styles from "./ItemCard.module.css";
+import { PlusIcon } from '@radix-ui/react-icons';
+import { IconButton } from '@radix-ui/themes';
+import { Link } from 'react-router';
+import { useWardrobe } from '../../contexts/WardrobeContext';
+import type { WardrobeItem } from '../../types/wardrobe';
+import { formatDateDisplay } from '../../utils/dateFormatter';
+import styles from './ItemCard.module.css';
 
 interface ItemCardProps {
   item: WardrobeItem;
@@ -16,9 +16,7 @@ export function ItemCard({ item, onClick }: ItemCardProps) {
 
   // Calculate cost per wear if price exists and wear count > 0
   const costPerWear =
-    item.price !== undefined && item.wearCount > 0
-      ? item.price / item.wearCount
-      : null;
+    item.price !== undefined && item.wearCount > 0 ? item.price / item.wearCount : null;
 
   const handleQuickWear = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -26,18 +24,27 @@ export function ItemCard({ item, onClick }: ItemCardProps) {
     try {
       await incrementWearCount(item.id);
     } catch (err) {
-      console.error("Failed to increment wear count:", err);
+      console.error('Failed to increment wear count:', err);
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (onClick && (e.key === 'Enter' || e.key === ' ')) {
+      e.preventDefault();
+      onClick();
     }
   };
 
   const content = (
-    <div className={styles.card} onClick={onClick}>
+    <div
+      className={styles.card}
+      onClick={onClick}
+      onKeyDown={handleKeyDown}
+      role="button"
+      tabIndex={0}
+    >
       <div className={styles.imageContainer}>
-        <img
-          src={item.imageUrl}
-          alt={`${item.type} - ${item.color}`}
-          className={styles.image}
-        />
+        <img src={item.imageUrl} alt={`${item.type} - ${item.color}`} className={styles.image} />
         <IconButton
           size="2"
           variant="solid"
@@ -54,7 +61,7 @@ export function ItemCard({ item, onClick }: ItemCardProps) {
           {item.color && <span className={styles.color}>{item.color}</span>}
           {item.brand && (
             <span className={styles.brand}>
-              {item.color ? " • " : ""}
+              {item.color ? ' • ' : ''}
               {item.brand}
             </span>
           )}
@@ -65,15 +72,11 @@ export function ItemCard({ item, onClick }: ItemCardProps) {
           )}
           {item.isSecondHand && <span className={styles.badge}>Thrifted</span>}
           {item.purchaseDate && (
-            <span className={styles.date}>
-              {formatDateDisplay(item.purchaseDate)}
-            </span>
+            <span className={styles.date}>{formatDateDisplay(item.purchaseDate)}</span>
           )}
           <span className={styles.wearCount}>Worn {item.wearCount}×</span>
           {costPerWear !== null && (
-            <span className={styles.costPerWear}>
-              {costPerWear.toFixed(2)} kr/wear
-            </span>
+            <span className={styles.costPerWear}>{costPerWear.toFixed(2)} kr/wear</span>
           )}
         </div>
       </div>

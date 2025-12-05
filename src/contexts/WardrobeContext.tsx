@@ -1,13 +1,7 @@
-import {
-  type ReactNode,
-  createContext,
-  useContext,
-  useEffect,
-  useState,
-} from "react";
-import type { NewWardrobeItem, WardrobeItem } from "../types/wardrobe";
-import { saveItem } from "../utils/indexedDB";
-import { generateId, loadItems, removeItem } from "../utils/storage";
+import { createContext, type ReactNode, useContext, useEffect, useState } from 'react';
+import type { NewWardrobeItem, WardrobeItem } from '../types/wardrobe';
+import { saveItem } from '../utils/indexedDB';
+import { generateId, loadItems, removeItem } from '../utils/storage';
 
 interface WardrobeContextValue {
   items: WardrobeItem[];
@@ -21,9 +15,7 @@ interface WardrobeContextValue {
   isLoading: boolean;
 }
 
-const WardrobeContext = createContext<WardrobeContextValue | undefined>(
-  undefined
-);
+const WardrobeContext = createContext<WardrobeContextValue | undefined>(undefined);
 
 interface WardrobeProviderProps {
   children: ReactNode;
@@ -40,7 +32,7 @@ export function WardrobeProvider({ children }: WardrobeProviderProps) {
         const loadedItems = await loadItems();
         setItems(loadedItems);
       } catch (error) {
-        console.error("Failed to load items:", error);
+        console.error('Failed to load items:', error);
       } finally {
         setIsLoading(false);
       }
@@ -67,13 +59,10 @@ export function WardrobeProvider({ children }: WardrobeProviderProps) {
     return item;
   };
 
-  const updateItem = async (
-    id: string,
-    updates: Partial<WardrobeItem>
-  ): Promise<void> => {
+  const updateItem = async (id: string, updates: Partial<WardrobeItem>): Promise<void> => {
     const itemToUpdate = items.find((item) => item.id === id);
     if (!itemToUpdate) {
-      throw new Error("Item not found");
+      throw new Error('Item not found');
     }
 
     const updatedItem = { ...itemToUpdate, ...updates, updatedAt: new Date() };
@@ -82,9 +71,7 @@ export function WardrobeProvider({ children }: WardrobeProviderProps) {
     await saveItem(updatedItem);
 
     // Then update state
-    setItems((prev) =>
-      prev.map((item) => (item.id === id ? updatedItem : item))
-    );
+    setItems((prev) => prev.map((item) => (item.id === id ? updatedItem : item)));
   };
 
   const deleteItem = async (id: string): Promise<void> => {
@@ -98,7 +85,7 @@ export function WardrobeProvider({ children }: WardrobeProviderProps) {
   const incrementWearCount = async (id: string): Promise<void> => {
     const itemToUpdate = items.find((item) => item.id === id);
     if (!itemToUpdate) {
-      throw new Error("Item not found");
+      throw new Error('Item not found');
     }
 
     const updatedItem = {
@@ -111,9 +98,7 @@ export function WardrobeProvider({ children }: WardrobeProviderProps) {
     await saveItem(updatedItem);
 
     // Then update state
-    setItems((prev) =>
-      prev.map((item) => (item.id === id ? updatedItem : item))
-    );
+    setItems((prev) => prev.map((item) => (item.id === id ? updatedItem : item)));
   };
 
   const getItemById = (id: string): WardrobeItem | undefined => {
@@ -127,7 +112,7 @@ export function WardrobeProvider({ children }: WardrobeProviderProps) {
   const getAllBrands = (): string[] => {
     const brands = new Set<string>();
     for (const item of items) {
-      if (item.brand && item.brand.trim()) {
+      if (item.brand?.trim()) {
         brands.add(item.brand.trim());
       }
     }
@@ -146,17 +131,13 @@ export function WardrobeProvider({ children }: WardrobeProviderProps) {
     isLoading,
   };
 
-  return (
-    <WardrobeContext.Provider value={value}>
-      {children}
-    </WardrobeContext.Provider>
-  );
+  return <WardrobeContext.Provider value={value}>{children}</WardrobeContext.Provider>;
 }
 
 export function useWardrobe(): WardrobeContextValue {
   const context = useContext(WardrobeContext);
   if (context === undefined) {
-    throw new Error("useWardrobe must be used within a WardrobeProvider");
+    throw new Error('useWardrobe must be used within a WardrobeProvider');
   }
   return context;
 }

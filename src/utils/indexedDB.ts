@@ -1,11 +1,11 @@
 // IndexedDB wrapper for wardrobe storage
 // More capacity than localStorage, stores images as Blobs for efficiency
 
-import type { ItemCategory } from "../types/wardrobe";
+import type { ItemCategory } from '../types/wardrobe';
 
-const DB_NAME = "MyWardrobeDB";
+const DB_NAME = 'MyWardrobeDB';
 const DB_VERSION = 1;
-const STORE_NAME = "items";
+const STORE_NAME = 'items';
 
 // Open or create the database
 function openDB(): Promise<IDBDatabase> {
@@ -20,9 +20,9 @@ function openDB(): Promise<IDBDatabase> {
 
       // Create object store if it doesn't exist
       if (!db.objectStoreNames.contains(STORE_NAME)) {
-        const objectStore = db.createObjectStore(STORE_NAME, { keyPath: "id" });
-        objectStore.createIndex("category", "category", { unique: false });
-        objectStore.createIndex("createdAt", "createdAt", { unique: false });
+        const objectStore = db.createObjectStore(STORE_NAME, { keyPath: 'id' });
+        objectStore.createIndex('category', 'category', { unique: false });
+        objectStore.createIndex('createdAt', 'createdAt', { unique: false });
       }
     };
   });
@@ -30,10 +30,10 @@ function openDB(): Promise<IDBDatabase> {
 
 // Convert data URL to Blob for efficient storage
 export function dataURLtoBlob(dataURL: string): Blob {
-  const arr = dataURL.split(",");
+  const arr = dataURL.split(',');
   const mimeMatch = arr[0]?.match(/:(.*?);/);
-  const mime = mimeMatch ? mimeMatch[1] : "image/jpeg";
-  const bstr = atob(arr[1] ?? "");
+  const mime = mimeMatch ? mimeMatch[1] : 'image/jpeg';
+  const bstr = atob(arr[1] ?? '');
   let n = bstr.length;
   const u8arr = new Uint8Array(n);
 
@@ -72,7 +72,7 @@ export async function saveItem(item: {
   const db = await openDB();
 
   return new Promise((resolve, reject) => {
-    const transaction = db.transaction([STORE_NAME], "readwrite");
+    const transaction = db.transaction([STORE_NAME], 'readwrite');
     const store = transaction.objectStore(STORE_NAME);
 
     // Convert image data URL to Blob for efficient storage
@@ -122,7 +122,7 @@ export async function loadAllItems(): Promise<
   const db = await openDB();
 
   return new Promise((resolve, reject) => {
-    const transaction = db.transaction([STORE_NAME], "readonly");
+    const transaction = db.transaction([STORE_NAME], 'readonly');
     const store = transaction.objectStore(STORE_NAME);
     const request = store.getAll();
 
@@ -141,12 +141,10 @@ export async function loadAllItems(): Promise<
           wearCount: dbItem.wearCount,
           price: dbItem.price,
           isSecondHand: dbItem.isSecondHand,
-          purchaseDate: dbItem.purchaseDate
-            ? new Date(dbItem.purchaseDate)
-            : undefined,
+          purchaseDate: dbItem.purchaseDate ? new Date(dbItem.purchaseDate) : undefined,
           createdAt: new Date(dbItem.createdAt),
           updatedAt: new Date(dbItem.updatedAt),
-        }))
+        })),
       );
 
       resolve(items);
@@ -163,7 +161,7 @@ export async function deleteItem(id: string): Promise<void> {
   const db = await openDB();
 
   return new Promise((resolve, reject) => {
-    const transaction = db.transaction([STORE_NAME], "readwrite");
+    const transaction = db.transaction([STORE_NAME], 'readwrite');
     const store = transaction.objectStore(STORE_NAME);
     const request = store.delete(id);
 
@@ -179,7 +177,7 @@ export async function clearAllItems(): Promise<void> {
   const db = await openDB();
 
   return new Promise((resolve, reject) => {
-    const transaction = db.transaction([STORE_NAME], "readwrite");
+    const transaction = db.transaction([STORE_NAME], 'readwrite');
     const store = transaction.objectStore(STORE_NAME);
     const request = store.clear();
 
@@ -197,7 +195,7 @@ export async function getStorageEstimate(): Promise<{
   usageInMB: number;
   quotaInMB: number;
 }> {
-  if ("storage" in navigator && "estimate" in navigator.storage) {
+  if ('storage' in navigator && 'estimate' in navigator.storage) {
     const estimate = await navigator.storage.estimate();
     return {
       usage: estimate.usage || 0,
