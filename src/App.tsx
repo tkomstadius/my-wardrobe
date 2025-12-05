@@ -1,9 +1,12 @@
-import { Route, Routes } from 'react-router';
-import { MainLayout } from './components/layout/MainLayout';
-import { AddItemPage } from './pages/AddItemPage';
-import { CategoryPage } from './pages/CategoryPage';
-import { EditItemPage } from './pages/EditItemPage';
-import { HomePage } from './pages/HomePage';
+import { Route, Routes } from "react-router";
+import { MainLayout } from "./components/layout/MainLayout";
+import { AddItemPage } from "./pages/AddItemPage";
+import { CategoryPage } from "./pages/CategoryPage";
+import { EditItemPage } from "./pages/EditItemPage";
+import { HomePage } from "./pages/HomePage";
+import { OutfitsPage } from "./pages/OutfitsPage";
+import { CreateOutfitPage } from "./pages/CreateOutfitPage";
+import { OutfitDetailPage } from "./pages/OutfitDetailPage";
 
 function App() {
   return (
@@ -13,6 +16,9 @@ function App() {
         <Route path="add-item" element={<AddItemPage />} />
         <Route path="category/:category" element={<CategoryPage />} />
         <Route path="edit-item/:id" element={<EditItemPage />} />
+        <Route path="outfits" element={<OutfitsPage />} />
+        <Route path="create-outfit" element={<CreateOutfitPage />} />
+        <Route path="outfit/:id" element={<OutfitDetailPage />} />
       </Route>
     </Routes>
   );

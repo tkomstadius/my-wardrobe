@@ -2,10 +2,12 @@
 // More capacity than localStorage, stores images as Blobs for efficiency
 
 import type { ItemCategory } from "../types/wardrobe";
+import type { Outfit } from "../types/outfit";
 
 const DB_NAME = "MyWardrobeDB";
-const DB_VERSION = 2;
+const DB_VERSION = 3;
 const STORE_NAME = "items";
+const OUTFITS_STORE = "outfits";
 
 // Open or create the database
 function openDB(): Promise<IDBDatabase> {
@@ -13,7 +15,32 @@ function openDB(): Promise<IDBDatabase> {
     const request = indexedDB.open(DB_NAME, DB_VERSION);
 
     request.onerror = () => reject(request.error);
-    request.onsuccess = () => resolve(request.result);
+    request.onsuccess = () => {
+      const db = request.result;
+
+      // Check if outfits store exists, if not, we need to upgrade
+      if (!db.objectStoreNames.contains(OUTFITS_STORE)) {
+        db.close();
+        // Force upgrade by incrementing version
+        const upgradeRequest = indexedDB.open(DB_NAME, db.version + 1);
+        upgradeRequest.onerror = () => reject(upgradeRequest.error);
+        upgradeRequest.onsuccess = () => resolve(upgradeRequest.result);
+        upgradeRequest.onupgradeneeded = (event) => {
+          const upgradedDb = (event.target as IDBOpenDBRequest).result;
+          if (!upgradedDb.objectStoreNames.contains(OUTFITS_STORE)) {
+            const outfitsStore = upgradedDb.createObjectStore(OUTFITS_STORE, {
+              keyPath: "id",
+            });
+            outfitsStore.createIndex("wornDate", "wornDate", { unique: false });
+            outfitsStore.createIndex("createdAt", "createdAt", {
+              unique: false,
+            });
+          }
+        };
+      } else {
+        resolve(db);
+      }
+    };
 
     request.onupgradeneeded = (event) => {
       const db = (event.target as IDBOpenDBRequest).result;
@@ -25,6 +52,15 @@ function openDB(): Promise<IDBDatabase> {
         const objectStore = db.createObjectStore(STORE_NAME, { keyPath: "id" });
         objectStore.createIndex("category", "category", { unique: false });
         objectStore.createIndex("createdAt", "createdAt", { unique: false });
+      }
+
+      // Create outfits store (version 3+)
+      if (!db.objectStoreNames.contains(OUTFITS_STORE)) {
+        const outfitsStore = db.createObjectStore(OUTFITS_STORE, {
+          keyPath: "id",
+        });
+        outfitsStore.createIndex("wornDate", "wornDate", { unique: false });
+        outfitsStore.createIndex("createdAt", "createdAt", { unique: false });
       }
 
       // Migrate from version 1 to version 2
@@ -237,4 +273,86 @@ export async function getStorageEstimate(): Promise<{
   }
 
   return { usage: 0, quota: 0, usageInMB: 0, quotaInMB: 0 };
+}
+
+// ========== Outfit Storage Functions ==========
+
+// Save an outfit to IndexedDB
+export async function saveOutfit(outfit: Outfit): Promise<void> {
+  const db = await openDB();
+
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction([OUTFITS_STORE], "readwrite");
+    const store = transaction.objectStore(OUTFITS_STORE);
+
+    // Convert photo data URL to Blob if it exists
+    const dbOutfit = {
+      id: outfit.id,
+      photoBlob: outfit.photo ? dataURLtoBlob(outfit.photo) : undefined,
+      itemIds: outfit.itemIds,
+      wornDate: outfit.wornDate.toISOString(),
+      notes: outfit.notes,
+      createdAt: outfit.createdAt.toISOString(),
+      updatedAt: outfit.updatedAt.toISOString(),
+    };
+
+    const request = store.put(dbOutfit);
+
+    request.onsuccess = () => resolve();
+    request.onerror = () => reject(request.error);
+
+    transaction.oncomplete = () => db.close();
+  });
+}
+
+// Load all outfits from IndexedDB
+export async function loadAllOutfits(): Promise<Outfit[]> {
+  const db = await openDB();
+
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction([OUTFITS_STORE], "readonly");
+    const store = transaction.objectStore(OUTFITS_STORE);
+    const request = store.getAll();
+
+    request.onsuccess = async () => {
+      const dbOutfits = request.result;
+
+      // Convert Blobs back to data URLs
+      const outfits = await Promise.all(
+        dbOutfits.map(async (dbOutfit) => ({
+          id: dbOutfit.id,
+          photo: dbOutfit.photoBlob
+            ? await blobToDataURL(dbOutfit.photoBlob)
+            : undefined,
+          itemIds: dbOutfit.itemIds,
+          wornDate: new Date(dbOutfit.wornDate),
+          notes: dbOutfit.notes,
+          createdAt: new Date(dbOutfit.createdAt),
+          updatedAt: new Date(dbOutfit.updatedAt),
+        }))
+      );
+
+      resolve(outfits);
+    };
+
+    request.onerror = () => reject(request.error);
+
+    transaction.oncomplete = () => db.close();
+  });
+}
+
+// Delete an outfit from IndexedDB
+export async function deleteOutfit(id: string): Promise<void> {
+  const db = await openDB();
+
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction([OUTFITS_STORE], "readwrite");
+    const store = transaction.objectStore(OUTFITS_STORE);
+    const request = store.delete(id);
+
+    request.onsuccess = () => resolve();
+    request.onerror = () => reject(request.error);
+
+    transaction.oncomplete = () => db.close();
+  });
 }

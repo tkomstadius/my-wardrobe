@@ -1,5 +1,6 @@
 import type { WardrobeItem } from '../types/wardrobe';
-import { deleteItem, loadAllItems, saveItem } from './indexedDB';
+import type { Outfit } from '../types/outfit';
+import { deleteItem, loadAllItems, saveItem, saveOutfit, loadAllOutfits, deleteOutfit } from './indexedDB';
 
 // Storage layer - now uses IndexedDB for better capacity and performance
 // Previously used localStorage (5-10MB limit)
@@ -36,4 +37,33 @@ export async function removeItem(id: string): Promise<void> {
 export function generateId(): string {
   // Generate a unique ID using timestamp + random string
   return `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+}
+
+// ========== Outfit Storage Functions ==========
+
+export async function loadOutfits(): Promise<Outfit[]> {
+  try {
+    return await loadAllOutfits();
+  } catch (error) {
+    console.error('Failed to load outfits from IndexedDB:', error);
+    return [];
+  }
+}
+
+export async function removeOutfit(id: string): Promise<void> {
+  try {
+    await deleteOutfit(id);
+  } catch (error) {
+    console.error('Failed to delete outfit from IndexedDB:', error);
+    throw new Error('Failed to delete outfit.');
+  }
+}
+
+export async function saveOutfitToStorage(outfit: Outfit): Promise<void> {
+  try {
+    await saveOutfit(outfit);
+  } catch (error) {
+    console.error('Failed to save outfit to IndexedDB:', error);
+    throw new Error('Failed to save outfit. Storage may be full.');
+  }
 }

@@ -71,11 +71,11 @@
 /* Adjust for very small screens */
 @media (max-width: 360px) {
   .navItem {
-    min-width: 60px;
-    padding: 0.5rem 0.5rem;
+    min-width: 50px;
+    padding: 0.5rem 0.25rem;
   }
 
   .label {
-    font-size: 0.7rem;
+    font-size: 0.65rem;
   }
 }

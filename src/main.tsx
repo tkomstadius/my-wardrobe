@@ -8,15 +8,18 @@ import { BrowserRouter } from 'react-router';
 
 import App from './App';
 import { WardrobeProvider } from './contexts/WardrobeContext';
+import { OutfitProvider } from './contexts/OutfitContext';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <WardrobeProvider>
-      <Theme appearance="dark" accentColor="violet" radius="medium">
-        <BrowserRouter>
-          <App />
-        </BrowserRouter>
-      </Theme>
+      <OutfitProvider>
+        <Theme appearance="dark" accentColor="violet" radius="medium">
+          <BrowserRouter>
+            <App />
+          </BrowserRouter>
+        </Theme>
+      </OutfitProvider>
     </WardrobeProvider>
   </StrictMode>,
 );

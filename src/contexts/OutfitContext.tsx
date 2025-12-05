@@ -1,0 +1,123 @@
+import { createContext, type ReactNode, useContext, useEffect, useState } from 'react';
+import type { NewOutfit, Outfit } from '../types/outfit';
+import { generateId, loadOutfits, removeOutfit, saveOutfitToStorage } from '../utils/storage';
+import { useWardrobe } from './WardrobeContext';
+
+interface OutfitContextValue {
+  outfits: Outfit[];
+  addOutfit: (newOutfit: NewOutfit) => Promise<Outfit>;
+  updateOutfit: (id: string, updates: Partial<Outfit>) => Promise<void>;
+  deleteOutfit: (id: string) => Promise<void>;
+  getOutfitById: (id: string) => Outfit | undefined;
+  getRecentOutfits: (limit?: number) => Outfit[];
+  isLoading: boolean;
+}
+
+const OutfitContext = createContext<OutfitContextValue | undefined>(undefined);
+
+interface OutfitProviderProps {
+  children: ReactNode;
+}
+
+export function OutfitProvider({ children }: OutfitProviderProps) {
+  const [outfits, setOutfits] = useState<Outfit[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const { incrementWearCount } = useWardrobe();
+
+  // Load outfits from IndexedDB on mount
+  useEffect(() => {
+    async function initializeData() {
+      try {
+        const loadedOutfits = await loadOutfits();
+        setOutfits(loadedOutfits);
+      } catch (error) {
+        console.error('Failed to load outfits:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    initializeData();
+  }, []);
+
+  const addOutfit = async (newOutfit: NewOutfit): Promise<Outfit> => {
+    const now = new Date();
+    const outfit: Outfit = {
+      ...newOutfit,
+      id: generateId(),
+      wornDate: newOutfit.wornDate ?? now,
+      createdAt: now,
+      updatedAt: now,
+    };
+
+    // Save to IndexedDB first
+    await saveOutfitToStorage(outfit);
+
+    // Increment wear count for all items in the outfit
+    for (const itemId of outfit.itemIds) {
+      try {
+        await incrementWearCount(itemId);
+      } catch (error) {
+        console.error(`Failed to increment wear count for item ${itemId}:`, error);
+      }
+    }
+
+    // Then update state
+    setOutfits((prev) => [outfit, ...prev]);
+    return outfit;
+  };
+
+  const updateOutfit = async (id: string, updates: Partial<Outfit>): Promise<void> => {
+    const outfitToUpdate = outfits.find((outfit) => outfit.id === id);
+    if (!outfitToUpdate) {
+      throw new Error('Outfit not found');
+    }
+
+    const updatedOutfit = { ...outfitToUpdate, ...updates, updatedAt: new Date() };
+
+    // Save to IndexedDB first
+    await saveOutfitToStorage(updatedOutfit);
+
+    // Then update state
+    setOutfits((prev) => prev.map((outfit) => (outfit.id === id ? updatedOutfit : outfit)));
+  };
+
+  const deleteOutfit = async (id: string): Promise<void> => {
+    // Delete from IndexedDB first
+    await removeOutfit(id);
+
+    // Then update state
+    setOutfits((prev) => prev.filter((outfit) => outfit.id !== id));
+  };
+
+  const getOutfitById = (id: string): Outfit | undefined => {
+    return outfits.find((outfit) => outfit.id === id);
+  };
+
+  const getRecentOutfits = (limit = 10): Outfit[] => {
+    return [...outfits]
+      .sort((a, b) => b.wornDate.getTime() - a.wornDate.getTime())
+      .slice(0, limit);
+  };
+
+  const value: OutfitContextValue = {
+    outfits,
+    addOutfit,
+    updateOutfit,
+    deleteOutfit,
+    getOutfitById,
+    getRecentOutfits,
+    isLoading,
+  };
+
+  return <OutfitContext.Provider value={value}>{children}</OutfitContext.Provider>;
+}
+
+export function useOutfit(): OutfitContextValue {
+  const context = useContext(OutfitContext);
+  if (context === undefined) {
+    throw new Error('useOutfit must be used within an OutfitProvider');
+  }
+  return context;
+}
+

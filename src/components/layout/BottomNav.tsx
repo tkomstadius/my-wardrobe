@@ -1,6 +1,6 @@
-import { HomeIcon, PlusIcon } from '@radix-ui/react-icons';
-import { Link, useLocation } from 'react-router';
-import styles from './BottomNav.module.css';
+import { HomeIcon, PlusIcon, MixIcon } from "@radix-ui/react-icons";
+import { Link, useLocation } from "react-router";
+import styles from "./BottomNav.module.css";
 
 export function BottomNav() {
   const location = useLocation();
@@ -8,7 +8,12 @@ export function BottomNav() {
 
   return (
     <nav className={styles.bottomNav}>
-      <Link to="/" className={`${styles.navItem} ${currentPath === '/' ? styles.active : ''}`}>
+      <Link
+        to="/"
+        className={`${styles.navItem} ${
+          currentPath === "/" ? styles.active : ""
+        }`}
+      >
         <HomeIcon className={styles.icon} />
         <span className={styles.label}>Home</span>
       </Link>
@@ -18,6 +23,18 @@ export function BottomNav() {
           <PlusIcon className={styles.addIcon} />
         </div>
         <span className={styles.label}>Add Item</span>
+      </Link>
+
+      <Link
+        to="/outfits"
+        className={`${styles.navItem} ${
+          currentPath.startsWith("/outfits") || currentPath === "/create-outfit"
+            ? styles.active
+            : ""
+        }`}
+      >
+        <MixIcon className={styles.icon} />
+        <span className={styles.label}>Outfits</span>
       </Link>
     </nav>
   );
