@@ -1,5 +1,4 @@
-import { PlusIcon } from "@radix-ui/react-icons";
-import { Button, Text } from "@radix-ui/themes";
+import { Text } from "@radix-ui/themes";
 import { Link } from "react-router";
 import { useWardrobe } from "../contexts/WardrobeContext";
 import type { ItemCategory } from "../types/wardrobe";
@@ -22,12 +21,6 @@ export function HomePage() {
     <div className={styles.container}>
       <div className={styles.header}>
         <h2 className={styles.title}>My Wardrobe</h2>
-        <Link to="/add-item">
-          <Button size="3">
-            <PlusIcon />
-            Add Item
-          </Button>
-        </Link>
       </div>
 
       {isLoading && (

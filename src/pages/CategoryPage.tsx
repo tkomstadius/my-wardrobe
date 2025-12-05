@@ -78,9 +78,7 @@ export function CategoryPage() {
             No {title.toLowerCase()} yet. Add your first item!
           </Text>
           <Link to="/add-item" className={styles.addItemLink}>
-            <Button size="2">
-              Add Item
-            </Button>
+            <Button size="2">Add Item</Button>
           </Link>
         </div>
       )}
@@ -102,4 +100,3 @@ export function CategoryPage() {
     </div>
   );
 }
-

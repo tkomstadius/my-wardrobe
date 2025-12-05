@@ -1,7 +1,17 @@
-import { Outlet } from 'react-router';
-import styles from './MainLayout.module.css';
+import { Outlet, useLocation } from "react-router";
+import { BottomNav } from "./BottomNav";
+import styles from "./MainLayout.module.css";
+
+const PAGES_WITHOUT_BOTTOM_NAV = ["/add-item"];
 
 export function MainLayout() {
+  const location = useLocation();
+
+  // Hide bottom nav on form pages (add/edit item)
+  const shouldShowBottomNav =
+    !PAGES_WITHOUT_BOTTOM_NAV.includes(location.pathname) &&
+    !location.pathname.startsWith("/edit-item/");
+
   return (
     <div className={styles.layout}>
       <header className={styles.header}>
@@ -10,6 +20,7 @@ export function MainLayout() {
       <main className={styles.main}>
         <Outlet />
       </main>
+      {shouldShowBottomNav && <BottomNav />}
     </div>
   );
 }
