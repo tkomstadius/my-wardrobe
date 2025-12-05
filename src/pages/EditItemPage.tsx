@@ -1,35 +1,49 @@
-import { ArrowLeftIcon, TrashIcon } from '@radix-ui/react-icons';
-import { AlertDialog, Button, Select, Text, TextField } from '@radix-ui/themes';
-import { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router';
-import { useWardrobe } from '../contexts/WardrobeContext';
-import type { ItemCategory } from '../types/wardrobe';
+import { ArrowLeftIcon, TrashIcon } from "@radix-ui/react-icons";
+import {
+  AlertDialog,
+  Button,
+  Checkbox,
+  Flex,
+  Select,
+  Text,
+  TextField,
+} from "@radix-ui/themes";
+import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router";
+import { useWardrobe } from "../contexts/WardrobeContext";
+import type { ItemCategory } from "../types/wardrobe";
 import {
   compressImage,
   formatBytes,
   getCompressionStats,
   getDataURLSize,
-} from '../utils/imageCompression';
-import styles from './EditItemPage.module.css';
+} from "../utils/imageCompression";
+import styles from "./EditItemPage.module.css";
 
 export function EditItemPage() {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
-  const { getItemById, updateItem, deleteItem, getAllBrands, incrementWearCount } = useWardrobe();
+  const {
+    getItemById,
+    updateItem,
+    deleteItem,
+    getAllBrands,
+    incrementWearCount,
+  } = useWardrobe();
 
   const [formData, setFormData] = useState({
-    type: '',
-    color: '',
-    brand: '',
-    category: 'tops' as ItemCategory,
-    price: '',
+    notes: "",
+    brand: "",
+    category: "tops" as ItemCategory,
+    price: "",
     isSecondHand: false,
-    purchaseDate: '',
-    wearCount: '',
+    isDogCasual: false,
+    purchaseDate: "",
+    wearCount: "",
   });
-  const [imagePreview, setImagePreview] = useState<string>('');
-  const [error, setError] = useState('');
-  const [compressionInfo, setCompressionInfo] = useState('');
+  const [imagePreview, setImagePreview] = useState<string>("");
+  const [error, setError] = useState("");
+  const [compressionInfo, setCompressionInfo] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [itemNotFound, setItemNotFound] = useState(false);
 
@@ -48,21 +62,23 @@ export function EditItemPage() {
 
     // Pre-fill form with existing data
     setFormData({
-      type: item.type,
-      color: item.color || '',
-      brand: item.brand || '',
+      notes: item.notes || "",
+      brand: item.brand || "",
       category: item.category,
-      price: item.price !== undefined ? item.price.toString() : '',
+      price: item.price !== undefined ? item.price.toString() : "",
       isSecondHand: item.isSecondHand || false,
+      isDogCasual: item.isDogCasual || false,
       purchaseDate: item.purchaseDate
-        ? (new Date(item.purchaseDate).toISOString().split('T')[0] ?? '')
-        : '',
+        ? new Date(item.purchaseDate).toISOString().split("T")[0] ?? ""
+        : "",
       wearCount: item.wearCount.toString(),
     });
     setImagePreview(item.imageUrl);
   }, [id, getItemById]);
 
-  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const file = event.target.files?.[0];
     if (file) {
       const reader = new FileReader();
@@ -77,18 +93,18 @@ export function EditItemPage() {
           const compressedDataURL = await compressImage(originalDataURL);
           const stats = getCompressionStats(originalDataURL, compressedDataURL);
 
-          console.log('✅ Compressed image:', stats);
+          console.log("✅ Compressed image:", stats);
 
           // Show compression info to user
           setCompressionInfo(
-            `Compressed: ${stats.originalFormatted} → ${stats.compressedFormatted} (saved ${stats.compressionRatio})`,
+            `Compressed: ${stats.originalFormatted} → ${stats.compressedFormatted} (saved ${stats.compressionRatio})`
           );
 
           setImagePreview(compressedDataURL);
         } catch (err) {
-          console.error('Compression failed, using original:', err);
+          console.error("Compression failed, using original:", err);
           setImagePreview(originalDataURL);
-          setCompressionInfo('');
+          setCompressionInfo("");
         }
       };
       reader.readAsDataURL(file);
@@ -97,16 +113,11 @@ export function EditItemPage() {
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    setError('');
+    setError("");
 
     // Validate form
     if (!imagePreview) {
-      setError('Please add an image of the item');
-      return;
-    }
-
-    if (!formData.type.trim()) {
-      setError('Please enter the item type');
+      setError("Please add an image of the item");
       return;
     }
 
@@ -115,21 +126,25 @@ export function EditItemPage() {
     try {
       await updateItem(id!, {
         imageUrl: imagePreview,
-        type: formData.type.trim(),
-        color: formData.color.trim() || undefined,
+        notes: formData.notes.trim() || undefined,
         brand: formData.brand.trim() || undefined,
         category: formData.category,
         price: formData.price ? Number.parseFloat(formData.price) : undefined,
         isSecondHand: formData.isSecondHand,
-        purchaseDate: formData.purchaseDate ? new Date(formData.purchaseDate) : undefined,
-        wearCount: formData.wearCount ? Number.parseInt(formData.wearCount, 10) : 0,
+        isDogCasual: formData.isDogCasual,
+        purchaseDate: formData.purchaseDate
+          ? new Date(formData.purchaseDate)
+          : undefined,
+        wearCount: formData.wearCount
+          ? Number.parseInt(formData.wearCount, 10)
+          : 0,
       });
 
       // Navigate back to category page
       navigate(`/category/${formData.category}`);
     } catch (err) {
-      console.error('Failed to update item:', err);
-      setError('Failed to save changes. Please try again.');
+      console.error("Failed to update item:", err);
+      setError("Failed to save changes. Please try again.");
     } finally {
       setIsSaving(false);
     }
@@ -140,10 +155,10 @@ export function EditItemPage() {
 
     try {
       await deleteItem(id);
-      navigate('/'); // Navigate to home after delete
+      navigate("/"); // Navigate to home after delete
     } catch (err) {
-      console.error('Failed to delete item:', err);
-      setError('Failed to delete item. Please try again.');
+      console.error("Failed to delete item:", err);
+      setError("Failed to delete item. Please try again.");
     }
   };
 
@@ -161,8 +176,8 @@ export function EditItemPage() {
         }));
       }
     } catch (err) {
-      console.error('Failed to increment wear count:', err);
-      setError('Failed to update wear count. Please try again.');
+      console.error("Failed to increment wear count:", err);
+      setError("Failed to update wear count. Please try again.");
     }
   };
 
@@ -170,7 +185,7 @@ export function EditItemPage() {
     return (
       <div className={styles.container}>
         <div className={styles.header}>
-          <Button variant="ghost" onClick={() => navigate('/')}>
+          <Button variant="ghost" onClick={() => navigate("/")}>
             <ArrowLeftIcon />
             Back
           </Button>
@@ -200,8 +215,15 @@ export function EditItemPage() {
         <div className={styles.imageSection}>
           {imagePreview ? (
             <div className={styles.imagePreviewContainer}>
-              <img src={imagePreview} alt="Item preview" className={styles.imagePreview} />
-              <label htmlFor="image-upload" className={styles.changeImageButton}>
+              <img
+                src={imagePreview}
+                alt="Item preview"
+                className={styles.imagePreview}
+              />
+              <label
+                htmlFor="image-upload"
+                className={styles.changeImageButton}
+              >
                 <Button type="button" size="2">
                   Change Image
                 </Button>
@@ -243,32 +265,14 @@ export function EditItemPage() {
         {/* Form Fields */}
         <div className={styles.fields}>
           <div className={styles.field}>
-            <span className={styles.label}>Type *</span>
-            <TextField.Root
-              placeholder="e.g., T-shirt, Jeans, Sneakers"
-              value={formData.type}
-              onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-              size="3"
-            />
-          </div>
-
-          <div className={styles.field}>
-            <span className={styles.label}>Color *</span>
-            <TextField.Root
-              placeholder="e.g., Blue, Black, White"
-              value={formData.color}
-              onChange={(e) => setFormData({ ...formData, color: e.target.value })}
-              size="3"
-            />
-          </div>
-
-          <div className={styles.field}>
             <span className={styles.label}>Brand</span>
             <input
               type="text"
               placeholder="e.g., Nike, Zara, H&M"
               value={formData.brand}
-              onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, brand: e.target.value })
+              }
               list="brand-suggestions-edit"
               className={styles.input}
             />
@@ -305,7 +309,9 @@ export function EditItemPage() {
               type="number"
               placeholder="e.g., 49.99"
               value={formData.price}
-              onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, price: e.target.value })
+              }
               size="3"
             />
           </div>
@@ -315,7 +321,9 @@ export function EditItemPage() {
             <TextField.Root
               type="date"
               value={formData.purchaseDate}
-              onChange={(e) => setFormData({ ...formData, purchaseDate: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, purchaseDate: e.target.value })
+              }
               size="3"
             />
           </div>
@@ -327,7 +335,9 @@ export function EditItemPage() {
                 type="number"
                 placeholder="0"
                 value={formData.wearCount}
-                onChange={(e) => setFormData({ ...formData, wearCount: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, wearCount: e.target.value })
+                }
                 size="3"
                 className={styles.wearCountInput}
               />
@@ -343,17 +353,41 @@ export function EditItemPage() {
             </div>
           </div>
 
-          <div className={styles.checkboxField}>
-            <label className={styles.checkboxLabel}>
-              <input
-                type="checkbox"
-                checked={formData.isSecondHand}
-                onChange={(e) => setFormData({ ...formData, isSecondHand: e.target.checked })}
-                className={styles.checkbox}
-              />
-              <span>Second Hand / Thrifted</span>
-            </label>
+          <div className={styles.field}>
+            <span className={styles.label}>Notes (Optional)</span>
+            <TextField.Root
+              placeholder="e.g., favorite jeans, scratched"
+              value={formData.notes}
+              onChange={(e) =>
+                setFormData({ ...formData, notes: e.target.value })
+              }
+              size="3"
+            />
           </div>
+
+          <Text as="label" size="3">
+            <Flex gap="2" align="center">
+              <Checkbox
+                checked={formData.isSecondHand}
+                onCheckedChange={(checked) =>
+                  setFormData({ ...formData, isSecondHand: checked === true })
+                }
+              />
+              Second Hand / Thrifted
+            </Flex>
+          </Text>
+
+          <Text as="label" size="3">
+            <Flex gap="2" align="center">
+              <Checkbox
+                checked={formData.isDogCasual}
+                onCheckedChange={(checked) =>
+                  setFormData({ ...formData, isDogCasual: checked === true })
+                }
+              />
+              Casual
+            </Flex>
+          </Text>
         </div>
 
         {error && (
@@ -365,8 +399,13 @@ export function EditItemPage() {
         )}
 
         <div className={styles.actions}>
-          <Button type="submit" size="3" disabled={isSaving} className={styles.saveButton}>
-            {isSaving ? 'Saving...' : 'Save Changes'}
+          <Button
+            type="submit"
+            size="3"
+            disabled={isSaving}
+            className={styles.saveButton}
+          >
+            {isSaving ? "Saving..." : "Save Changes"}
           </Button>
 
           <AlertDialog.Root>
@@ -379,16 +418,25 @@ export function EditItemPage() {
             <AlertDialog.Content maxWidth="400px">
               <AlertDialog.Title>Delete Item</AlertDialog.Title>
               <AlertDialog.Description>
-                Are you sure you want to delete this item? This action cannot be undone.
+                Are you sure you want to delete this item? This action cannot be
+                undone.
               </AlertDialog.Description>
               <div className={styles.dialogActions}>
                 <AlertDialog.Cancel>
-                  <Button variant="soft" color="gray" className={styles.dialogButton}>
+                  <Button
+                    variant="soft"
+                    color="gray"
+                    className={styles.dialogButton}
+                  >
                     Cancel
                   </Button>
                 </AlertDialog.Cancel>
                 <AlertDialog.Action>
-                  <Button color="red" onClick={handleDelete} className={styles.dialogButton}>
+                  <Button
+                    color="red"
+                    onClick={handleDelete}
+                    className={styles.dialogButton}
+                  >
                     Delete
                   </Button>
                 </AlertDialog.Action>

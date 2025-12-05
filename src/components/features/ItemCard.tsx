@@ -44,7 +44,7 @@ export function ItemCard({ item, onClick }: ItemCardProps) {
       tabIndex={0}
     >
       <div className={styles.imageContainer}>
-        <img src={item.imageUrl} alt={`${item.type} - ${item.color}`} className={styles.image} />
+        <img src={item.imageUrl} alt={item.notes || item.brand || 'Wardrobe item'} className={styles.image} />
         <IconButton
           size="2"
           variant="solid"
@@ -56,21 +56,16 @@ export function ItemCard({ item, onClick }: ItemCardProps) {
         </IconButton>
       </div>
       <div className={styles.content}>
-        <h3 className={styles.type}>{item.type}</h3>
+        {item.notes && <h3 className={styles.type}>{item.notes}</h3>}
         <p className={styles.details}>
-          {item.color && <span className={styles.color}>{item.color}</span>}
-          {item.brand && (
-            <span className={styles.brand}>
-              {item.color ? ' • ' : ''}
-              {item.brand}
-            </span>
-          )}
+          {item.brand && <span className={styles.brand}>{item.brand}</span>}
         </p>
         <div className={styles.metadata}>
           {item.price !== undefined && (
             <span className={styles.price}>{item.price.toFixed(2)} kr</span>
           )}
           {item.isSecondHand && <span className={styles.badge}>Thrifted</span>}
+          {item.isDogCasual && <span className={styles.badge}>Casual</span>}
           {item.purchaseDate && (
             <span className={styles.date}>{formatDateDisplay(item.purchaseDate)}</span>
           )}

@@ -1,33 +1,41 @@
-import { ArrowLeftIcon } from '@radix-ui/react-icons';
-import { Button, Callout, Select, TextField } from '@radix-ui/themes';
-import { useState } from 'react';
-import { useNavigate } from 'react-router';
-import { useWardrobe } from '../contexts/WardrobeContext';
-import type { ItemCategory } from '../types/wardrobe';
+import { ArrowLeftIcon } from "@radix-ui/react-icons";
+import {
+  Button,
+  Callout,
+  Checkbox,
+  Flex,
+  Select,
+  Text,
+  TextField,
+} from "@radix-ui/themes";
+import { useState } from "react";
+import { useNavigate } from "react-router";
+import { useWardrobe } from "../contexts/WardrobeContext";
+import type { ItemCategory } from "../types/wardrobe";
 import {
   compressImage,
   formatBytes,
   getCompressionStats,
   getDataURLSize,
-} from '../utils/imageCompression';
-import styles from './AddItemPage.module.css';
+} from "../utils/imageCompression";
+import styles from "./AddItemPage.module.css";
 
 export function AddItemPage() {
   const navigate = useNavigate();
   const { addItem, getAllBrands } = useWardrobe();
-  const [imagePreview, setImagePreview] = useState<string>('');
+  const [imagePreview, setImagePreview] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState<string>('');
-  const [compressionInfo, setCompressionInfo] = useState<string>('');
+  const [error, setError] = useState<string>("");
+  const [compressionInfo, setCompressionInfo] = useState<string>("");
   const [formData, setFormData] = useState({
-    type: '',
-    color: '',
-    brand: '',
-    category: 'tops' as ItemCategory,
-    price: '',
+    notes: "",
+    brand: "",
+    category: "tops" as ItemCategory,
+    price: "",
     isSecondHand: false,
-    purchaseDate: '',
-    initialWearCount: '',
+    isDogCasual: false,
+    purchaseDate: "",
+    initialWearCount: "",
   });
 
   const handleImageCapture = async () => {
@@ -39,13 +47,15 @@ export function AddItemPage() {
       for (const track of stream.getTracks()) {
         track.stop();
       }
-      console.log('Camera access granted - full implementation coming');
+      console.log("Camera access granted - full implementation coming");
     } catch (error) {
-      console.error('Error accessing camera:', error);
+      console.error("Error accessing camera:", error);
     }
   };
 
-  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const file = event.target.files?.[0];
     if (file) {
       const reader = new FileReader();
@@ -54,7 +64,7 @@ export function AddItemPage() {
         const originalSize = getDataURLSize(originalDataURL);
 
         // Show original size
-        console.log('📸 Original image:', formatBytes(originalSize));
+        console.log("📸 Original image:", formatBytes(originalSize));
 
         // Compress the image
         try {
@@ -62,7 +72,7 @@ export function AddItemPage() {
           const stats = getCompressionStats(originalDataURL, compressedDataURL);
 
           // Log compression results
-          console.log('✅ Compressed image:', {
+          console.log("✅ Compressed image:", {
             original: stats.originalFormatted,
             compressed: stats.compressedFormatted,
             saved: stats.savedFormatted,
@@ -71,14 +81,14 @@ export function AddItemPage() {
 
           // Show compression info to user
           setCompressionInfo(
-            `Compressed: ${stats.originalFormatted} → ${stats.compressedFormatted} (saved ${stats.compressionRatio})`,
+            `Compressed: ${stats.originalFormatted} → ${stats.compressedFormatted} (saved ${stats.compressionRatio})`
           );
 
           setImagePreview(compressedDataURL);
         } catch (err) {
-          console.error('Compression failed, using original:', err);
+          console.error("Compression failed, using original:", err);
           setImagePreview(originalDataURL);
-          setCompressionInfo('');
+          setCompressionInfo("");
         }
       };
       reader.readAsDataURL(file);
@@ -87,16 +97,11 @@ export function AddItemPage() {
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    setError('');
+    setError("");
 
     // Validate form
     if (!imagePreview) {
-      setError('Please add an image of the item');
-      return;
-    }
-
-    if (!formData.type.trim()) {
-      setError('Please enter the item type');
+      setError("Please add an image of the item");
       return;
     }
 
@@ -106,13 +111,15 @@ export function AddItemPage() {
       // Save item to context (which persists to IndexedDB)
       await addItem({
         imageUrl: imagePreview,
-        type: formData.type.trim(),
-        color: formData.color.trim() || undefined,
+        notes: formData.notes.trim() || undefined,
         brand: formData.brand.trim() || undefined,
         category: formData.category,
         price: formData.price ? Number.parseFloat(formData.price) : undefined,
         isSecondHand: formData.isSecondHand,
-        purchaseDate: formData.purchaseDate ? new Date(formData.purchaseDate) : undefined,
+        isDogCasual: formData.isDogCasual,
+        purchaseDate: formData.purchaseDate
+          ? new Date(formData.purchaseDate)
+          : undefined,
         wearCount: formData.initialWearCount
           ? Number.parseInt(formData.initialWearCount, 10)
           : undefined,
@@ -121,8 +128,8 @@ export function AddItemPage() {
       // Navigate to category page
       navigate(`/category/${formData.category}`);
     } catch (err) {
-      console.error('Failed to save item:', err);
-      setError('Failed to save item. Please try again.');
+      console.error("Failed to save item:", err);
+      setError("Failed to save item. Please try again.");
       setIsSubmitting(false);
     }
   };
@@ -130,7 +137,7 @@ export function AddItemPage() {
   return (
     <div className={styles.container}>
       <div className={styles.header}>
-        <Button variant="ghost" onClick={() => navigate('/')}>
+        <Button variant="ghost" onClick={() => navigate("/")}>
           <ArrowLeftIcon />
         </Button>
         <h2 className={styles.title}>Add Item</h2>
@@ -153,7 +160,11 @@ export function AddItemPage() {
         <div className={styles.imageSection}>
           {imagePreview ? (
             <div className={styles.imagePreview}>
-              <img src={imagePreview} alt="Item preview" className={styles.previewImage} />
+              <img
+                src={imagePreview}
+                alt="Item preview"
+                className={styles.previewImage}
+              />
             </div>
           ) : (
             <div className={styles.imagePlaceholder}>
@@ -181,29 +192,13 @@ export function AddItemPage() {
 
         <div className={styles.fields}>
           <div className={styles.field}>
-            <span className={styles.label}>Type</span>
-            <TextField.Root
-              placeholder="e.g., T-shirt, Jeans"
-              value={formData.type}
-              onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-            />
-          </div>
-
-          <div className={styles.field}>
-            <span className={styles.label}>Color</span>
-            <TextField.Root
-              placeholder="e.g., Blue, Black"
-              value={formData.color}
-              onChange={(e) => setFormData({ ...formData, color: e.target.value })}
-            />
-          </div>
-
-          <div className={styles.field}>
             <span className={styles.label}>Brand (Optional)</span>
             <TextField.Root
               placeholder="e.g., Nike, Zara"
               value={formData.brand}
-              onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, brand: e.target.value })
+              }
               list="brand-suggestions"
             />
             <datalist id="brand-suggestions">
@@ -239,7 +234,9 @@ export function AddItemPage() {
               type="number"
               placeholder="e.g., 49.99"
               value={formData.price}
-              onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, price: e.target.value })
+              }
               size="3"
             />
           </div>
@@ -249,7 +246,9 @@ export function AddItemPage() {
             <TextField.Root
               type="date"
               value={formData.purchaseDate}
-              onChange={(e) => setFormData({ ...formData, purchaseDate: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, purchaseDate: e.target.value })
+              }
               size="3"
             />
           </div>
@@ -260,26 +259,57 @@ export function AddItemPage() {
               type="number"
               placeholder="0"
               value={formData.initialWearCount}
-              onChange={(e) => setFormData({ ...formData, initialWearCount: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, initialWearCount: e.target.value })
+              }
               size="3"
             />
           </div>
 
-          <div className={styles.checkboxField}>
-            <label className={styles.checkboxLabel}>
-              <input
-                type="checkbox"
-                checked={formData.isSecondHand}
-                onChange={(e) => setFormData({ ...formData, isSecondHand: e.target.checked })}
-                className={styles.checkbox}
-              />
-              <span>Second Hand / Thrifted</span>
-            </label>
+          <div className={styles.field}>
+            <span className={styles.label}>Notes (Optional)</span>
+            <TextField.Root
+              placeholder="e.g., T-shirt, favorite jeans, scratched"
+              value={formData.notes}
+              onChange={(e) =>
+                setFormData({ ...formData, notes: e.target.value })
+              }
+              size="3"
+            />
           </div>
+
+          <Text as="label" size="3">
+            <Flex gap="2" align="center">
+              <Checkbox
+                checked={formData.isSecondHand}
+                onCheckedChange={(checked) =>
+                  setFormData({ ...formData, isSecondHand: checked === true })
+                }
+              />
+              Second Hand / Thrifted
+            </Flex>
+          </Text>
+
+          <Text as="label" size="3">
+            <Flex gap="2" align="center">
+              <Checkbox
+                checked={formData.isDogCasual}
+                onCheckedChange={(checked) =>
+                  setFormData({ ...formData, isDogCasual: checked === true })
+                }
+              />
+              Dog casual
+            </Flex>
+          </Text>
         </div>
 
-        <Button type="submit" size="3" className={styles.saveButton} disabled={isSubmitting}>
-          {isSubmitting ? 'Saving...' : 'Save Item'}
+        <Button
+          type="submit"
+          size="3"
+          className={styles.saveButton}
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? "Saving..." : "Save Item"}
         </Button>
       </form>
     </div>

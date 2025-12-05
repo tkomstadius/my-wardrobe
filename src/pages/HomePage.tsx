@@ -7,7 +7,7 @@ import styles from "./HomePage.module.css";
 const CATEGORIES: Array<{ id: ItemCategory; title: string }> = [
   { id: "tops", title: "Tops" },
   { id: "bottoms", title: "Bottoms" },
-  { id: "dresses", title: "Dresses/Jumpsuits" },
+  { id: "dresses", title: "Dresses & Jumpsuits" },
   { id: "outerwear", title: "Outerwear" },
   { id: "shoes", title: "Shoes" },
   { id: "accessories", title: "Accessories" },
