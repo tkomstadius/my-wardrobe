@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { useOutfit } from '../contexts/OutfitContext';
 import { useWardrobe } from '../contexts/WardrobeContext';
+import type { WardrobeItem } from '../types/wardrobe';
 import { compressImage } from '../utils/imageCompression';
 import styles from './CreateOutfitPage.module.css';
 
@@ -14,7 +15,7 @@ export function CreateOutfitPage() {
 
   const [formData, setFormData] = useState({
     notes: '',
-    wornDate: new Date().toISOString().split('T')[0], // Today's date
+    wornDate: new Date().toISOString().split('T')[0] as string, // Today's date
   });
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
@@ -83,15 +84,16 @@ export function CreateOutfitPage() {
   };
 
   // Group items by category for easier selection
-  const itemsByCategory = items.reduce(
+  const itemsByCategory = items.reduce<Record<string, WardrobeItem[]>>(
     (acc, item) => {
-      if (!acc[item.category]) {
-        acc[item.category] = [];
+      const category = item.category;
+      if (!acc[category]) {
+        acc[category] = [];
       }
-      acc[item.category].push(item);
+      acc[category]!.push(item);
       return acc;
     },
-    {} as Record<string, typeof items>
+    {}
   );
 
   const categories = Object.keys(itemsByCategory).sort();
@@ -199,7 +201,7 @@ export function CreateOutfitPage() {
                   </Text>
 
                   <div className={styles.itemsGrid}>
-                    {itemsByCategory[category].map((item) => (
+                    {itemsByCategory[category]?.map((item) => (
                       <label key={item.id} className={styles.itemCheckbox}>
                         <div
                           className={`${styles.itemCard} ${

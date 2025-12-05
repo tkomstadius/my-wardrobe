@@ -1,10 +1,10 @@
-import { PlusIcon, MixIcon } from '@radix-ui/react-icons';
-import { Button, Heading, Text } from '@radix-ui/themes';
-import { useNavigate } from 'react-router';
-import { useOutfit } from '../contexts/OutfitContext';
-import { useWardrobe } from '../contexts/WardrobeContext';
-import { formatDate } from '../utils/dateFormatter';
-import styles from './OutfitsPage.module.css';
+import { PlusIcon, MixIcon } from "@radix-ui/react-icons";
+import { Button, Heading, Text } from "@radix-ui/themes";
+import { useNavigate } from "react-router";
+import { useOutfit } from "../contexts/OutfitContext";
+import { useWardrobe } from "../contexts/WardrobeContext";
+import { formatDate } from "../utils/dateFormatter";
+import styles from "./OutfitsPage.module.css";
 
 export function OutfitsPage() {
   const navigate = useNavigate();
@@ -29,7 +29,7 @@ export function OutfitsPage() {
     <div className={styles.container}>
       <header className={styles.header}>
         <Heading size="6">My Outfits</Heading>
-        <Button onClick={() => navigate('/create-outfit')} size="2">
+        <Button onClick={() => navigate("/create-outfit")} size="2">
           <PlusIcon /> Create Outfit
         </Button>
       </header>
@@ -38,15 +38,23 @@ export function OutfitsPage() {
         <div className={styles.emptyState}>
           <MixIcon className={styles.emptyIcon} />
           <Heading size="4">No outfits yet</Heading>
-          <Text color="gray">Create your first outfit to start tracking what you wear</Text>
-          <Button onClick={() => navigate('/create-outfit')} size="3" style={{ marginTop: '1rem' }}>
+          <Text color="gray">
+            Create your first outfit to start tracking what you wear
+          </Text>
+          <Button
+            onClick={() => navigate("/create-outfit")}
+            size="3"
+            style={{ marginTop: "1rem" }}
+          >
             <PlusIcon /> Create Your First Outfit
           </Button>
         </div>
       ) : (
         <div className={styles.outfitsGrid}>
           {sortedOutfits.map((outfit) => {
-            const firstItem = outfit.itemIds[0] ? getItemById(outfit.itemIds[0]) : null;
+            const firstItem = outfit.itemIds[0]
+              ? getItemById(outfit.itemIds[0])
+              : null;
             const displayImage = outfit.photo || firstItem?.imageUrl;
 
             return (
@@ -57,7 +65,7 @@ export function OutfitsPage() {
               >
                 <div className={styles.outfitImage}>
                   {displayImage ? (
-                    <img src={displayImage} alt={outfit.name || 'Outfit'} />
+                    <img src={displayImage} alt="Outfit" />
                   ) : (
                     <div className={styles.noImage}>
                       <MixIcon width="32" height="32" />
@@ -65,7 +73,8 @@ export function OutfitsPage() {
                   )}
                   <div className={styles.itemCount}>
                     <Text size="1" weight="bold">
-                      {outfit.itemIds.length} {outfit.itemIds.length === 1 ? 'item' : 'items'}
+                      {outfit.itemIds.length}{" "}
+                      {outfit.itemIds.length === 1 ? "item" : "items"}
                     </Text>
                   </div>
                 </div>
@@ -76,7 +85,9 @@ export function OutfitsPage() {
                   </Text>
                   {outfit.notes && (
                     <Text size="1" color="gray" className={styles.outfitNotes}>
-                      {outfit.notes.length > 40 ? `${outfit.notes.substring(0, 40)}...` : outfit.notes}
+                      {outfit.notes.length > 40
+                        ? `${outfit.notes.substring(0, 40)}...`
+                        : outfit.notes}
                     </Text>
                   )}
                 </div>
@@ -88,4 +99,3 @@ export function OutfitsPage() {
     </div>
   );
 }
-

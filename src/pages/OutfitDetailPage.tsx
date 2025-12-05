@@ -29,7 +29,9 @@ export function OutfitDetailPage() {
     );
   }
 
-  const outfitItems = outfit.itemIds.map((itemId) => getItemById(itemId)).filter(Boolean);
+  const outfitItems = outfit.itemIds
+    .map((itemId) => getItemById(itemId))
+    .filter((item): item is NonNullable<typeof item> => item !== undefined);
 
   const handleDelete = async () => {
     setIsDeleting(true);
