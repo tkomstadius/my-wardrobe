@@ -1,4 +1,4 @@
-import { ArrowLeftIcon } from "@radix-ui/react-icons";
+import { ArrowLeftIcon, CameraIcon } from "@radix-ui/react-icons";
 import {
   Button,
   Callout,
@@ -37,21 +37,6 @@ export function AddItemPage() {
     purchaseDate: "",
     initialWearCount: "",
   });
-
-  const handleImageCapture = async () => {
-    try {
-      // Use the Media Capture API to access the camera
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-      // For now, we'll just show a placeholder
-      // Full implementation will come later with proper camera capture
-      for (const track of stream.getTracks()) {
-        track.stop();
-      }
-      console.log("Camera access granted - full implementation coming");
-    } catch (error) {
-      console.error("Error accessing camera:", error);
-    }
-  };
 
   const handleImageUpload = async (
     event: React.ChangeEvent<HTMLInputElement>
@@ -158,35 +143,29 @@ export function AddItemPage() {
         )}
 
         <div className={styles.imageSection}>
-          {imagePreview ? (
-            <div className={styles.imagePreview}>
+          <div className={styles.imageContainer}>
+            {imagePreview ? (
               <img
                 src={imagePreview}
                 alt="Item preview"
                 className={styles.previewImage}
               />
-            </div>
-          ) : (
-            <div className={styles.imagePlaceholder}>
-              <p>No image selected</p>
-            </div>
-          )}
+            ) : (
+              <div className={styles.imagePlaceholder}>
+                <p>No image selected</p>
+              </div>
+            )}
 
-          <div className={styles.imageButtons}>
-            <Button type="button" variant="soft" onClick={handleImageCapture}>
-              Take Photo
-            </Button>
-            <Button type="button" variant="soft" asChild>
-              <label>
-                Upload Image
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageUpload}
-                  className={styles.fileInput}
-                />
-              </label>
-            </Button>
+            <label htmlFor="image-upload" className={styles.cameraButton}>
+              <CameraIcon width={24} height={24} />
+            </label>
+            <input
+              id="image-upload"
+              type="file"
+              accept="image/*"
+              onChange={handleImageUpload}
+              className={styles.fileInput}
+            />
           </div>
         </div>
 

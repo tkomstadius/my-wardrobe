@@ -385,7 +385,7 @@ export function EditItemPage() {
                   setFormData({ ...formData, isDogCasual: checked === true })
                 }
               />
-              Casual
+              Dog casual
             </Flex>
           </Text>
         </div>

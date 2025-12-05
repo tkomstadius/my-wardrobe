@@ -129,6 +129,11 @@
   display: flex;
   gap: 12px;
   margin-top: 8px;
+  align-items: stretch;
+}
+
+.actions button {
+  min-height: 40px;
 }
 
 .saveButton {
