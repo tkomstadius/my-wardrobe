@@ -43,7 +43,6 @@ export function EditItemPage() {
   });
   const [imagePreview, setImagePreview] = useState<string>("");
   const [error, setError] = useState("");
-  const [compressionInfo, setCompressionInfo] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [itemNotFound, setItemNotFound] = useState(false);
 
@@ -95,16 +94,10 @@ export function EditItemPage() {
 
           console.log("✅ Compressed image:", stats);
 
-          // Show compression info to user
-          setCompressionInfo(
-            `Compressed: ${stats.originalFormatted} → ${stats.compressedFormatted} (saved ${stats.compressionRatio})`
-          );
-
           setImagePreview(compressedDataURL);
         } catch (err) {
           console.error("Compression failed, using original:", err);
           setImagePreview(originalDataURL);
-          setCompressionInfo("");
         }
       };
       reader.readAsDataURL(file);
@@ -258,14 +251,6 @@ export function EditItemPage() {
                 onChange={handleImageUpload}
                 className={styles.fileInput}
               />
-            </div>
-          )}
-
-          {compressionInfo && (
-            <div className={styles.compressionBanner}>
-              <Text size="1" color="green">
-                {compressionInfo}
-              </Text>
             </div>
           )}
         </div>

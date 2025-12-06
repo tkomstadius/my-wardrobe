@@ -41,6 +41,8 @@
   width: 100%;
   height: auto;
   display: block;
+  object-fit: contain;
+  background: var(--gray-3);
 }
 
 .infoSection {

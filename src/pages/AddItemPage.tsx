@@ -26,7 +26,6 @@ export function AddItemPage() {
   const [imagePreview, setImagePreview] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string>("");
-  const [compressionInfo, setCompressionInfo] = useState<string>("");
   const [formData, setFormData] = useState({
     notes: "",
     brand: "",
@@ -64,16 +63,10 @@ export function AddItemPage() {
             ratio: stats.compressionRatio,
           });
 
-          // Show compression info to user
-          setCompressionInfo(
-            `Compressed: ${stats.originalFormatted} → ${stats.compressedFormatted} (saved ${stats.compressionRatio})`
-          );
-
           setImagePreview(compressedDataURL);
         } catch (err) {
           console.error("Compression failed, using original:", err);
           setImagePreview(originalDataURL);
-          setCompressionInfo("");
         }
       };
       reader.readAsDataURL(file);
@@ -133,12 +126,6 @@ export function AddItemPage() {
         {error && (
           <Callout.Root color="red" size="1">
             <Callout.Text>{error}</Callout.Text>
-          </Callout.Root>
-        )}
-
-        {compressionInfo && (
-          <Callout.Root color="green" size="1">
-            <Callout.Text>{compressionInfo}</Callout.Text>
           </Callout.Root>
         )}
 
