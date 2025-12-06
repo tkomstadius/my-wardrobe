@@ -65,22 +65,10 @@
   gap: 1rem;
 }
 
-.itemLink {
-  text-decoration: none;
-  color: inherit;
-  position: relative;
-}
-
-.wearBadge {
-  margin-top: 0.5rem;
-  padding: 0.25rem 0.5rem;
-  background-color: var(--accent-3);
-  border: 1px solid var(--accent-6);
-  border-radius: var(--radius-2);
-  font-size: 0.75rem;
-  font-weight: 500;
-  color: var(--accent-11);
-  text-align: center;
+.itemWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
 }
 
 @media (min-width: 640px) {

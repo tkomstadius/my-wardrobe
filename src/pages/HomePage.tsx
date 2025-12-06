@@ -1,11 +1,12 @@
 import { Text } from "@radix-ui/themes";
-import { Link } from "react-router";
+import { useNavigate } from "react-router";
 import { ItemCard } from "../components/features/ItemCard";
 import { useWardrobe } from "../contexts/WardrobeContext";
 import { getDaysAgo } from "../utils/dateFormatter";
 import styles from "./HomePage.module.css";
 
 export function HomePage() {
+  const navigate = useNavigate();
   const { items, getItemsWornInPeriod, isLoading } = useWardrobe();
   const hasItems = items.length > 0;
 
@@ -57,17 +58,13 @@ export function HomePage() {
               </div>
             ) : (
               <div className={styles.itemGrid}>
-                {recentlyWornItems.map(({ item, wearCount }) => (
-                  <Link
-                    key={item.id}
-                    to={`/item/${item.id}`}
-                    className={styles.itemLink}
-                  >
-                    <ItemCard item={item} />
-                    <div className={styles.wearBadge}>
-                      Worn {wearCount}x this week
-                    </div>
-                  </Link>
+                {recentlyWornItems.map(({ item }) => (
+                  <div key={item.id} className={styles.itemWrapper}>
+                    <ItemCard
+                      item={item}
+                      onClick={() => navigate(`/item/${item.id}`)}
+                    />
+                  </div>
                 ))}
               </div>
             )}
