@@ -17,6 +17,7 @@ interface WardrobeContextValue {
   updateItem: (id: string, updates: Partial<WardrobeItem>) => Promise<void>;
   deleteItem: (id: string) => Promise<void>;
   incrementWearCount: (id: string) => Promise<void>;
+  removeWear: (id: string, wearIndex: number) => Promise<void>;
   getItemById: (id: string) => WardrobeItem | undefined;
   getItemsByCategory: (category: string) => WardrobeItem[];
   getAllBrands: () => string[];
@@ -141,6 +142,38 @@ export function WardrobeProvider({ children }: WardrobeProviderProps) {
     );
   };
 
+  const removeWear = async (id: string, wearIndex: number): Promise<void> => {
+    const itemToUpdate = items.find((item) => item.id === id);
+    if (!itemToUpdate) {
+      throw new Error("Item not found");
+    }
+
+    const newWearHistory = [...(itemToUpdate.wearHistory || [])];
+
+    // Remove the wear at the specified index
+    if (wearIndex < 0 || wearIndex >= newWearHistory.length) {
+      throw new Error("Invalid wear index");
+    }
+
+    newWearHistory.splice(wearIndex, 1);
+    const initialCount = itemToUpdate.initialWearCount ?? 0;
+
+    const updatedItem = {
+      ...itemToUpdate,
+      wearCount: initialCount + newWearHistory.length, // Recalculate total
+      wearHistory: newWearHistory,
+      updatedAt: new Date(),
+    };
+
+    // Save to IndexedDB first
+    await saveItem(updatedItem);
+
+    // Then update state
+    setItems((prev) =>
+      prev.map((item) => (item.id === id ? updatedItem : item))
+    );
+  };
+
   const getItemById = (id: string): WardrobeItem | undefined => {
     return items.find((item) => item.id === id);
   };
@@ -228,6 +261,7 @@ export function WardrobeProvider({ children }: WardrobeProviderProps) {
     updateItem,
     deleteItem,
     incrementWearCount,
+    removeWear,
     getItemById,
     getItemsByCategory,
     getAllBrands,

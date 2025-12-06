@@ -130,6 +130,50 @@
   flex: 1;
 }
 
+/* Wear History Section */
+.wearHistorySection {
+  padding: 20px 0;
+  border-top: 1px solid var(--gray-6);
+}
+
+.sectionHeading {
+  margin-bottom: 1rem;
+}
+
+.wearHistoryList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.wearHistoryItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem;
+  background: var(--gray-2);
+  border: 1px solid var(--gray-6);
+  border-radius: var(--radius-2);
+  transition: all 0.2s ease;
+}
+
+.wearHistoryItem:hover {
+  border-color: var(--gray-7);
+  background: var(--gray-3);
+}
+
+.wearDate {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.showMoreContainer {
+  margin-top: 0.75rem;
+  display: flex;
+  justify-content: center;
+}
+
 /* Outfit Membership Section */
 .outfitSection {
   display: flex;

@@ -15,9 +15,14 @@ import styles from "./ItemDetailPage.module.css";
 export function ItemDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { getItemById, deleteItem, incrementWearCount } = useWardrobe();
+  const { getItemById, deleteItem, incrementWearCount, removeWear } =
+    useWardrobe();
   const { getOutfitsByItemId } = useOutfit();
   const [isDeleting, setIsDeleting] = useState(false);
+  const [deletingWearIndex, setDeletingWearIndex] = useState<number | null>(
+    null
+  );
+  const [showAllWears, setShowAllWears] = useState(false);
 
   const item = id ? getItemById(id) : null;
   const outfitsWithItem = id ? getOutfitsByItemId(id) : [];
@@ -57,6 +62,20 @@ export function ItemDetailPage() {
     } catch (error) {
       console.error("Failed to mark as worn:", error);
       alert("Failed to update wear count. Please try again.");
+    }
+  };
+
+  const handleRemoveWear = async (wearIndex: number) => {
+    if (!id) return;
+
+    setDeletingWearIndex(wearIndex);
+    try {
+      await removeWear(id, wearIndex);
+    } catch (error) {
+      console.error("Failed to remove wear:", error);
+      alert("Failed to remove wear. Please try again.");
+    } finally {
+      setDeletingWearIndex(null);
     }
   };
 
@@ -165,6 +184,60 @@ export function ItemDetailPage() {
             </Button>
           </div>
         </section>
+
+        {/* Wear History */}
+        {item.wearHistory && item.wearHistory.length > 0 && (
+          <section className={styles.wearHistorySection}>
+            <Heading size="4" className={styles.sectionHeading}>
+              Wear History ({item.wearHistory.length})
+            </Heading>
+            <div className={styles.wearHistoryList}>
+              {[...item.wearHistory]
+                .reverse()
+                .slice(0, showAllWears ? item.wearHistory.length : 2)
+                .map((date, reverseIndex) => {
+                  const actualIndex =
+                    item.wearHistory!.length - 1 - reverseIndex;
+                  return (
+                    <div key={actualIndex} className={styles.wearHistoryItem}>
+                      <div className={styles.wearDate}>
+                        <Text size="2">{formatDateDisplay(date)}</Text>
+                        <Text size="1" color="gray">
+                          {formatItemAge(date)}
+                        </Text>
+                      </div>
+                      <Button
+                        size="1"
+                        variant="ghost"
+                        color="red"
+                        onClick={() => handleRemoveWear(actualIndex)}
+                        disabled={deletingWearIndex === actualIndex}
+                      >
+                        {deletingWearIndex === actualIndex ? (
+                          "Removing..."
+                        ) : (
+                          <TrashIcon />
+                        )}
+                      </Button>
+                    </div>
+                  );
+                })}
+            </div>
+            {item.wearHistory.length > 2 && (
+              <div className={styles.showMoreContainer}>
+                <Button
+                  variant="soft"
+                  size="2"
+                  onClick={() => setShowAllWears(!showAllWears)}
+                >
+                  {showAllWears
+                    ? "Show Less"
+                    : `Show All ${item.wearHistory.length} Wears`}
+                </Button>
+              </div>
+            )}
+          </section>
+        )}
 
         {/* Outfit Membership */}
         {outfitsWithItem.length > 0 && (
