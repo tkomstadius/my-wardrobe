@@ -84,66 +84,57 @@ export function ItemDetailPage() {
 
         {/* Item Info */}
         <section className={styles.infoSection}>
-          <div className={styles.titleArea}>
-            {item.notes && (
-              <Heading size="6" className={styles.title}>
-                {item.notes}
-              </Heading>
-            )}
+          <div className={styles.topInfo}>
             {item.brand && (
-              <Text size="4" weight="medium" color="gray">
+              <Text size="3" weight="medium" color="gray">
                 {item.brand}
               </Text>
             )}
+            {item.price !== undefined && (
+              <Text size="3" className={styles.priceText}>
+                Price: {item.price.toFixed(2)} kr
+              </Text>
+            )}
+            {item.purchaseDate && (
+              <Text size="2" color="gray">
+                Purchased {formatDateDisplay(item.purchaseDate)} (
+                {formatItemAge(item.purchaseDate)})
+              </Text>
+            )}
+            <Text size="2" weight="bold" className={styles.wearCountInline}>
+              Worn {item.wearCount}×
+            </Text>
+            {item.wearHistory && item.wearHistory.length > 0 && (
+              <Text size="2" color="gray">
+                {formatLastWorn(item.wearHistory)}
+              </Text>
+            )}
+          </div>
+
+          {/* Cost Per Wear Card */}
+          {costPerWear !== null && (
+            <div className={styles.costPerWearCard}>
+              <Text size="1" color="gray">
+                Cost Per Wear
+              </Text>
+              <Text size="7" weight="bold" className={styles.costPerWear}>
+                {costPerWear.toFixed(2)} kr
+              </Text>
+              <Text size="2" color="gray">
+                Based on {item.wearCount} wear{item.wearCount !== 1 ? "s" : ""}
+              </Text>
+            </div>
+          )}
+
+          {/* Category and Notes */}
+          <div className={styles.bottomInfo}>
             <Text size="2" color="gray" className={styles.category}>
               {item.category.charAt(0).toUpperCase() + item.category.slice(1)}
             </Text>
-          </div>
-
-          {/* Metadata Grid */}
-          <div className={styles.metadataGrid}>
-            <div className={styles.metadataCard}>
-              <Text size="1" color="gray">
-                Worn
+            {item.notes && (
+              <Text size="3" color="gray" className={styles.description}>
+                {item.notes}
               </Text>
-              <Text size="5" weight="bold">
-                {item.wearCount}×
-              </Text>
-              {item.wearHistory && item.wearHistory.length > 0 && (
-                <Text size="1" color="gray">
-                  {formatLastWorn(item.wearHistory)}
-                </Text>
-              )}
-            </div>
-
-            {item.price !== undefined && (
-              <div className={styles.metadataCard}>
-                <Text size="1" color="gray">
-                  Price
-                </Text>
-                <Text size="5" weight="bold" className={styles.price}>
-                  {item.price.toFixed(2)} kr
-                </Text>
-                {costPerWear !== null && (
-                  <Text size="1" color="gray">
-                    {costPerWear.toFixed(2)} kr/wear
-                  </Text>
-                )}
-              </div>
-            )}
-
-            {item.purchaseDate && (
-              <div className={styles.metadataCard}>
-                <Text size="1" color="gray">
-                  Age
-                </Text>
-                <Text size="5" weight="bold">
-                  {formatItemAge(item.purchaseDate)}
-                </Text>
-                <Text size="1" color="gray">
-                  Since {formatDateDisplay(item.purchaseDate)}
-                </Text>
-              </div>
             )}
           </div>
 
