@@ -1,6 +1,6 @@
 import { CheckIcon, ChevronDownIcon } from "@radix-ui/react-icons";
-import { Button, Text } from "@radix-ui/themes";
-import { useState } from "react";
+import { Button, Text, Callout } from "@radix-ui/themes";
+import { useState, useOptimistic } from "react";
 import { useNavigate } from "react-router";
 import { useWardrobe } from "../contexts/WardrobeContext";
 import type { ItemCategory } from "../types/wardrobe";
@@ -12,9 +12,29 @@ export function LogWearPage() {
   const { items, incrementWearCount } = useWardrobe();
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
   const [openCategory, setOpenCategory] = useState<ItemCategory | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string>("");
+
+  // useOptimistic: Track items that are being logged optimistically
+  // This lets us show instant UI feedback while the database updates happen
+  const [optimisticLoggedItems, addOptimisticLog] = useOptimistic<
+    Set<string>,
+    string[]
+  >(
+    new Set(), // Initial state: no items logged yet
+    (state, itemIds) => {
+      // Updater function: add the items being logged to the set
+      const newSet = new Set(state);
+      for (const id of itemIds) {
+        newSet.add(id);
+      }
+      return newSet;
+    }
+  );
 
   const toggleItemSelection = (itemId: string) => {
+    // Don't allow toggling items that have already been logged
+    if (optimisticLoggedItems.has(itemId)) return;
+
     setSelectedItems((prev) => {
       const newSet = new Set(prev);
       if (newSet.has(itemId)) {
@@ -33,23 +53,39 @@ export function LogWearPage() {
   const handleSubmit = async () => {
     if (selectedItems.size === 0) return;
 
-    setIsSubmitting(true);
+    const itemsToLog = Array.from(selectedItems);
+
+    // Optimistically mark these items as logged IMMEDIATELY
+    // User sees instant feedback - items appear "logged" right away
+    addOptimisticLog(itemsToLog);
+
+    // Clear the selection immediately for better UX
+    setSelectedItems(new Set());
+    setError("");
+
     try {
-      // Increment wear count for all selected items sequentially
-      // This avoids potential race conditions with state updates
-      for (const itemId of selectedItems) {
+      // Actually save to IndexedDB in the background
+      // This happens while the user sees the optimistic update
+      for (const itemId of itemsToLog) {
         await incrementWearCount(itemId);
       }
 
-      // Navigate back to home
+      // Success! Navigate back to home
+      // The optimistic state is no longer needed - items are truly saved
       navigate("/");
-    } catch (error) {
-      console.error("Failed to log wear:", error);
-      alert("Failed to log wear. Please try again.");
-    } finally {
-      setIsSubmitting(false);
+    } catch (err) {
+      console.error("Failed to log wear:", err);
+
+      // If this fails, useOptimistic automatically rolls back!
+      // The items will un-grey themselves and return to selectable state
+      setError("Failed to log wear. Please try again.");
+
+      // Re-select the items that failed so user can retry
+      setSelectedItems(new Set(itemsToLog));
     }
   };
+
+  const isPending = optimisticLoggedItems.size > 0;
 
   return (
     <div className={styles.container}>
@@ -59,6 +95,21 @@ export function LogWearPage() {
           Select items you wore today
         </Text>
       </div>
+
+      {error && (
+        <Callout.Root color="red" size="1" style={{ margin: "0 1rem" }}>
+          <Callout.Text>{error}</Callout.Text>
+        </Callout.Root>
+      )}
+
+      {isPending && (
+        <Callout.Root color="blue" size="1" style={{ margin: "0 1rem" }}>
+          <Callout.Text>
+            Logging {optimisticLoggedItems.size}{" "}
+            {optimisticLoggedItems.size === 1 ? "item" : "items"}...
+          </Callout.Text>
+        </Callout.Root>
+      )}
 
       <div className={styles.accordion}>
         {CATEGORIES.map((category) => {
@@ -104,6 +155,10 @@ export function LogWearPage() {
                   <div className={styles.itemGrid}>
                     {categoryItems.map((item) => {
                       const isSelected = selectedItems.has(item.id);
+                      const isOptimisticallyLogged = optimisticLoggedItems.has(
+                        item.id
+                      );
+
                       return (
                         <button
                           key={item.id}
@@ -112,6 +167,13 @@ export function LogWearPage() {
                           className={`${styles.itemCard} ${
                             isSelected ? styles.selected : ""
                           }`}
+                          disabled={isOptimisticallyLogged}
+                          style={{
+                            opacity: isOptimisticallyLogged ? 0.5 : 1,
+                            cursor: isOptimisticallyLogged
+                              ? "not-allowed"
+                              : "pointer",
+                          }}
                         >
                           <div className={styles.imageWrapper}>
                             <img
@@ -119,7 +181,7 @@ export function LogWearPage() {
                               alt={item.brand || category.title}
                               className={styles.itemImage}
                             />
-                            {isSelected && (
+                            {(isSelected || isOptimisticallyLogged) && (
                               <div className={styles.checkOverlay}>
                                 <div className={styles.checkIcon}>
                                   <CheckIcon />
@@ -152,16 +214,16 @@ export function LogWearPage() {
           variant="soft"
           color="gray"
           onClick={() => navigate(-1)}
-          disabled={isSubmitting}
+          disabled={isPending}
         >
           Cancel
         </Button>
         <Button
           size="3"
           onClick={handleSubmit}
-          disabled={selectedItems.size === 0 || isSubmitting}
+          disabled={selectedItems.size === 0 || isPending}
         >
-          {isSubmitting
+          {isPending
             ? "Logging..."
             : `Log ${selectedItems.size} ${
                 selectedItems.size === 1 ? "Item" : "Items"
