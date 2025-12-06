@@ -1,6 +1,10 @@
 import { useState, useRef } from "react";
 import { Button, Text, Card, Callout } from "@radix-ui/themes";
-import { InfoCircledIcon, CheckCircledIcon, CrossCircledIcon } from "@radix-ui/react-icons";
+import {
+  InfoCircledIcon,
+  CheckCircledIcon,
+  CrossCircledIcon,
+} from "@radix-ui/react-icons";
 import { useWardrobe } from "../contexts/WardrobeContext";
 import { useOutfit } from "../contexts/OutfitContext";
 import {
@@ -26,13 +30,13 @@ export function SettingsPage() {
     try {
       setIsExporting(true);
       setMessage(null);
-      
+
       const success = await shareBackup();
-      
+
       if (success) {
         setMessage({
           type: "success",
-          text: isShareSupported() 
+          text: isShareSupported()
             ? "Backup file ready! Save it to iCloud Drive to keep it safe."
             : "Backup file downloaded successfully!",
         });
@@ -52,7 +56,9 @@ export function SettingsPage() {
     fileInputRef.current?.click();
   };
 
-  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
@@ -64,7 +70,7 @@ export function SettingsPage() {
       const backupData = await parseBackupFile(file);
 
       // Import the data
-      const result = await importBackup(backupData, "replace");
+      const result = await importBackup(backupData);
 
       setMessage({
         type: "success",
@@ -103,17 +109,25 @@ export function SettingsPage() {
         {/* Backup & Restore Section */}
         <section className={styles.section}>
           <h3 className={styles.sectionTitle}>Backup & Restore</h3>
-          
+
           <Card className={styles.card}>
             <div className={styles.cardContent}>
               <div className={styles.statsRow}>
                 <div className={styles.stat}>
-                  <Text size="1" color="gray">Items</Text>
-                  <Text size="5" weight="bold">{items.length}</Text>
+                  <Text size="1" color="gray">
+                    Items
+                  </Text>
+                  <Text size="5" weight="bold">
+                    {items.length}
+                  </Text>
                 </div>
                 <div className={styles.stat}>
-                  <Text size="1" color="gray">Outfits</Text>
-                  <Text size="5" weight="bold">{outfits.length}</Text>
+                  <Text size="1" color="gray">
+                    Outfits
+                  </Text>
+                  <Text size="5" weight="bold">
+                    {outfits.length}
+                  </Text>
                 </div>
               </div>
 
@@ -123,7 +137,7 @@ export function SettingsPage() {
                     <InfoCircledIcon />
                   </Callout.Icon>
                   <Callout.Text>
-                    {isShareSupported() 
+                    {isShareSupported()
                       ? "Export your data and save it to iCloud Drive for safekeeping. You can restore it anytime or use it on another device."
                       : "Export your data to keep a backup. You can restore it anytime or use it on another device."}
                   </Callout.Text>
@@ -166,8 +180,8 @@ export function SettingsPage() {
                       message.type === "success"
                         ? "green"
                         : message.type === "error"
-                          ? "red"
-                          : "blue"
+                        ? "red"
+                        : "blue"
                     }
                   >
                     <Callout.Icon>
@@ -193,17 +207,20 @@ export function SettingsPage() {
             <ul className={styles.helpList}>
               <li>
                 <Text size="2" color="gray">
-                  <strong>Export:</strong> Creates a backup file with all your items and outfits
+                  <strong>Export:</strong> Creates a backup file with all your
+                  items and outfits
                 </Text>
               </li>
               <li>
                 <Text size="2" color="gray">
-                  <strong>Import:</strong> Restores data from a backup file (replaces current data)
+                  <strong>Import:</strong> Restores data from a backup file
+                  (replaces current data)
                 </Text>
               </li>
               <li>
                 <Text size="2" color="gray">
-                  <strong>Tip:</strong> Export regularly and save to iCloud Drive for peace of mind
+                  <strong>Tip:</strong> Export regularly and save to iCloud
+                  Drive for peace of mind
                 </Text>
               </li>
             </ul>
@@ -213,4 +230,3 @@ export function SettingsPage() {
     </div>
   );
 }
-

@@ -2,7 +2,12 @@
 
 import type { WardrobeItem } from "../types/wardrobe";
 import type { Outfit } from "../types/outfit";
-import { loadAllItems, saveItem, loadAllOutfits, saveOutfit } from "./indexedDB";
+import {
+  loadAllItems,
+  saveItem,
+  loadAllOutfits,
+  saveOutfit,
+} from "./indexedDB";
 
 export interface BackupData {
   version: string;
@@ -142,30 +147,52 @@ export async function parseBackupFile(file: File): Promise<BackupData> {
 }
 
 /**
+ * Convert string dates back to Date objects after JSON parsing
+ * JSON.parse() converts Date objects to strings, but saveItem/saveOutfit expect Date objects
+ */
+function convertDatesToObjects(data: BackupData): BackupData {
+  return {
+    ...data,
+    items: data.items.map((item) => ({
+      ...item,
+      wearHistory: item.wearHistory.map((dateStr) => new Date(dateStr)),
+      purchaseDate: item.purchaseDate ? new Date(item.purchaseDate) : undefined,
+      createdAt: new Date(item.createdAt),
+      updatedAt: new Date(item.updatedAt),
+    })),
+    outfits: data.outfits.map((outfit) => ({
+      ...outfit,
+      wornDate: new Date(outfit.wornDate),
+      createdAt: new Date(outfit.createdAt),
+      updatedAt: new Date(outfit.updatedAt),
+    })),
+  };
+}
+
+/**
  * Import backup data into IndexedDB
  * @param data Validated backup data
- * @param mode 'merge' adds to existing data, 'replace' clears first
+ * Note: IndexedDB put() will replace existing items with same IDs
  */
 export async function importBackup(
-  data: BackupData,
-  mode: "merge" | "replace" = "replace"
+  data: BackupData
 ): Promise<{ itemsImported: number; outfitsImported: number }> {
-  // If replace mode, we'll just overwrite items with same IDs
-  // IndexedDB put() will replace existing items with same key
+  // Convert date strings back to Date objects (JSON.parse converts them to strings)
+  const convertedData = convertDatesToObjects(data);
 
-  // Import items
-  for (const item of data.items) {
+  // Import items (will overwrite items with same IDs)
+  for (const item of convertedData.items) {
     await saveItem(item);
   }
 
-  // Import outfits
-  for (const outfit of data.outfits) {
+  // Import outfits (will overwrite outfits with same IDs)
+  for (const outfit of convertedData.outfits) {
     await saveOutfit(outfit);
   }
 
   return {
-    itemsImported: data.items.length,
-    outfitsImported: data.outfits.length,
+    itemsImported: convertedData.items.length,
+    outfitsImported: convertedData.outfits.length,
   };
 }
 
@@ -173,6 +200,8 @@ export async function importBackup(
  * Check if Web Share API is available (typically mobile)
  */
 export function isShareSupported(): boolean {
-  return typeof navigator.share === "function" && typeof navigator.canShare === "function";
+  return (
+    typeof navigator.share === "function" &&
+    typeof navigator.canShare === "function"
+  );
 }
-
