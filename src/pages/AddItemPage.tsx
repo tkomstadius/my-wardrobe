@@ -20,6 +20,16 @@ import {
 } from "../utils/imageCompression";
 import styles from "./AddItemPage.module.css";
 
+// Valid categories for validation
+const VALID_CATEGORIES: ItemCategory[] = [
+  "tops",
+  "bottoms",
+  "dresses",
+  "outerwear",
+  "shoes",
+  "accessories",
+];
+
 export function AddItemPage() {
   const navigate = useNavigate();
   const { addItem, getAllBrands } = useWardrobe();
@@ -180,15 +190,18 @@ export function AddItemPage() {
             <span className={styles.label}>Category</span>
             <Select.Root
               value={formData.category}
-              onValueChange={(value) =>
-                setFormData({ ...formData, category: value as ItemCategory })
-              }
+              onValueChange={(value) => {
+                // Ignore empty string changes (component initialization artifact)
+                if (value && VALID_CATEGORIES.includes(value as ItemCategory)) {
+                  setFormData({ ...formData, category: value as ItemCategory });
+                }
+              }}
             >
               <Select.Trigger placeholder="Select category" />
               <Select.Content>
                 <Select.Item value="tops">Tops</Select.Item>
                 <Select.Item value="bottoms">Bottoms</Select.Item>
-                <Select.Item value="dresses">Dresses/Jumpsuits</Select.Item>
+                <Select.Item value="dresses">Dresses & Jumpsuits</Select.Item>
                 <Select.Item value="outerwear">Outerwear</Select.Item>
                 <Select.Item value="shoes">Shoes</Select.Item>
                 <Select.Item value="accessories">Accessories</Select.Item>

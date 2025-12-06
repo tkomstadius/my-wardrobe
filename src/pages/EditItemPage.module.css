@@ -124,6 +124,14 @@
   border-radius: 8px;
 }
 
+/* Warning Message */
+.warningMessage {
+  padding: 12px;
+  background: var(--orange-3);
+  border: 1px solid var(--orange-6);
+  border-radius: 8px;
+}
+
 /* Actions */
 .actions {
   display: flex;

@@ -20,6 +20,16 @@ import {
 } from "../utils/imageCompression";
 import styles from "./EditItemPage.module.css";
 
+// Valid categories for validation
+const VALID_CATEGORIES: ItemCategory[] = [
+  "tops",
+  "bottoms",
+  "dresses",
+  "outerwear",
+  "shoes",
+  "accessories",
+];
+
 export function EditItemPage() {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
@@ -46,6 +56,7 @@ export function EditItemPage() {
   const [error, setError] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [itemNotFound, setItemNotFound] = useState(false);
+  const [categoryWarning, setCategoryWarning] = useState("");
 
   // Load item data
   useEffect(() => {
@@ -60,11 +71,23 @@ export function EditItemPage() {
       return;
     }
 
+    // Validate category
+    let itemCategory = item.category;
+    if (!VALID_CATEGORIES.includes(item.category)) {
+      console.warn(
+        `Invalid category "${item.category}" for item ${id}. Defaulting to "tops".`
+      );
+      setCategoryWarning(
+        `Warning: This item had an invalid category "${item.category}". Please select the correct category and save.`
+      );
+      itemCategory = "tops";
+    }
+
     // Pre-fill form with existing data
     setFormData({
       notes: item.notes || "",
       brand: item.brand || "",
-      category: item.category,
+      category: itemCategory, // Use validated category (defaults to "tops" if invalid)
       price: item.price !== undefined ? item.price.toString() : "",
       isSecondHand: item.isSecondHand || false,
       isDogCasual: item.isDogCasual || false,
@@ -109,10 +132,19 @@ export function EditItemPage() {
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     setError("");
+    setCategoryWarning("");
 
     // Validate form
     if (!imagePreview) {
       setError("Please add an image of the item");
+      return;
+    }
+
+    // Validate category
+    if (!VALID_CATEGORIES.includes(formData.category)) {
+      setError(
+        `Invalid category "${formData.category}". Please select a valid category.`
+      );
       return;
     }
 
@@ -258,6 +290,15 @@ export function EditItemPage() {
           )}
         </div>
 
+        {/* Category Warning */}
+        {categoryWarning && (
+          <div className={styles.warningMessage}>
+            <Text color="orange" size="2">
+              {categoryWarning}
+            </Text>
+          </div>
+        )}
+
         {/* Form Fields */}
         <div className={styles.fields}>
           <div className={styles.field}>
@@ -283,15 +324,18 @@ export function EditItemPage() {
             <span className={styles.label}>Category</span>
             <Select.Root
               value={formData.category}
-              onValueChange={(value) =>
-                setFormData({ ...formData, category: value as ItemCategory })
-              }
+              onValueChange={(value) => {
+                // Ignore empty string changes (component initialization artifact)
+                if (value && VALID_CATEGORIES.includes(value as ItemCategory)) {
+                  setFormData({ ...formData, category: value as ItemCategory });
+                }
+              }}
             >
-              <Select.Trigger />
+              <Select.Trigger placeholder="Select category" />
               <Select.Content>
                 <Select.Item value="tops">Tops</Select.Item>
                 <Select.Item value="bottoms">Bottoms</Select.Item>
-                <Select.Item value="dresses">Dresses/Jumpsuits</Select.Item>
+                <Select.Item value="dresses">Dresses & Jumpsuits</Select.Item>
                 <Select.Item value="outerwear">Outerwear</Select.Item>
                 <Select.Item value="shoes">Shoes</Select.Item>
                 <Select.Item value="accessories">Accessories</Select.Item>
