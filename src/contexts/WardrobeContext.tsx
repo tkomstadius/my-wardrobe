@@ -5,6 +5,7 @@ import {
   useEffect,
   useState,
 } from "react";
+import { isBefore, subDays } from "date-fns";
 import type { NewWardrobeItem, WardrobeItem } from "../types/wardrobe";
 import { countWearsInRange } from "../utils/dateFormatter";
 import { saveItem } from "../utils/indexedDB";
@@ -202,8 +203,7 @@ export function WardrobeProvider({ children }: WardrobeProviderProps) {
 
   // Get items that haven't been worn in X days (or never worn)
   const getUnwornItems = (daysSince = 365): WardrobeItem[] => {
-    const cutoffDate = new Date();
-    cutoffDate.setDate(cutoffDate.getDate() - daysSince);
+    const cutoffDate = subDays(new Date(), daysSince);
 
     return items.filter((item) => {
       if (!item.wearHistory || item.wearHistory.length === 0) {
@@ -213,7 +213,7 @@ export function WardrobeProvider({ children }: WardrobeProviderProps) {
       const lastWorn = item.wearHistory.at(-1);
       if (!lastWorn) return true; // Safety check
 
-      return new Date(lastWorn) < cutoffDate;
+      return isBefore(new Date(lastWorn), cutoffDate);
     });
   };
 

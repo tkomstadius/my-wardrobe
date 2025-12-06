@@ -1,5 +1,6 @@
 import { PlusIcon, MixIcon } from "@radix-ui/react-icons";
 import { Button, Heading, Text } from "@radix-ui/themes";
+import { compareDesc } from "date-fns";
 import { useNavigate } from "react-router";
 import { useOutfit } from "../contexts/OutfitContext";
 import { useWardrobe } from "../contexts/WardrobeContext";
@@ -21,8 +22,8 @@ export function OutfitsPage() {
     );
   }
 
-  const sortedOutfits = [...outfits].sort(
-    (a, b) => b.wornDate.getTime() - a.wornDate.getTime()
+  const sortedOutfits = [...outfits].sort((a, b) =>
+    compareDesc(a.wornDate, b.wornDate)
   );
 
   return (

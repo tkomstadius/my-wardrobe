@@ -1,4 +1,5 @@
 import { createContext, type ReactNode, useContext, useEffect, useState } from 'react';
+import { compareDesc } from 'date-fns';
 import type { NewOutfit, Outfit } from '../types/outfit';
 import { generateId, loadOutfits, removeOutfit, saveOutfitToStorage } from '../utils/storage';
 import { useWardrobe } from './WardrobeContext';
@@ -96,7 +97,7 @@ export function OutfitProvider({ children }: OutfitProviderProps) {
 
   const getRecentOutfits = (limit = 10): Outfit[] => {
     return [...outfits]
-      .sort((a, b) => b.wornDate.getTime() - a.wornDate.getTime())
+      .sort((a, b) => compareDesc(a.wornDate, b.wornDate))
       .slice(0, limit);
   };
 

@@ -1,38 +1,34 @@
+import {
+  format,
+  subDays,
+  subMonths,
+  subYears,
+  differenceInCalendarDays,
+  differenceInMonths,
+  differenceInYears,
+} from "date-fns";
+import { sv } from "date-fns/locale";
+
 // Format date according to ISO 8601 / Swedish standard (YYYY-MM-DD)
 export function formatDate(date: Date | undefined): string {
   if (!date) return "";
-
-  const d = new Date(date);
-  const year = d.getFullYear();
-  const month = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-
-  return `${year}-${month}-${day}`;
+  return format(date, "yyyy-MM-dd");
 }
 
 // Format date for display with Swedish locale
 export function formatDateDisplay(date: Date | undefined): string {
   if (!date) return "";
-
-  return new Date(date).toLocaleDateString("sv-SE", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
+  return format(date, "d MMM yyyy", { locale: sv });
 }
 
 // Get date X days ago from now
 export function getDaysAgo(days: number): Date {
-  const date = new Date();
-  date.setDate(date.getDate() - days);
-  return date;
+  return subDays(new Date(), days);
 }
 
 // Get date X months ago from now
 export function getMonthsAgo(months: number): Date {
-  const date = new Date();
-  date.setMonth(date.getMonth() - months);
-  return date;
+  return subMonths(new Date(), months);
 }
 
 // Count how many times an item was worn in a date range
@@ -60,10 +56,7 @@ export function getDaysSinceLastWorn(wearHistory: Date[]): number | undefined {
   const lastWorn = getLastWornDate(wearHistory);
   if (!lastWorn) return undefined;
 
-  const now = new Date();
-  const diffTime = Math.abs(now.getTime() - new Date(lastWorn).getTime());
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-  return diffDays;
+  return differenceInCalendarDays(new Date(), lastWorn);
 }
 
 // Format "last worn" display text (e.g., "2 days ago", "Last week", "3 months ago")
@@ -91,24 +84,12 @@ export function calculateItemAge(purchaseDate: Date): {
   days: number;
 } {
   const now = new Date();
-  const purchase = new Date(purchaseDate);
+  const years = differenceInYears(now, purchaseDate);
+  const months = differenceInMonths(now, purchaseDate) % 12;
 
-  let years = now.getFullYear() - purchase.getFullYear();
-  let months = now.getMonth() - purchase.getMonth();
-  let days = now.getDate() - purchase.getDate();
-
-  // Adjust for negative days
-  if (days < 0) {
-    months--;
-    const lastMonth = new Date(now.getFullYear(), now.getMonth(), 0);
-    days += lastMonth.getDate();
-  }
-
-  // Adjust for negative months
-  if (months < 0) {
-    years--;
-    months += 12;
-  }
+  // Get remaining days after accounting for years and months
+  const afterYearsMonths = subMonths(subYears(now, years), months);
+  const days = differenceInCalendarDays(afterYearsMonths, purchaseDate);
 
   return { years, months, days };
 }
