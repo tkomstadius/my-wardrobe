@@ -35,10 +35,11 @@ export function LogWearPage() {
 
     setIsSubmitting(true);
     try {
-      // Increment wear count for all selected items
-      await Promise.all(
-        Array.from(selectedItems).map((itemId) => incrementWearCount(itemId))
-      );
+      // Increment wear count for all selected items sequentially
+      // This avoids potential race conditions with state updates
+      for (const itemId of selectedItems) {
+        await incrementWearCount(itemId);
+      }
 
       // Navigate back to home
       navigate("/");
