@@ -4,7 +4,8 @@ export type ItemCategory =
   | "outerwear"
   | "accessories"
   | "shoes"
-  | "dresses";
+  | "dresses"
+  | "bags";
 
 export interface WardrobeItem {
   id: string;

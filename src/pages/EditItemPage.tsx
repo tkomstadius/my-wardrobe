@@ -18,17 +18,8 @@ import {
   getCompressionStats,
   getDataURLSize,
 } from "../utils/imageCompression";
+import { CATEGORIES, CATEGORY_IDS } from "../utils/categories";
 import styles from "./EditItemPage.module.css";
-
-// Valid categories for validation
-const VALID_CATEGORIES: ItemCategory[] = [
-  "tops",
-  "bottoms",
-  "dresses",
-  "outerwear",
-  "shoes",
-  "accessories",
-];
 
 export function EditItemPage() {
   const navigate = useNavigate();
@@ -73,7 +64,7 @@ export function EditItemPage() {
 
     // Validate category
     let itemCategory = item.category;
-    if (!VALID_CATEGORIES.includes(item.category)) {
+    if (!CATEGORY_IDS.includes(item.category)) {
       console.warn(
         `Invalid category "${item.category}" for item ${id}. Defaulting to "tops".`
       );
@@ -141,7 +132,7 @@ export function EditItemPage() {
     }
 
     // Validate category
-    if (!VALID_CATEGORIES.includes(formData.category)) {
+    if (!CATEGORY_IDS.includes(formData.category)) {
       setError(
         `Invalid category "${formData.category}". Please select a valid category.`
       );
@@ -326,19 +317,18 @@ export function EditItemPage() {
               value={formData.category}
               onValueChange={(value) => {
                 // Ignore empty string changes (component initialization artifact)
-                if (value && VALID_CATEGORIES.includes(value as ItemCategory)) {
+                if (value && CATEGORY_IDS.includes(value as ItemCategory)) {
                   setFormData({ ...formData, category: value as ItemCategory });
                 }
               }}
             >
               <Select.Trigger placeholder="Select category" />
               <Select.Content>
-                <Select.Item value="tops">Tops</Select.Item>
-                <Select.Item value="bottoms">Bottoms</Select.Item>
-                <Select.Item value="dresses">Dresses & Jumpsuits</Select.Item>
-                <Select.Item value="outerwear">Outerwear</Select.Item>
-                <Select.Item value="shoes">Shoes</Select.Item>
-                <Select.Item value="accessories">Accessories</Select.Item>
+                {CATEGORIES.map((category) => (
+                  <Select.Item key={category.id} value={category.id}>
+                    {category.title}
+                  </Select.Item>
+                ))}
               </Select.Content>
             </Select.Root>
           </div>

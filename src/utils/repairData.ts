@@ -1,16 +1,8 @@
 // Data repair utilities to fix inconsistencies
 
-import { loadAllItems, saveItem } from "./indexedDB";
 import type { ItemCategory } from "../types/wardrobe";
-
-const VALID_CATEGORIES: ItemCategory[] = [
-  "tops",
-  "bottoms",
-  "dresses",
-  "outerwear",
-  "shoes",
-  "accessories",
-];
+import { loadAllItems, saveItem } from "./indexedDB";
+import { CATEGORY_IDS } from "./categories";
 
 /**
  * Repair all data issues in items
@@ -35,17 +27,13 @@ export async function repairWearCountMismatches(): Promise<{
 
     if (currentWearCount !== expectedWearCount) {
       needsRepair = true;
-      repairs.push(
-        `wearCount: ${currentWearCount} → ${expectedWearCount}`
-      );
+      repairs.push(`wearCount: ${currentWearCount} → ${expectedWearCount}`);
     }
 
     // Check 2: Invalid or missing category
-    if (!item.category || !VALID_CATEGORIES.includes(item.category)) {
+    if (!item.category || !CATEGORY_IDS.includes(item.category)) {
       needsRepair = true;
-      repairs.push(
-        `invalid category: "${item.category}" → "tops"`
-      );
+      repairs.push(`invalid category: "${item.category}" → "tops"`);
       item.category = "tops"; // Default to tops if invalid
     }
 
@@ -150,7 +138,7 @@ export async function findInconsistentItems(): Promise<
  */
 export async function diagnoseAllItems(): Promise<void> {
   const items = await loadAllItems();
-  
+
   console.log("=== WARDROBE DIAGNOSTIC REPORT ===");
   console.log(`Total items in database: ${items.length}`);
   console.log("");
@@ -173,7 +161,7 @@ export async function diagnoseAllItems(): Promise<void> {
   for (const item of items) {
     const itemIssues: string[] = [];
 
-    if (!item.category || !VALID_CATEGORIES.includes(item.category)) {
+    if (!item.category || !CATEGORY_IDS.includes(item.category)) {
       itemIssues.push(`invalid category: "${item.category}"`);
     }
 
