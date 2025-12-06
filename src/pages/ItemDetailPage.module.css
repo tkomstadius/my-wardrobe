@@ -130,6 +130,73 @@
   flex: 1;
 }
 
+/* Outfit Membership Section */
+.outfitSection {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px 0;
+  border-top: 1px solid var(--gray-6);
+}
+
+.outfitHeading {
+  margin: 0;
+  color: var(--gray-12);
+}
+
+.outfitGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 16px;
+}
+
+.outfitCard {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  text-decoration: none;
+  color: inherit;
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--gray-3);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  cursor: pointer;
+}
+
+.outfitCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.outfitImage {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  background: var(--gray-4);
+}
+
+.outfitPlaceholder {
+  width: 100%;
+  aspect-ratio: 1;
+  background: var(--gray-4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.outfitInfo {
+  padding: 8px 12px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.outfitNotes {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 /* Bottom Actions */
 .bottomActions {
   display: flex;

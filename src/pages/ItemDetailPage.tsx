@@ -8,8 +8,9 @@ import {
   Badge,
 } from "@radix-ui/themes";
 import { useState } from "react";
-import { useNavigate, useParams } from "react-router";
+import { Link, useNavigate, useParams } from "react-router";
 import { useWardrobe } from "../contexts/WardrobeContext";
+import { useOutfit } from "../contexts/OutfitContext";
 import {
   formatDateDisplay,
   formatItemAge,
@@ -21,9 +22,11 @@ export function ItemDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { getItemById, deleteItem, incrementWearCount } = useWardrobe();
+  const { getOutfitsByItemId } = useOutfit();
   const [isDeleting, setIsDeleting] = useState(false);
 
   const item = id ? getItemById(id) : null;
+  const outfitsWithItem = id ? getOutfitsByItemId(id) : [];
 
   if (!item) {
     return (
@@ -168,6 +171,53 @@ export function ItemDetailPage() {
             </Button>
           </div>
         </section>
+
+        {/* Outfit Membership */}
+        {outfitsWithItem.length > 0 && (
+          <section className={styles.outfitSection}>
+            <Heading size="4" className={styles.outfitHeading}>
+              Worn in {outfitsWithItem.length}{" "}
+              {outfitsWithItem.length === 1 ? "Outfit" : "Outfits"}
+            </Heading>
+            <div className={styles.outfitGrid}>
+              {outfitsWithItem.map((outfit) => (
+                <Link
+                  key={outfit.id}
+                  to={`/outfit/${outfit.id}`}
+                  className={styles.outfitCard}
+                >
+                  {outfit.photo ? (
+                    <img
+                      src={outfit.photo}
+                      alt={`Outfit from ${formatDateDisplay(outfit.wornDate)}`}
+                      className={styles.outfitImage}
+                    />
+                  ) : (
+                    <div className={styles.outfitPlaceholder}>
+                      <Text size="1" color="gray">
+                        No photo
+                      </Text>
+                    </div>
+                  )}
+                  <div className={styles.outfitInfo}>
+                    <Text size="2" weight="medium">
+                      {formatDateDisplay(outfit.wornDate)}
+                    </Text>
+                    {outfit.notes && (
+                      <Text
+                        size="1"
+                        color="gray"
+                        className={styles.outfitNotes}
+                      >
+                        {outfit.notes}
+                      </Text>
+                    )}
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </section>
+        )}
 
         {/* Edit and Delete Actions */}
         <section className={styles.bottomActions}>
