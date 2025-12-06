@@ -66,9 +66,6 @@ export function ItemCard({ item, onClick }: ItemCardProps) {
           {item.brand && <span className={styles.brand}>{item.brand}</span>}
         </p>
         <div className={styles.metadata}>
-          {item.price !== undefined && (
-            <span className={styles.price}>{item.price.toFixed(2)} kr</span>
-          )}
           {item.isSecondHand && <Badge color="amber">Thrifted</Badge>}
           {item.isDogCasual && <Badge color="cyan">Casual</Badge>}
           {item.isHandmade && <Badge color="green">Handmade</Badge>}
