@@ -220,14 +220,14 @@ export function EditItemPage() {
                 alt="Item preview"
                 className={styles.imagePreview}
               />
-              <label
-                htmlFor="image-upload"
+              <Button
+                type="button"
+                size="2"
                 className={styles.changeImageButton}
+                onClick={() => document.getElementById("image-upload")?.click()}
               >
-                <Button type="button" size="2">
-                  Change Image
-                </Button>
-              </label>
+                Change Image
+              </Button>
               <input
                 id="image-upload"
                 type="file"
@@ -238,11 +238,13 @@ export function EditItemPage() {
             </div>
           ) : (
             <div className={styles.uploadPlaceholder}>
-              <label htmlFor="image-upload">
-                <Button type="button" size="3">
-                  Upload New Image
-                </Button>
-              </label>
+              <Button
+                type="button"
+                size="3"
+                onClick={() => document.getElementById("image-upload")?.click()}
+              >
+                Upload New Image
+              </Button>
               <input
                 id="image-upload"
                 type="file"
