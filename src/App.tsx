@@ -6,6 +6,7 @@ import { EditItemPage } from "./pages/EditItemPage";
 import { ItemDetailPage } from "./pages/ItemDetailPage";
 import { HomePage } from "./pages/HomePage";
 import { ItemsPage } from "./pages/ItemsPage";
+import { LogWearPage } from "./pages/LogWearPage";
 import { OutfitsPage } from "./pages/OutfitsPage";
 import { CreateOutfitPage } from "./pages/CreateOutfitPage";
 import { OutfitDetailPage } from "./pages/OutfitDetailPage";
@@ -18,6 +19,7 @@ function App() {
         <Route index element={<HomePage />} />
         <Route path="add-item" element={<AddItemPage />} />
         <Route path="items" element={<ItemsPage />} />
+        <Route path="log-wear" element={<LogWearPage />} />
         <Route path="category/:category" element={<CategoryPage />} />
         <Route path="item/:id" element={<ItemDetailPage />} />
         <Route path="edit-item/:id" element={<EditItemPage />} />

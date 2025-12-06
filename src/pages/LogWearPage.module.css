@@ -1,0 +1,237 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  gap: 1rem;
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--gray-6);
+}
+
+.title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--gray-12);
+  margin: 0;
+}
+
+.accordion {
+  flex: 1;
+  overflow-y: auto;
+  margin-bottom: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.accordionItem {
+  display: flex;
+  flex-direction: column;
+}
+
+.accordionTrigger {
+  width: 100%;
+  padding: 1rem;
+  background: var(--gray-2);
+  border: 1px solid var(--gray-6);
+  border-radius: var(--radius-3);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.accordionTrigger:hover {
+  background: var(--gray-3);
+}
+
+.chevron {
+  width: 20px;
+  height: 20px;
+  color: var(--gray-11);
+  transition: transform 0.2s ease;
+  flex-shrink: 0;
+}
+
+.chevron.open {
+  transform: rotate(180deg);
+}
+
+.categoryHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.categoryTitle {
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--gray-12);
+}
+
+.categoryCount {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: var(--gray-11);
+}
+
+.selectedBadge {
+  padding: 0.25rem 0.5rem;
+  background: var(--accent-9);
+  color: white;
+  border-radius: var(--radius-2);
+  font-weight: 500;
+  font-size: 0.75rem;
+}
+
+.totalCount {
+  color: var(--gray-11);
+}
+
+.accordionContent {
+  padding: 1rem;
+  background: var(--gray-1);
+  border: 1px solid var(--gray-6);
+  border-top: none;
+  border-bottom-left-radius: var(--radius-3);
+  border-bottom-right-radius: var(--radius-3);
+  margin-top: -1px;
+}
+
+.itemGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+}
+
+.itemCard {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  background: var(--gray-2);
+  border: 2px solid var(--gray-6);
+  border-radius: var(--radius-3);
+  padding: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+}
+
+.itemCard:hover {
+  border-color: var(--gray-7);
+  transform: translateY(-2px);
+}
+
+.itemCard.selected {
+  border-color: var(--accent-9);
+  background: var(--accent-2);
+}
+
+.imageWrapper {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: var(--radius-2);
+  overflow: hidden;
+  background: var(--gray-3);
+}
+
+.itemImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.checkOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.checkIcon {
+  width: 32px;
+  height: 32px;
+  background: var(--accent-9);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+}
+
+.checkIcon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.itemInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.itemBrand {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--gray-12);
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.itemNotes {
+  font-size: 0.75rem;
+  color: var(--gray-11);
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.footer {
+  display: flex;
+  gap: 0.75rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--gray-6);
+  background: var(--color-background);
+  position: sticky;
+  bottom: 0;
+}
+
+.footer button:first-child {
+  flex: 1;
+}
+
+.footer button:last-child {
+  flex: 2;
+}
+
+@media (min-width: 640px) {
+  .itemGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .itemGrid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
