@@ -46,6 +46,9 @@
   align-items: center;
   justify-content: space-between;
   gap: 0.5rem;
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
 .accordionTrigger:hover {
