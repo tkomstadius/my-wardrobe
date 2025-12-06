@@ -13,7 +13,10 @@ import {
   importBackup,
   isShareSupported,
 } from "../utils/backup";
-import { repairWearCountMismatches } from "../utils/repairData";
+import {
+  repairWearCountMismatches,
+  diagnoseAllItems,
+} from "../utils/repairData";
 import styles from "./SettingsPage.module.css";
 
 export function SettingsPage() {
@@ -282,20 +285,42 @@ export function SettingsPage() {
                 </Callout.Root>
               </div>
 
-              <Button
-                size="3"
-                variant="outline"
-                onClick={handleRepairData}
-                disabled={isRepairing}
-                className={styles.primaryButton}
-              >
-                {isRepairing ? "Repairing..." : "Repair Data"}
-              </Button>
+              <div className={styles.buttonGroup}>
+                <Button
+                  size="3"
+                  variant="outline"
+                  onClick={handleRepairData}
+                  disabled={isRepairing}
+                  style={{ flex: 1 }}
+                >
+                  {isRepairing ? "Repairing..." : "Repair Data"}
+                </Button>
+
+                <Button
+                  size="3"
+                  variant="soft"
+                  color="gray"
+                  onClick={async () => {
+                    await diagnoseAllItems();
+                    setMessage({
+                      type: "info",
+                      text: "Diagnostic report printed to browser console (F12 → Console tab)",
+                    });
+                  }}
+                  style={{ flex: 1 }}
+                >
+                  Run Diagnostic
+                </Button>
+              </div>
 
               <div className={styles.helpText}>
                 <Text size="2" color="gray">
-                  This will check all items for inconsistencies and automatically
-                  fix them. Safe to run anytime.
+                  <strong>Repair:</strong> Fixes invalid categories, wear counts,
+                  and missing fields.
+                </Text>
+                <Text size="2" color="gray">
+                  <strong>Diagnostic:</strong> Shows detailed info in browser
+                  console (for debugging).
                 </Text>
               </div>
             </div>
