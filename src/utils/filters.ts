@@ -6,9 +6,12 @@ export type FilterType =
   | "recent"
   | "most-worn";
 
+// Filter constants
+export const FILTER_ALL = "all" as const;
+
 // Single source of truth for filter definitions
 export const FILTERS = [
-  { id: "all" as const, label: "All", color: undefined },
+  { id: FILTER_ALL, label: "All", color: undefined },
   { id: "thrifted" as const, label: "Thrifted", color: "amber" as const },
   { id: "casual" as const, label: "Casual", color: "cyan" as const },
   { id: "handmade" as const, label: "Handmade", color: "green" as const },
@@ -18,4 +21,3 @@ export const FILTERS = [
 
 // Extract just the filter IDs for validation
 export const FILTER_IDS = FILTERS.map((filter) => filter.id) as FilterType[];
-

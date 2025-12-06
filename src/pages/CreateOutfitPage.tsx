@@ -1,12 +1,12 @@
-import { CameraIcon, TrashIcon } from '@radix-ui/react-icons';
-import { Button, Heading, Text, TextArea, Checkbox } from '@radix-ui/themes';
-import { useState } from 'react';
-import { useNavigate } from 'react-router';
-import { useOutfit } from '../contexts/OutfitContext';
-import { useWardrobe } from '../contexts/WardrobeContext';
-import type { WardrobeItem } from '../types/wardrobe';
-import { compressImage } from '../utils/imageCompression';
-import styles from './CreateOutfitPage.module.css';
+import { CameraIcon, TrashIcon } from "@radix-ui/react-icons";
+import { Button, Heading, Text, TextArea } from "@radix-ui/themes";
+import { useState } from "react";
+import { useNavigate } from "react-router";
+import { useOutfit } from "../contexts/OutfitContext";
+import { useWardrobe } from "../contexts/WardrobeContext";
+import { ItemSelector } from "../components/common/ItemSelector";
+import { compressImage } from "../utils/imageCompression";
+import styles from "./CreateOutfitPage.module.css";
 
 export function CreateOutfitPage() {
   const navigate = useNavigate();
@@ -14,8 +14,8 @@ export function CreateOutfitPage() {
   const { items } = useWardrobe();
 
   const [formData, setFormData] = useState({
-    notes: '',
-    wornDate: new Date().toISOString().split('T')[0] as string, // Today's date
+    notes: "",
+    wornDate: new Date().toISOString().split("T")[0] as string, // Today's date
   });
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
@@ -33,8 +33,8 @@ export function CreateOutfitPage() {
         };
         reader.readAsDataURL(file);
       } catch (error) {
-        console.error('Failed to process image:', error);
-        alert('Failed to process image. Please try another file.');
+        console.error("Failed to process image:", error);
+        alert("Failed to process image. Please try another file.");
       }
     }
   };
@@ -59,7 +59,7 @@ export function CreateOutfitPage() {
     e.preventDefault();
 
     if (selectedItems.size === 0) {
-      alert('Please select at least one item for this outfit');
+      alert("Please select at least one item for this outfit");
       return;
     }
 
@@ -74,35 +74,20 @@ export function CreateOutfitPage() {
       });
 
       // Navigate to outfits page
-      navigate('/outfits');
+      navigate("/outfits");
     } catch (error) {
-      console.error('Failed to save outfit:', error);
-      alert('Failed to save outfit. Please try again.');
+      console.error("Failed to save outfit:", error);
+      alert("Failed to save outfit. Please try again.");
     } finally {
       setIsSaving(false);
     }
   };
 
-  // Group items by category for easier selection
-  const itemsByCategory = items.reduce<Record<string, WardrobeItem[]>>(
-    (acc, item) => {
-      const category = item.category;
-      if (!acc[category]) {
-        acc[category] = [];
-      }
-      acc[category]!.push(item);
-      return acc;
-    },
-    {}
-  );
-
-  const categories = Object.keys(itemsByCategory).sort();
-
   return (
     <div className={styles.container}>
       <header className={styles.header}>
         <Heading size="6">Create Outfit</Heading>
-        <Button variant="ghost" onClick={() => navigate('/outfits')}>
+        <Button variant="ghost" onClick={() => navigate("/outfits")}>
           Cancel
         </Button>
       </header>
@@ -118,7 +103,11 @@ export function CreateOutfitPage() {
             <div className={styles.imageContainer}>
               {imagePreview ? (
                 <>
-                  <img src={imagePreview} alt="Outfit preview" className={styles.previewImage} />
+                  <img
+                    src={imagePreview}
+                    alt="Outfit preview"
+                    className={styles.previewImage}
+                  />
                   <Button
                     type="button"
                     variant="soft"
@@ -136,7 +125,10 @@ export function CreateOutfitPage() {
                 </div>
               )}
 
-              <label htmlFor="outfit-image-upload" className={styles.cameraButton}>
+              <label
+                htmlFor="outfit-image-upload"
+                className={styles.cameraButton}
+              >
                 <CameraIcon width={24} height={24} />
               </label>
               <input
@@ -159,7 +151,9 @@ export function CreateOutfitPage() {
             <input
               type="date"
               value={formData.wornDate}
-              onChange={(e) => setFormData({ ...formData, wornDate: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, wornDate: e.target.value })
+              }
               className={styles.dateInput}
               required
             />
@@ -172,7 +166,9 @@ export function CreateOutfitPage() {
             <TextArea
               placeholder="Add any notes about this outfit..."
               value={formData.notes}
-              onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, notes: e.target.value })
+              }
               rows={3}
               size="3"
             />
@@ -180,62 +176,25 @@ export function CreateOutfitPage() {
         </section>
 
         {/* Item Selection */}
-        <section className={styles.section}>
-          <Text weight="bold" size="3">
-            Select Items ({selectedItems.size} selected)
-          </Text>
-
-          {items.length === 0 ? (
-            <div className={styles.emptyState}>
-              <Text color="gray">No items in your wardrobe yet</Text>
-              <Button type="button" onClick={() => navigate('/add-item')} variant="soft" size="2">
-                Add Your First Item
+        <section className={styles.selectorSection}>
+          <ItemSelector
+            items={items}
+            selectedItems={selectedItems}
+            onToggleSelection={toggleItemSelection}
+            emptyMessage="No items in your wardrobe yet"
+            actionButtons={
+              <Button
+                type="submit"
+                size="3"
+                disabled={isSaving || selectedItems.size === 0}
+                style={{ flex: 1 }}
+              >
+                {isSaving ? "Creating..." : "Create Outfit"}
               </Button>
-            </div>
-          ) : (
-            <div className={styles.itemsSelection}>
-              {categories.map((category) => (
-                <div key={category} className={styles.categorySection}>
-                  <Text size="2" weight="bold" className={styles.categoryTitle}>
-                    {category.charAt(0).toUpperCase() + category.slice(1)}
-                  </Text>
-
-                  <div className={styles.itemsGrid}>
-                    {itemsByCategory[category]?.map((item) => (
-                      <label key={item.id} className={styles.itemCheckbox}>
-                        <div
-                          className={`${styles.itemCard} ${
-                            selectedItems.has(item.id) ? styles.selected : ''
-                          }`}
-                        >
-                          <img src={item.imageUrl} alt={item.notes || 'Item'} />
-                          <div className={styles.checkboxOverlay}>
-                            <Checkbox
-                              checked={selectedItems.has(item.id)}
-                              onCheckedChange={() => toggleItemSelection(item.id)}
-                            />
-                          </div>
-                        </div>
-                        <Text size="1" className={styles.itemLabel}>
-                          {item.notes || item.brand || 'Unnamed'}
-                        </Text>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
+            }
+          />
         </section>
-
-        {/* Submit Button */}
-        <div className={styles.actions}>
-          <Button type="submit" size="4" disabled={isSaving || selectedItems.size === 0}>
-            {isSaving ? 'Creating...' : 'Create Outfit'}
-          </Button>
-        </div>
       </form>
     </div>
   );
 }
-

@@ -1,11 +1,11 @@
 import { CameraIcon, TrashIcon, ArrowLeftIcon } from "@radix-ui/react-icons";
-import { Button, Heading, Text, TextArea, Checkbox } from "@radix-ui/themes";
+import { Button, Heading, Text, TextArea } from "@radix-ui/themes";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router";
 import { useOutfit } from "../contexts/OutfitContext";
 import { useWardrobe } from "../contexts/WardrobeContext";
 import { DeleteConfirmDialog } from "../components/common/DeleteConfirmDialog";
-import type { WardrobeItem } from "../types/wardrobe";
+import { ItemSelector } from "../components/common/ItemSelector";
 import { compressImage } from "../utils/imageCompression";
 import styles from "./CreateOutfitPage.module.css";
 
@@ -124,21 +124,6 @@ export function EditOutfitPage() {
       setIsDeleting(false);
     }
   };
-
-  // Group items by category for easier selection
-  const itemsByCategory = items.reduce<Record<string, WardrobeItem[]>>(
-    (acc, item) => {
-      const category = item.category;
-      if (!acc[category]) {
-        acc[category] = [];
-      }
-      acc[category]!.push(item);
-      return acc;
-    },
-    {}
-  );
-
-  const categories = Object.keys(itemsByCategory).sort();
 
   if (outfitNotFound) {
     return (
@@ -259,71 +244,24 @@ export function EditOutfitPage() {
         </section>
 
         {/* Item Selection */}
-        <section className={styles.section}>
-          <Text weight="bold" size="3">
-            Select Items ({selectedItems.size} selected)
-          </Text>
-
-          {items.length === 0 ? (
-            <div className={styles.emptyState}>
-              <Text color="gray">No items in your wardrobe yet</Text>
+        <section className={styles.selectorSection}>
+          <ItemSelector
+            items={items}
+            selectedItems={selectedItems}
+            onToggleSelection={toggleItemSelection}
+            emptyMessage="No items in your wardrobe yet"
+            actionButtons={
               <Button
-                type="button"
-                onClick={() => navigate("/add-item")}
-                variant="soft"
-                size="2"
+                type="submit"
+                size="3"
+                disabled={isSaving || selectedItems.size === 0}
+                style={{ flex: 1 }}
               >
-                Add Your First Item
+                {isSaving ? "Saving..." : "Save Changes"}
               </Button>
-            </div>
-          ) : (
-            <div className={styles.itemsSelection}>
-              {categories.map((category) => (
-                <div key={category} className={styles.categorySection}>
-                  <Text size="2" weight="bold" className={styles.categoryTitle}>
-                    {category.charAt(0).toUpperCase() + category.slice(1)}
-                  </Text>
-
-                  <div className={styles.itemsGrid}>
-                    {itemsByCategory[category]?.map((item) => (
-                      <label key={item.id} className={styles.itemCheckbox}>
-                        <div
-                          className={`${styles.itemCard} ${
-                            selectedItems.has(item.id) ? styles.selected : ""
-                          }`}
-                        >
-                          <img src={item.imageUrl} alt={item.notes || "Item"} />
-                          <div className={styles.checkboxOverlay}>
-                            <Checkbox
-                              checked={selectedItems.has(item.id)}
-                              onCheckedChange={() =>
-                                toggleItemSelection(item.id)
-                              }
-                            />
-                          </div>
-                        </div>
-                        <Text size="1" className={styles.itemLabel}>
-                          {item.notes || item.brand || "Unnamed"}
-                        </Text>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
+            }
+          />
         </section>
-
-        {/* Submit Button */}
-        <div className={styles.actions}>
-          <Button
-            type="submit"
-            size="4"
-            disabled={isSaving || selectedItems.size === 0}
-          >
-            {isSaving ? "Saving..." : "Save Changes"}
-          </Button>
-        </div>
       </form>
     </div>
   );

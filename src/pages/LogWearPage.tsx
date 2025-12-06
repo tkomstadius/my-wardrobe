@@ -1,17 +1,14 @@
-import { CheckIcon, ChevronDownIcon } from "@radix-ui/react-icons";
 import { Button, Text, Callout } from "@radix-ui/themes";
 import { useState, useOptimistic } from "react";
 import { useNavigate } from "react-router";
 import { useWardrobe } from "../contexts/WardrobeContext";
-import type { ItemCategory } from "../types/wardrobe";
-import { CATEGORIES } from "../utils/categories";
+import { ItemSelector } from "../components/common/ItemSelector";
 import styles from "./LogWearPage.module.css";
 
 export function LogWearPage() {
   const navigate = useNavigate();
   const { items, incrementWearCount } = useWardrobe();
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
-  const [openCategory, setOpenCategory] = useState<ItemCategory | null>(null);
   const [error, setError] = useState<string>("");
 
   // useOptimistic: Track items that are being logged optimistically
@@ -44,10 +41,6 @@ export function LogWearPage() {
       }
       return newSet;
     });
-  };
-
-  const toggleCategory = (categoryId: ItemCategory) => {
-    setOpenCategory((prev) => (prev === categoryId ? null : categoryId));
   };
 
   const handleSubmit = async () => {
@@ -111,124 +104,38 @@ export function LogWearPage() {
         </Callout.Root>
       )}
 
-      <div className={styles.accordion}>
-        {CATEGORIES.map((category) => {
-          const categoryItems = items.filter(
-            (item) => item.category === category.id
-          );
-          const selectedInCategory = categoryItems.filter((item) =>
-            selectedItems.has(item.id)
-          ).length;
-
-          if (categoryItems.length === 0) return null;
-
-          const isOpen = openCategory === category.id;
-
-          return (
-            <div key={category.id} className={styles.accordionItem}>
-              <button
-                type="button"
-                onClick={() => toggleCategory(category.id)}
-                className={styles.accordionTrigger}
+      <div className={styles.selectorContainer}>
+        <ItemSelector
+          items={items}
+          selectedItems={selectedItems}
+          onToggleSelection={toggleItemSelection}
+          disabledItems={optimisticLoggedItems}
+          emptyMessage="No items in your wardrobe yet"
+          actionButtons={
+            <>
+              <Button
+                size="3"
+                variant="soft"
+                color="gray"
+                onClick={() => navigate(-1)}
+                disabled={isPending}
               >
-                <div className={styles.categoryHeader}>
-                  <span className={styles.categoryTitle}>{category.title}</span>
-                  <span className={styles.categoryCount}>
-                    {selectedInCategory > 0 && (
-                      <span className={styles.selectedBadge}>
-                        {selectedInCategory} selected
-                      </span>
-                    )}
-                    <span className={styles.totalCount}>
-                      {categoryItems.length}{" "}
-                      {categoryItems.length === 1 ? "item" : "items"}
-                    </span>
-                  </span>
-                </div>
-                <ChevronDownIcon
-                  className={`${styles.chevron} ${isOpen ? styles.open : ""}`}
-                />
-              </button>
-
-              {isOpen && (
-                <div className={styles.accordionContent}>
-                  <div className={styles.itemGrid}>
-                    {categoryItems.map((item) => {
-                      const isSelected = selectedItems.has(item.id);
-                      const isOptimisticallyLogged = optimisticLoggedItems.has(
-                        item.id
-                      );
-
-                      return (
-                        <button
-                          key={item.id}
-                          type="button"
-                          onClick={() => toggleItemSelection(item.id)}
-                          className={`${styles.itemCard} ${
-                            isSelected ? styles.selected : ""
-                          }`}
-                          disabled={isOptimisticallyLogged}
-                          style={{
-                            opacity: isOptimisticallyLogged ? 0.5 : 1,
-                            cursor: isOptimisticallyLogged
-                              ? "not-allowed"
-                              : "pointer",
-                          }}
-                        >
-                          <div className={styles.imageWrapper}>
-                            <img
-                              src={item.imageUrl}
-                              alt={item.brand || category.title}
-                              className={styles.itemImage}
-                            />
-                            {(isSelected || isOptimisticallyLogged) && (
-                              <div className={styles.checkOverlay}>
-                                <div className={styles.checkIcon}>
-                                  <CheckIcon />
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                          <div className={styles.itemInfo}>
-                            {item.brand && (
-                              <p className={styles.itemBrand}>{item.brand}</p>
-                            )}
-                            {item.notes && (
-                              <p className={styles.itemNotes}>{item.notes}</p>
-                            )}
-                          </div>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
-
-      <div className={styles.footer}>
-        <Button
-          size="3"
-          variant="soft"
-          color="gray"
-          onClick={() => navigate(-1)}
-          disabled={isPending}
-        >
-          Cancel
-        </Button>
-        <Button
-          size="3"
-          onClick={handleSubmit}
-          disabled={selectedItems.size === 0 || isPending}
-        >
-          {isPending
-            ? "Logging..."
-            : `Log ${selectedItems.size} ${
-                selectedItems.size === 1 ? "Item" : "Items"
-              }`}
-        </Button>
+                Cancel
+              </Button>
+              <Button
+                size="3"
+                onClick={handleSubmit}
+                disabled={selectedItems.size === 0 || isPending}
+              >
+                {isPending
+                  ? "Logging..."
+                  : `Log ${selectedItems.size} ${
+                      selectedItems.size === 1 ? "Item" : "Items"
+                    }`}
+              </Button>
+            </>
+          }
+        />
       </div>
     </div>
   );
