@@ -68,16 +68,6 @@
   color: white;
 }
 
-.categoriesButton {
-  background: none;
-  border: none;
-  font-family: inherit;
-}
-
-.dropdownContent {
-  z-index: 101;
-}
-
 /* Adjust for very small screens */
 @media (max-width: 360px) {
   .navItem {

@@ -1,19 +1,11 @@
-import { ArrowLeftIcon } from '@radix-ui/react-icons';
-import { Button, Text } from '@radix-ui/themes';
-import { Link, useParams } from 'react-router';
-import { ItemCard } from '../components/features/ItemCard';
-import { useWardrobe } from '../contexts/WardrobeContext';
-import type { ItemCategory } from '../types/wardrobe';
-import styles from './CategoryPage.module.css';
-
-const CATEGORY_TITLES: Record<ItemCategory, string> = {
-  tops: 'Tops',
-  bottoms: 'Bottoms',
-  dresses: 'Dresses/Jumpsuits',
-  outerwear: 'Outerwear',
-  shoes: 'Shoes',
-  accessories: 'Accessories',
-};
+import { ArrowLeftIcon } from "@radix-ui/react-icons";
+import { Button, Text } from "@radix-ui/themes";
+import { Link, useParams } from "react-router";
+import { ItemCard } from "../components/features/ItemCard";
+import { useWardrobe } from "../contexts/WardrobeContext";
+import type { ItemCategory } from "../types/wardrobe";
+import { CATEGORY_TITLES } from "../utils/categories";
+import styles from "./CategoryPage.module.css";
 
 export function CategoryPage() {
   const { category } = useParams<{ category: string }>();
@@ -23,7 +15,14 @@ export function CategoryPage() {
   const isValidCategory = (cat: string | undefined): cat is ItemCategory => {
     return (
       cat !== undefined &&
-      ['tops', 'bottoms', 'dresses', 'outerwear', 'shoes', 'accessories'].includes(cat)
+      [
+        "tops",
+        "bottoms",
+        "dresses",
+        "outerwear",
+        "shoes",
+        "accessories",
+      ].includes(cat)
     );
   };
 
@@ -87,7 +86,8 @@ export function CategoryPage() {
         <>
           <div className={styles.itemCount}>
             <Text size="2" color="gray">
-              {categoryItems.length} {categoryItems.length === 1 ? 'item' : 'items'}
+              {categoryItems.length}{" "}
+              {categoryItems.length === 1 ? "item" : "items"}
             </Text>
           </div>
           <div className={styles.grid}>
