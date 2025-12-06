@@ -4,7 +4,7 @@ import { useState, useMemo } from "react";
 import { Link, useNavigate, useParams } from "react-router";
 import { ItemCard } from "../components/features/ItemCard";
 import { useWardrobe } from "../contexts/WardrobeContext";
-import type { ItemCategory, WardrobeItem } from "../types/wardrobe";
+import type { ItemCategory } from "../types/wardrobe";
 import { CATEGORY_TITLES } from "../utils/categories";
 import styles from "./CategoryPage.module.css";
 
