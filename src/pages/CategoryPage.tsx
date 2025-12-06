@@ -1,5 +1,5 @@
 import { ArrowLeftIcon, PlusIcon } from "@radix-ui/react-icons";
-import { Button, Text } from "@radix-ui/themes";
+import { Button, Text, Select } from "@radix-ui/themes";
 import { useState, useMemo } from "react";
 import { Link, useNavigate, useParams } from "react-router";
 import { ItemCard } from "../components/features/ItemCard";
@@ -14,6 +14,7 @@ export function CategoryPage() {
   const { category } = useParams<{ category: string }>();
   const { getItemsByCategory, isLoading } = useWardrobe();
   const [activeFilter, setActiveFilter] = useState<FilterType>("all");
+  const [selectedBrand, setSelectedBrand] = useState<string>("all");
 
   // Validate category
   const isValidCategory = (cat: string | undefined): cat is ItemCategory => {
@@ -43,10 +44,27 @@ export function CategoryPage() {
   const categoryItems = getItemsByCategory(category);
   const title = CATEGORY_TITLES[category];
 
-  // Filter items based on active filter
+  // Get brands available in this category
+  const availableBrands = useMemo(() => {
+    const brands = new Set<string>();
+    for (const item of categoryItems) {
+      if (item.brand?.trim()) {
+        brands.add(item.brand.trim());
+      }
+    }
+    return Array.from(brands).sort();
+  }, [categoryItems]);
+
+  // Filter items based on active filter and brand
   const filteredItems = useMemo(() => {
     let items = [...categoryItems];
 
+    // Apply brand filter first
+    if (selectedBrand !== "all") {
+      items = items.filter((item) => item.brand === selectedBrand);
+    }
+
+    // Apply type filters
     switch (activeFilter) {
       case "thrifted":
         items = items.filter((item) => item.isSecondHand);
@@ -73,7 +91,7 @@ export function CategoryPage() {
     }
 
     return items;
-  }, [categoryItems, activeFilter]);
+  }, [categoryItems, activeFilter, selectedBrand]);
 
   const hasItems = categoryItems.length > 0;
   const hasFilteredItems = filteredItems.length > 0;
@@ -136,6 +154,33 @@ export function CategoryPage() {
               ))}
             </div>
           </div>
+
+          {/* Brand Filter */}
+          {availableBrands.length > 0 && (
+            <div className={styles.brandFilterContainer}>
+              <Text
+                size="2"
+                weight="medium"
+                className={styles.brandFilterLabel}
+              >
+                Brand:
+              </Text>
+              <Select.Root
+                value={selectedBrand}
+                onValueChange={setSelectedBrand}
+              >
+                <Select.Trigger className={styles.brandSelect} />
+                <Select.Content>
+                  <Select.Item value="all">All Brands</Select.Item>
+                  {availableBrands.map((brand) => (
+                    <Select.Item key={brand} value={brand}>
+                      {brand}
+                    </Select.Item>
+                  ))}
+                </Select.Content>
+              </Select.Root>
+            </div>
+          )}
 
           {hasFilteredItems ? (
             <div className={styles.grid}>

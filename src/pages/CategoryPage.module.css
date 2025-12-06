@@ -53,6 +53,21 @@
   flex-shrink: 0;
 }
 
+.brandFilterContainer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.brandFilterLabel {
+  color: var(--gray-11);
+}
+
+.brandSelect {
+  min-width: 200px;
+}
+
 .grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
