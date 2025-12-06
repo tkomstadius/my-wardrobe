@@ -1,9 +1,20 @@
 import { ArrowLeftIcon, Pencil1Icon, TrashIcon } from "@radix-ui/react-icons";
-import { AlertDialog, Button, Flex, Heading, Text } from "@radix-ui/themes";
+import {
+  AlertDialog,
+  Button,
+  Flex,
+  Heading,
+  Text,
+  Badge,
+} from "@radix-ui/themes";
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router";
 import { useWardrobe } from "../contexts/WardrobeContext";
-import { formatDateDisplay, formatItemAge, formatLastWorn } from "../utils/dateFormatter";
+import {
+  formatDateDisplay,
+  formatItemAge,
+  formatLastWorn,
+} from "../utils/dateFormatter";
 import styles from "./ItemDetailPage.module.css";
 
 export function ItemDetailPage() {
@@ -65,7 +76,10 @@ export function ItemDetailPage() {
         </Button>
 
         <Flex gap="2">
-          <Button variant="soft" onClick={() => navigate(`/edit-item/${item.id}`)}>
+          <Button
+            variant="soft"
+            onClick={() => navigate(`/edit-item/${item.id}`)}
+          >
             <Pencil1Icon /> Edit
           </Button>
 
@@ -177,24 +191,24 @@ export function ItemDetailPage() {
           {/* Badges */}
           <div className={styles.badges}>
             {item.isSecondHand && (
-              <div className={styles.badge}>
-                <Text size="2" weight="medium">
-                  Second Hand / Thrifted
-                </Text>
-              </div>
+              <Badge color="amber" size="2">
+                Second Hand / Thrifted
+              </Badge>
             )}
             {item.isDogCasual && (
-              <div className={styles.badge}>
-                <Text size="2" weight="medium">
-                  Dog Casual
-                </Text>
-              </div>
+              <Badge color="cyan" size="2">
+                Dog Casual
+              </Badge>
             )}
           </div>
 
           {/* Mark as Worn Button */}
           <div className={styles.actions}>
-            <Button size="3" onClick={handleMarkAsWorn} className={styles.wornButton}>
+            <Button
+              size="3"
+              onClick={handleMarkAsWorn}
+              className={styles.wornButton}
+            >
               Mark as Worn Today
             </Button>
           </div>
@@ -209,4 +223,3 @@ export function ItemDetailPage() {
     </div>
   );
 }
-

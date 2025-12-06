@@ -1,5 +1,5 @@
 import { PlusIcon } from "@radix-ui/react-icons";
-import { IconButton } from "@radix-ui/themes";
+import { IconButton, Badge } from "@radix-ui/themes";
 import { Link } from "react-router";
 import { useWardrobe } from "../../contexts/WardrobeContext";
 import type { WardrobeItem } from "../../types/wardrobe";
@@ -70,8 +70,8 @@ export function ItemCard({ item, onClick }: ItemCardProps) {
           {item.price !== undefined && (
             <span className={styles.price}>{item.price.toFixed(2)} kr</span>
           )}
-          {item.isSecondHand && <span className={styles.badge}>Thrifted</span>}
-          {item.isDogCasual && <span className={styles.badge}>Casual</span>}
+          {item.isSecondHand && <Badge color="amber">Thrifted</Badge>}
+          {item.isDogCasual && <Badge color="cyan">Casual</Badge>}
           {item.purchaseDate && (
             <span className={styles.itemAge}>
               {formatItemAge(item.purchaseDate)}

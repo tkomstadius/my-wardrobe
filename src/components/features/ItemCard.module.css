@@ -119,14 +119,6 @@
   font-weight: 600;
 }
 
-.badge {
-  background: var(--amber-4);
-  color: var(--amber-11);
-  padding: 2px 8px;
-  border-radius: 4px;
-  font-weight: 500;
-}
-
 .wearCount {
   color: var(--gray-10);
   font-weight: 500;
