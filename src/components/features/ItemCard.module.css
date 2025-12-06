@@ -139,6 +139,40 @@
   border-radius: 4px;
 }
 
+/* Compact variant for smaller thumbnails */
+.compact {
+  border-radius: 8px;
+}
+
+.compact .imageContainer {
+  aspect-ratio: 1;
+  position: relative;
+}
+
+.compactContent {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 6px 8px;
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.8) 0%,
+    rgba(0, 0, 0, 0.5) 70%,
+    transparent 100%
+  );
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.compactWearCount {
+  font-size: 12px;
+  font-weight: 700;
+  color: white;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .content {

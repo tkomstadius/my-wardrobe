@@ -9,9 +9,10 @@ import styles from "./ItemCard.module.css";
 interface ItemCardProps {
   item: WardrobeItem;
   onClick?: () => void;
+  compact?: boolean;
 }
 
-export function ItemCard({ item, onClick }: ItemCardProps) {
+export function ItemCard({ item, onClick, compact = false }: ItemCardProps) {
   const { incrementWearCount } = useWardrobe();
 
   // Calculate cost per wear if price exists and wear count > 0
@@ -39,7 +40,7 @@ export function ItemCard({ item, onClick }: ItemCardProps) {
 
   const content = (
     <div
-      className={styles.card}
+      className={`${styles.card} ${compact ? styles.compact : ""}`}
       onClick={onClick}
       onKeyDown={handleKeyDown}
       role="button"
@@ -51,37 +52,46 @@ export function ItemCard({ item, onClick }: ItemCardProps) {
           alt={item.brand || "Wardrobe item"}
           className={styles.image}
         />
-        <IconButton
-          size="2"
-          variant="solid"
-          className={styles.quickWearButton}
-          onClick={handleQuickWear}
-          title="Mark as worn"
-        >
-          <PlusIcon />
-        </IconButton>
+        {!compact && (
+          <IconButton
+            size="2"
+            variant="solid"
+            className={styles.quickWearButton}
+            onClick={handleQuickWear}
+            title="Mark as worn"
+          >
+            <PlusIcon />
+          </IconButton>
+        )}
       </div>
-      <div className={styles.content}>
-        <p className={styles.details}>
-          {item.brand && <span className={styles.brand}>{item.brand}</span>}
-        </p>
-        <div className={styles.metadata}>
-          {item.isSecondHand && <Badge color="amber">Thrifted</Badge>}
-          {item.isDogCasual && <Badge color="cyan">Casual</Badge>}
-          {item.isHandmade && <Badge color="green">Handmade</Badge>}
-          {item.purchaseDate && (
-            <span className={styles.itemAge}>
-              {formatItemAge(item.purchaseDate)}
-            </span>
-          )}
-          <span className={styles.wearCount}>Worn {item.wearCount}×</span>
-          {costPerWear !== null && (
-            <span className={styles.costPerWear}>
-              {costPerWear.toFixed(2)} kr/wear
-            </span>
-          )}
+      {!compact && (
+        <div className={styles.content}>
+          <p className={styles.details}>
+            {item.brand && <span className={styles.brand}>{item.brand}</span>}
+          </p>
+          <div className={styles.metadata}>
+            {item.isSecondHand && <Badge color="amber">Thrifted</Badge>}
+            {item.isDogCasual && <Badge color="cyan">Casual</Badge>}
+            {item.isHandmade && <Badge color="green">Handmade</Badge>}
+            {item.purchaseDate && (
+              <span className={styles.itemAge}>
+                {formatItemAge(item.purchaseDate)}
+              </span>
+            )}
+            <span className={styles.wearCount}>Worn {item.wearCount}×</span>
+            {costPerWear !== null && (
+              <span className={styles.costPerWear}>
+                {costPerWear.toFixed(2)} kr/wear
+              </span>
+            )}
+          </div>
         </div>
-      </div>
+      )}
+      {compact && (
+        <div className={styles.compactContent}>
+          <span className={styles.compactWearCount}>{item.wearCount}×</span>
+        </div>
+      )}
     </div>
   );
 

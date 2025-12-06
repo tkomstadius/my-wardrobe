@@ -77,14 +77,34 @@
   gap: 0.5rem;
 }
 
+/* Compact grid for "Worn This Week" - smaller thumbnails, more columns */
+.compactGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+}
+
+.compactItemWrapper {
+  display: flex;
+  flex-direction: column;
+}
+
 @media (min-width: 640px) {
   .itemGrid {
     grid-template-columns: repeat(3, 1fr);
+  }
+
+  .compactGrid {
+    grid-template-columns: repeat(4, 1fr);
   }
 }
 
 @media (min-width: 1024px) {
   .itemGrid {
     grid-template-columns: repeat(4, 1fr);
+  }
+
+  .compactGrid {
+    grid-template-columns: repeat(6, 1fr);
   }
 }

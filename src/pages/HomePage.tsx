@@ -70,12 +70,13 @@ export function HomePage() {
                 </Text>
               </div>
             ) : (
-              <div className={styles.itemGrid}>
+              <div className={styles.compactGrid}>
                 {recentlyWornItems.map(({ item }) => (
-                  <div key={item.id} className={styles.itemWrapper}>
+                  <div key={item.id} className={styles.compactItemWrapper}>
                     <ItemCard
                       item={item}
                       onClick={() => navigate(`/item/${item.id}`)}
+                      compact
                     />
                   </div>
                 ))}
