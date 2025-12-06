@@ -1,11 +1,29 @@
 import { CheckIcon } from "@radix-ui/react-icons";
-import { Select, Button, Text } from "@radix-ui/themes";
+import { Select, Button, Text, Badge } from "@radix-ui/themes";
 import { useState, useMemo } from "react";
 import type { ReactNode } from "react";
 import type { WardrobeItem, ItemCategory } from "../../types/wardrobe";
 import { CATEGORIES } from "../../utils/categories";
 import { FILTER_ALL } from "../../utils/filters";
 import styles from "./ItemSelector.module.css";
+
+// Helper function to check if item was worn recently
+function getRecentWearBadge(wearHistory?: Date[]): string | null {
+  if (!wearHistory || wearHistory.length === 0) return null;
+
+  // Get the most recent wear date
+  const lastWornDate = wearHistory[wearHistory.length - 1];
+  if (!lastWornDate) return null;
+
+  const now = new Date();
+  const lastWorn = new Date(lastWornDate);
+  const diffMs = now.getTime() - lastWorn.getTime();
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+  if (diffDays === 0) return "Worn today";
+  if (diffDays <= 7) return "Worn this week";
+  return null;
+}
 
 interface ItemSelectorProps {
   items: WardrobeItem[];
@@ -211,6 +229,7 @@ export function ItemSelector({
           filteredItems.map((item) => {
             const isSelected = selectedItems.has(item.id);
             const isDisabled = disabledItems.has(item.id);
+            const recentBadge = getRecentWearBadge(item.wearHistory);
 
             return (
               <button
@@ -232,6 +251,13 @@ export function ItemSelector({
                     alt={item.brand || item.notes || "Item"}
                     className={styles.itemImage}
                   />
+                  {recentBadge && (
+                    <div className={styles.recentBadge}>
+                      <Badge size="1" color="orange" variant="solid">
+                        {recentBadge}
+                      </Badge>
+                    </div>
+                  )}
                   {(isSelected || isDisabled) && (
                     <div className={styles.checkOverlay}>
                       <div className={styles.checkIcon}>
