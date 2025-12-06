@@ -60,7 +60,7 @@ export function HomePage() {
                 {recentlyWornItems.map(({ item, wearCount }) => (
                   <Link
                     key={item.id}
-                    to={`/category/${item.category}`}
+                    to={`/item/${item.id}`}
                     className={styles.itemLink}
                   >
                     <ItemCard item={item} />

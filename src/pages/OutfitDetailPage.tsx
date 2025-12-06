@@ -159,7 +159,7 @@ export function OutfitDetailPage() {
                 <div
                   key={item.id}
                   className={styles.itemCard}
-                  onClick={() => navigate(`/edit-item/${item.id}`)}
+                  onClick={() => navigate(`/item/${item.id}`)}
                 >
                   <div className={styles.itemImage}>
                     <img src={item.imageUrl} alt={item.notes || "Item"} />

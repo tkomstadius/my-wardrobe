@@ -94,7 +94,7 @@ export function ItemCard({ item, onClick }: ItemCardProps) {
   }
 
   return (
-    <Link to={`/edit-item/${item.id}`} className={styles.cardLink}>
+    <Link to={`/item/${item.id}`} className={styles.cardLink}>
       {content}
     </Link>
   );
