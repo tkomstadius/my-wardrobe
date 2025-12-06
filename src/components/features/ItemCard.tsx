@@ -72,6 +72,7 @@ export function ItemCard({ item, onClick }: ItemCardProps) {
           )}
           {item.isSecondHand && <Badge color="amber">Thrifted</Badge>}
           {item.isDogCasual && <Badge color="cyan">Casual</Badge>}
+          {item.isHandmade && <Badge color="green">Handmade</Badge>}
           {item.purchaseDate && (
             <span className={styles.itemAge}>
               {formatItemAge(item.purchaseDate)}

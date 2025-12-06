@@ -33,6 +33,7 @@ export function AddItemPage() {
     price: "",
     isSecondHand: false,
     isDogCasual: false,
+    isHandmade: false,
     purchaseDate: "",
     initialWearCount: "",
   });
@@ -95,6 +96,7 @@ export function AddItemPage() {
         price: formData.price ? Number.parseFloat(formData.price) : undefined,
         isSecondHand: formData.isSecondHand,
         isDogCasual: formData.isDogCasual,
+        isHandmade: formData.isHandmade,
         purchaseDate: formData.purchaseDate
           ? new Date(formData.purchaseDate)
           : undefined,
@@ -265,6 +267,18 @@ export function AddItemPage() {
                 }
               />
               Dog casual
+            </Flex>
+          </Text>
+
+          <Text as="label" size="3">
+            <Flex gap="2" align="center">
+              <Checkbox
+                checked={formData.isHandmade}
+                onCheckedChange={(checked) =>
+                  setFormData({ ...formData, isHandmade: checked === true })
+                }
+              />
+              Handmade
             </Flex>
           </Text>
         </div>

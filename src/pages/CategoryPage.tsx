@@ -8,7 +8,13 @@ import type { ItemCategory } from "../types/wardrobe";
 import { CATEGORY_TITLES } from "../utils/categories";
 import styles from "./CategoryPage.module.css";
 
-type FilterType = "all" | "thrifted" | "casual" | "recent" | "most-worn";
+type FilterType =
+  | "all"
+  | "thrifted"
+  | "casual"
+  | "handmade"
+  | "recent"
+  | "most-worn";
 
 export function CategoryPage() {
   const navigate = useNavigate();
@@ -64,6 +70,9 @@ export function CategoryPage() {
         break;
       case "casual":
         items = items.filter((item) => item.isDogCasual);
+        break;
+      case "handmade":
+        items = items.filter((item) => item.isHandmade);
         break;
       case "recent":
         items = items.sort(
@@ -158,6 +167,15 @@ export function CategoryPage() {
               </Button>
               <Button
                 size="2"
+                variant={activeFilter === "handmade" ? "solid" : "soft"}
+                color="green"
+                onClick={() => setActiveFilter("handmade")}
+                className={styles.filterButton}
+              >
+                Handmade
+              </Button>
+              <Button
+                size="2"
                 variant={activeFilter === "recent" ? "solid" : "soft"}
                 color="purple"
                 onClick={() => setActiveFilter("recent")}
@@ -168,7 +186,7 @@ export function CategoryPage() {
               <Button
                 size="2"
                 variant={activeFilter === "most-worn" ? "solid" : "soft"}
-                color="green"
+                color="blue"
                 onClick={() => setActiveFilter("most-worn")}
                 className={styles.filterButton}
               >

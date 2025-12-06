@@ -18,6 +18,7 @@ export interface WardrobeItem {
   price?: number;
   isSecondHand?: boolean;
   isDogCasual?: boolean;
+  isHandmade?: boolean;
   purchaseDate?: Date;
   createdAt: Date;
   updatedAt: Date;
@@ -33,5 +34,6 @@ export interface NewWardrobeItem {
   price?: number;
   isSecondHand?: boolean;
   isDogCasual?: boolean;
+  isHandmade?: boolean;
   purchaseDate?: Date;
 }

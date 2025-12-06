@@ -159,6 +159,11 @@ export function ItemDetailPage() {
                 Dog Casual
               </Badge>
             )}
+            {item.isHandmade && (
+              <Badge color="green" size="2">
+                Handmade
+              </Badge>
+            )}
           </div>
 
           {/* Mark as Worn Button */}

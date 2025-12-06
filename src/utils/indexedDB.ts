@@ -103,6 +103,7 @@ export async function saveItem(item: {
   price?: number;
   isSecondHand?: boolean;
   isDogCasual?: boolean;
+  isHandmade?: boolean;
   purchaseDate?: Date;
   createdAt: Date;
   updatedAt: Date;
@@ -128,6 +129,7 @@ export async function saveItem(item: {
       price: item.price,
       isSecondHand: item.isSecondHand,
       isDogCasual: item.isDogCasual,
+      isHandmade: item.isHandmade,
       purchaseDate: item.purchaseDate?.toISOString(),
       createdAt: item.createdAt.toISOString(),
       updatedAt: item.updatedAt.toISOString(),
@@ -156,6 +158,7 @@ export async function loadAllItems(): Promise<
     price?: number;
     isSecondHand?: boolean;
     isDogCasual?: boolean;
+    isHandmade?: boolean;
     purchaseDate?: Date;
     createdAt: Date;
     updatedAt: Date;
@@ -187,6 +190,7 @@ export async function loadAllItems(): Promise<
           price: dbItem.price,
           isSecondHand: dbItem.isSecondHand,
           isDogCasual: dbItem.isDogCasual,
+          isHandmade: dbItem.isHandmade,
           purchaseDate: dbItem.purchaseDate
             ? new Date(dbItem.purchaseDate)
             : undefined,

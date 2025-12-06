@@ -38,6 +38,7 @@ export function EditItemPage() {
     price: "",
     isSecondHand: false,
     isDogCasual: false,
+    isHandmade: false,
     purchaseDate: "",
     initialWearCount: "",
   });
@@ -67,6 +68,7 @@ export function EditItemPage() {
       price: item.price !== undefined ? item.price.toString() : "",
       isSecondHand: item.isSecondHand || false,
       isDogCasual: item.isDogCasual || false,
+      isHandmade: item.isHandmade || false,
       purchaseDate: item.purchaseDate
         ? new Date(item.purchaseDate).toISOString().split("T")[0] ?? ""
         : "",
@@ -138,6 +140,7 @@ export function EditItemPage() {
         price: formData.price ? Number.parseFloat(formData.price) : undefined,
         isSecondHand: formData.isSecondHand,
         isDogCasual: formData.isDogCasual,
+        isHandmade: formData.isHandmade,
         purchaseDate: formData.purchaseDate
           ? new Date(formData.purchaseDate)
           : undefined,
@@ -406,6 +409,18 @@ export function EditItemPage() {
                 }
               />
               Dog casual
+            </Flex>
+          </Text>
+
+          <Text as="label" size="3">
+            <Flex gap="2" align="center">
+              <Checkbox
+                checked={formData.isHandmade}
+                onCheckedChange={(checked) =>
+                  setFormData({ ...formData, isHandmade: checked === true })
+                }
+              />
+              Handmade
             </Flex>
           </Text>
         </div>
