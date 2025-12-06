@@ -5,16 +5,9 @@ import { Link, useNavigate, useParams } from "react-router";
 import { ItemCard } from "../components/features/ItemCard";
 import { useWardrobe } from "../contexts/WardrobeContext";
 import type { ItemCategory } from "../types/wardrobe";
-import { CATEGORY_TITLES } from "../utils/categories";
+import { CATEGORY_TITLES, CATEGORY_IDS } from "../utils/categories";
+import { FILTERS, type FilterType } from "../utils/filters";
 import styles from "./CategoryPage.module.css";
-
-type FilterType =
-  | "all"
-  | "thrifted"
-  | "casual"
-  | "handmade"
-  | "recent"
-  | "most-worn";
 
 export function CategoryPage() {
   const navigate = useNavigate();
@@ -24,17 +17,7 @@ export function CategoryPage() {
 
   // Validate category
   const isValidCategory = (cat: string | undefined): cat is ItemCategory => {
-    return (
-      cat !== undefined &&
-      [
-        "tops",
-        "bottoms",
-        "dresses",
-        "outerwear",
-        "shoes",
-        "accessories",
-      ].includes(cat)
-    );
+    return cat !== undefined && CATEGORY_IDS.includes(cat as ItemCategory);
   };
 
   if (!isValidCategory(category)) {
@@ -139,59 +122,18 @@ export function CategoryPage() {
           {/* Filter Buttons */}
           <div className={styles.filtersContainer}>
             <div className={styles.filters}>
-              <Button
-                size="2"
-                variant={activeFilter === "all" ? "solid" : "soft"}
-                onClick={() => setActiveFilter("all")}
-                className={styles.filterButton}
-              >
-                All
-              </Button>
-              <Button
-                size="2"
-                variant={activeFilter === "thrifted" ? "solid" : "soft"}
-                color="amber"
-                onClick={() => setActiveFilter("thrifted")}
-                className={styles.filterButton}
-              >
-                Thrifted
-              </Button>
-              <Button
-                size="2"
-                variant={activeFilter === "casual" ? "solid" : "soft"}
-                color="cyan"
-                onClick={() => setActiveFilter("casual")}
-                className={styles.filterButton}
-              >
-                Casual
-              </Button>
-              <Button
-                size="2"
-                variant={activeFilter === "handmade" ? "solid" : "soft"}
-                color="green"
-                onClick={() => setActiveFilter("handmade")}
-                className={styles.filterButton}
-              >
-                Handmade
-              </Button>
-              <Button
-                size="2"
-                variant={activeFilter === "recent" ? "solid" : "soft"}
-                color="purple"
-                onClick={() => setActiveFilter("recent")}
-                className={styles.filterButton}
-              >
-                Recent
-              </Button>
-              <Button
-                size="2"
-                variant={activeFilter === "most-worn" ? "solid" : "soft"}
-                color="blue"
-                onClick={() => setActiveFilter("most-worn")}
-                className={styles.filterButton}
-              >
-                Most Worn
-              </Button>
+              {FILTERS.map((filter) => (
+                <Button
+                  key={filter.id}
+                  size="2"
+                  variant={activeFilter === filter.id ? "solid" : "soft"}
+                  color={filter.color}
+                  onClick={() => setActiveFilter(filter.id)}
+                  className={styles.filterButton}
+                >
+                  {filter.label}
+                </Button>
+              ))}
             </div>
           </div>
 
