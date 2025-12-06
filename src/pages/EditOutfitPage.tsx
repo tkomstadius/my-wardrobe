@@ -1,17 +1,10 @@
 import { CameraIcon, TrashIcon, ArrowLeftIcon } from "@radix-ui/react-icons";
-import {
-  Button,
-  Heading,
-  Text,
-  TextArea,
-  Checkbox,
-  AlertDialog,
-  Flex,
-} from "@radix-ui/themes";
+import { Button, Heading, Text, TextArea, Checkbox } from "@radix-ui/themes";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router";
 import { useOutfit } from "../contexts/OutfitContext";
 import { useWardrobe } from "../contexts/WardrobeContext";
+import { DeleteConfirmDialog } from "../components/common/DeleteConfirmDialog";
 import type { WardrobeItem } from "../types/wardrobe";
 import { compressImage } from "../utils/imageCompression";
 import styles from "./CreateOutfitPage.module.css";
@@ -169,37 +162,17 @@ export function EditOutfitPage() {
           <ArrowLeftIcon /> Back
         </Button>
         <Heading size="6">Edit Outfit</Heading>
-        <AlertDialog.Root>
-          <AlertDialog.Trigger>
+        <DeleteConfirmDialog
+          title="Delete Outfit"
+          description="Are you sure you want to delete this outfit? This action cannot be undone."
+          onConfirm={handleDelete}
+          isDeleting={isDeleting}
+          triggerButton={
             <Button variant="soft" color="red">
               <TrashIcon />
             </Button>
-          </AlertDialog.Trigger>
-          <AlertDialog.Content maxWidth="450px">
-            <AlertDialog.Title>Delete Outfit</AlertDialog.Title>
-            <AlertDialog.Description size="2">
-              Are you sure you want to delete this outfit? This action cannot be
-              undone.
-            </AlertDialog.Description>
-            <Flex gap="3" mt="4" justify="end">
-              <AlertDialog.Cancel>
-                <Button variant="soft" color="gray">
-                  Cancel
-                </Button>
-              </AlertDialog.Cancel>
-              <AlertDialog.Action>
-                <Button
-                  variant="solid"
-                  color="red"
-                  onClick={handleDelete}
-                  disabled={isDeleting}
-                >
-                  {isDeleting ? "Deleting..." : "Delete"}
-                </Button>
-              </AlertDialog.Action>
-            </Flex>
-          </AlertDialog.Content>
-        </AlertDialog.Root>
+          }
+        />
       </header>
 
       <form onSubmit={handleSubmit} className={styles.form}>
@@ -235,7 +208,10 @@ export function EditOutfitPage() {
                 </div>
               )}
 
-              <label htmlFor="outfit-image-upload" className={styles.cameraButton}>
+              <label
+                htmlFor="outfit-image-upload"
+                className={styles.cameraButton}
+              >
                 <CameraIcon width={24} height={24} />
               </label>
               <input
@@ -320,7 +296,9 @@ export function EditOutfitPage() {
                           <div className={styles.checkboxOverlay}>
                             <Checkbox
                               checked={selectedItems.has(item.id)}
-                              onCheckedChange={() => toggleItemSelection(item.id)}
+                              onCheckedChange={() =>
+                                toggleItemSelection(item.id)
+                              }
                             />
                           </div>
                         </div>
@@ -350,4 +328,3 @@ export function EditOutfitPage() {
     </div>
   );
 }
-

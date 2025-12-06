@@ -1,6 +1,5 @@
 import { ArrowLeftIcon, TrashIcon } from "@radix-ui/react-icons";
 import {
-  AlertDialog,
   Button,
   Checkbox,
   Flex,
@@ -11,6 +10,7 @@ import {
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router";
 import { useWardrobe } from "../contexts/WardrobeContext";
+import { DeleteConfirmDialog } from "../components/common/DeleteConfirmDialog";
 import type { ItemCategory } from "../types/wardrobe";
 import {
   compressImage,
@@ -477,41 +477,17 @@ export function EditItemPage() {
             {isSaving ? "Saving..." : "Save Changes"}
           </Button>
 
-          <AlertDialog.Root>
-            <AlertDialog.Trigger>
+          <DeleteConfirmDialog
+            title="Delete Item"
+            description="Are you sure you want to delete this item? This action cannot be undone."
+            onConfirm={handleDelete}
+            triggerButton={
               <Button type="button" color="red" variant="soft" size="3">
                 <TrashIcon />
                 Delete
               </Button>
-            </AlertDialog.Trigger>
-            <AlertDialog.Content maxWidth="400px">
-              <AlertDialog.Title>Delete Item</AlertDialog.Title>
-              <AlertDialog.Description>
-                Are you sure you want to delete this item? This action cannot be
-                undone.
-              </AlertDialog.Description>
-              <div className={styles.dialogActions}>
-                <AlertDialog.Cancel>
-                  <Button
-                    variant="soft"
-                    color="gray"
-                    className={styles.dialogButton}
-                  >
-                    Cancel
-                  </Button>
-                </AlertDialog.Cancel>
-                <AlertDialog.Action>
-                  <Button
-                    color="red"
-                    onClick={handleDelete}
-                    className={styles.dialogButton}
-                  >
-                    Delete
-                  </Button>
-                </AlertDialog.Action>
-              </div>
-            </AlertDialog.Content>
-          </AlertDialog.Root>
+            }
+          />
         </div>
       </form>
     </div>

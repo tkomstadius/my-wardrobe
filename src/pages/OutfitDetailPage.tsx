@@ -1,9 +1,10 @@
 import { ArrowLeftIcon, TrashIcon, Pencil1Icon } from "@radix-ui/react-icons";
-import { AlertDialog, Button, Flex, Heading, Text } from "@radix-ui/themes";
+import { Button, Heading, Text } from "@radix-ui/themes";
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router";
 import { useOutfit } from "../contexts/OutfitContext";
 import { useWardrobe } from "../contexts/WardrobeContext";
+import { DeleteConfirmDialog } from "../components/common/DeleteConfirmDialog";
 import { formatDate } from "../utils/dateFormatter";
 import styles from "./OutfitDetailPage.module.css";
 
@@ -136,20 +137,10 @@ export function OutfitDetailPage() {
 
         {/* Edit and Delete Actions */}
         <section className={styles.bottomActions}>
-          <AlertDialog.Root>
-            <AlertDialog.Trigger>
-              <Button
-                size="3"
-                variant="soft"
-                color="red"
-                className={styles.deleteButton}
-              >
-                <TrashIcon /> Delete
-              </Button>
-            </AlertDialog.Trigger>
-            <AlertDialog.Content maxWidth="450px">
-              <AlertDialog.Title>Delete Outfit</AlertDialog.Title>
-              <AlertDialog.Description size="2">
+          <DeleteConfirmDialog
+            title="Delete Outfit"
+            description={
+              <>
                 Are you sure you want to delete this outfit? This action cannot
                 be undone.
                 <br />
@@ -160,27 +151,22 @@ export function OutfitDetailPage() {
                 >
                   Note: Item wear counts will not be decreased.
                 </Text>
-              </AlertDialog.Description>
-
-              <Flex gap="3" mt="4" justify="end">
-                <AlertDialog.Cancel>
-                  <Button variant="soft" color="gray">
-                    Cancel
-                  </Button>
-                </AlertDialog.Cancel>
-                <AlertDialog.Action>
-                  <Button
-                    variant="solid"
-                    color="red"
-                    onClick={handleDelete}
-                    disabled={isDeleting}
-                  >
-                    {isDeleting ? "Deleting..." : "Delete Outfit"}
-                  </Button>
-                </AlertDialog.Action>
-              </Flex>
-            </AlertDialog.Content>
-          </AlertDialog.Root>
+              </>
+            }
+            onConfirm={handleDelete}
+            isDeleting={isDeleting}
+            confirmText="Delete Outfit"
+            triggerButton={
+              <Button
+                size="3"
+                variant="soft"
+                color="red"
+                className={styles.deleteButton}
+              >
+                <TrashIcon /> Delete
+              </Button>
+            }
+          />
 
           <Button
             size="3"
