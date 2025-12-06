@@ -44,8 +44,6 @@ function openDB(): Promise<IDBDatabase> {
 
     request.onupgradeneeded = (event) => {
       const db = (event.target as IDBOpenDBRequest).result;
-      const transaction = (event.target as IDBOpenDBRequest).transaction;
-      const oldVersion = event.oldVersion;
 
       // Create object store if it doesn't exist (initial setup)
       if (!db.objectStoreNames.contains(STORE_NAME)) {
@@ -61,33 +59,6 @@ function openDB(): Promise<IDBDatabase> {
         });
         outfitsStore.createIndex("wornDate", "wornDate", { unique: false });
         outfitsStore.createIndex("createdAt", "createdAt", { unique: false });
-      }
-
-      // Migrate from version 1 to version 2
-      if (oldVersion < 2 && transaction) {
-        const store = transaction.objectStore(STORE_NAME);
-        const getAllRequest = store.getAll();
-
-        getAllRequest.onsuccess = () => {
-          const items = getAllRequest.result;
-
-          // Transform each item: type → notes, remove color, isDogWardrobe → isDogCasual
-          for (const item of items) {
-            const migratedItem = {
-              ...item,
-              notes: item.type || undefined, // Rename type to notes
-              isDogCasual: item.isDogWardrobe || undefined, // Rename isDogWardrobe to isDogCasual
-            };
-
-            // Remove old fields
-            delete migratedItem.type;
-            delete migratedItem.color;
-            delete migratedItem.isDogWardrobe;
-
-            // Save the migrated item
-            store.put(migratedItem);
-          }
-        };
       }
     };
   });
