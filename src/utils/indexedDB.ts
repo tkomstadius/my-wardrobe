@@ -127,6 +127,7 @@ export async function saveItem(item: {
   brand?: string;
   category: ItemCategory;
   wearCount: number;
+  wearHistory: Date[];
   price?: number;
   isSecondHand?: boolean;
   isDogCasual?: boolean;
@@ -150,6 +151,7 @@ export async function saveItem(item: {
       brand: item.brand,
       category: item.category,
       wearCount: item.wearCount,
+      wearHistory: item.wearHistory.map((date) => date.toISOString()),
       price: item.price,
       isSecondHand: item.isSecondHand,
       isDogCasual: item.isDogCasual,
@@ -176,6 +178,7 @@ export async function loadAllItems(): Promise<
     brand?: string;
     category: ItemCategory;
     wearCount: number;
+    wearHistory: Date[];
     price?: number;
     isSecondHand?: boolean;
     isDogCasual?: boolean;
@@ -203,6 +206,9 @@ export async function loadAllItems(): Promise<
           brand: dbItem.brand,
           category: dbItem.category as ItemCategory,
           wearCount: dbItem.wearCount,
+          wearHistory: dbItem.wearHistory
+            ? dbItem.wearHistory.map((dateStr: string) => new Date(dateStr))
+            : [],
           price: dbItem.price,
           isSecondHand: dbItem.isSecondHand,
           isDogCasual: dbItem.isDogCasual,

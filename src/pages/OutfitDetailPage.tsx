@@ -1,11 +1,11 @@
-import { ArrowLeftIcon, TrashIcon } from '@radix-ui/react-icons';
-import { AlertDialog, Button, Flex, Heading, Text } from '@radix-ui/themes';
-import { useState } from 'react';
-import { useNavigate, useParams } from 'react-router';
-import { useOutfit } from '../contexts/OutfitContext';
-import { useWardrobe } from '../contexts/WardrobeContext';
-import { formatDate } from '../utils/dateFormatter';
-import styles from './OutfitDetailPage.module.css';
+import { ArrowLeftIcon, TrashIcon, Pencil1Icon } from "@radix-ui/react-icons";
+import { AlertDialog, Button, Flex, Heading, Text } from "@radix-ui/themes";
+import { useState } from "react";
+import { useNavigate, useParams } from "react-router";
+import { useOutfit } from "../contexts/OutfitContext";
+import { useWardrobe } from "../contexts/WardrobeContext";
+import { formatDate } from "../utils/dateFormatter";
+import styles from "./OutfitDetailPage.module.css";
 
 export function OutfitDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -21,7 +21,7 @@ export function OutfitDetailPage() {
       <div className={styles.container}>
         <div className={styles.notFound}>
           <Heading size="5">Outfit not found</Heading>
-          <Button onClick={() => navigate('/outfits')} variant="soft">
+          <Button onClick={() => navigate("/outfits")} variant="soft">
             Back to Outfits
           </Button>
         </div>
@@ -37,10 +37,10 @@ export function OutfitDetailPage() {
     setIsDeleting(true);
     try {
       await deleteOutfit(outfit.id);
-      navigate('/outfits');
+      navigate("/outfits");
     } catch (error) {
-      console.error('Failed to delete outfit:', error);
-      alert('Failed to delete outfit. Please try again.');
+      console.error("Failed to delete outfit:", error);
+      alert("Failed to delete outfit. Please try again.");
       setIsDeleting(false);
     }
   };
@@ -48,40 +48,59 @@ export function OutfitDetailPage() {
   return (
     <div className={styles.container}>
       <header className={styles.header}>
-        <Button variant="ghost" onClick={() => navigate('/outfits')}>
+        <Button variant="ghost" onClick={() => navigate("/outfits")}>
           <ArrowLeftIcon /> Back
         </Button>
 
-        <AlertDialog.Root>
-          <AlertDialog.Trigger>
-            <Button variant="soft" color="red">
-              <TrashIcon /> Delete
-            </Button>
-          </AlertDialog.Trigger>
-          <AlertDialog.Content maxWidth="450px">
-            <AlertDialog.Title>Delete Outfit</AlertDialog.Title>
-            <AlertDialog.Description size="2">
-              Are you sure you want to delete this outfit? This action cannot be undone.
-              <br />
-              <Text size="1" color="gray" style={{ marginTop: '0.5rem', display: 'block' }}>
-                Note: Item wear counts will not be decreased.
-              </Text>
-            </AlertDialog.Description>
+        <Flex gap="2">
+          <Button
+            variant="soft"
+            onClick={() => navigate(`/edit-outfit/${outfit.id}`)}
+          >
+            <Pencil1Icon /> Edit
+          </Button>
 
-            <Flex gap="3" mt="4" justify="end">
-              <AlertDialog.Cancel>
-                <Button variant="soft" color="gray">
-                  Cancel
-                </Button>
-              </AlertDialog.Cancel>
-              <AlertDialog.Action>
-                <Button variant="solid" color="red" onClick={handleDelete} disabled={isDeleting}>
-                  {isDeleting ? 'Deleting...' : 'Delete Outfit'}
-                </Button>
-              </AlertDialog.Action>
-            </Flex>
-          </AlertDialog.Content>
-        </AlertDialog.Root>
+          <AlertDialog.Root>
+            <AlertDialog.Trigger>
+              <Button variant="soft" color="red">
+                <TrashIcon />
+              </Button>
+            </AlertDialog.Trigger>
+            <AlertDialog.Content maxWidth="450px">
+              <AlertDialog.Title>Delete Outfit</AlertDialog.Title>
+              <AlertDialog.Description size="2">
+                Are you sure you want to delete this outfit? This action cannot
+                be undone.
+                <br />
+                <Text
+                  size="1"
+                  color="gray"
+                  style={{ marginTop: "0.5rem", display: "block" }}
+                >
+                  Note: Item wear counts will not be decreased.
+                </Text>
+              </AlertDialog.Description>
+
+              <Flex gap="3" mt="4" justify="end">
+                <AlertDialog.Cancel>
+                  <Button variant="soft" color="gray">
+                    Cancel
+                  </Button>
+                </AlertDialog.Cancel>
+                <AlertDialog.Action>
+                  <Button
+                    variant="solid"
+                    color="red"
+                    onClick={handleDelete}
+                    disabled={isDeleting}
+                  >
+                    {isDeleting ? "Deleting..." : "Delete Outfit"}
+                  </Button>
+                </AlertDialog.Action>
+              </Flex>
+            </AlertDialog.Content>
+          </AlertDialog.Root>
+        </Flex>
       </header>
 
       <div className={styles.content}>
@@ -143,11 +162,11 @@ export function OutfitDetailPage() {
                   onClick={() => navigate(`/edit-item/${item.id}`)}
                 >
                   <div className={styles.itemImage}>
-                    <img src={item.imageUrl} alt={item.notes || 'Item'} />
+                    <img src={item.imageUrl} alt={item.notes || "Item"} />
                   </div>
                   <div className={styles.itemInfo}>
                     <Text size="2" weight="bold">
-                      {item.notes || item.brand || 'Unnamed'}
+                      {item.notes || item.brand || "Unnamed"}
                     </Text>
                     {item.brand && item.notes && (
                       <Text size="1" color="gray">
@@ -155,7 +174,8 @@ export function OutfitDetailPage() {
                       </Text>
                     )}
                     <Text size="1" color="gray">
-                      {item.category.charAt(0).toUpperCase() + item.category.slice(1)}
+                      {item.category.charAt(0).toUpperCase() +
+                        item.category.slice(1)}
                     </Text>
                   </div>
                 </div>
@@ -167,4 +187,3 @@ export function OutfitDetailPage() {
     </div>
   );
 }
-
