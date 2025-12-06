@@ -356,3 +356,26 @@ export async function deleteOutfit(id: string): Promise<void> {
     transaction.oncomplete = () => db.close();
   });
 }
+
+// Delete entire database (useful for development/debugging)
+export async function deleteDatabase(): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.deleteDatabase(DB_NAME);
+
+    request.onsuccess = () => {
+      console.log("Database deleted successfully");
+      resolve();
+    };
+
+    request.onerror = () => {
+      console.error("Error deleting database:", request.error);
+      reject(request.error);
+    };
+
+    request.onblocked = () => {
+      console.warn(
+        "Database deletion blocked. Close all tabs using this database."
+      );
+    };
+  });
+}

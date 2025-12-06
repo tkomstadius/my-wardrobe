@@ -83,3 +83,61 @@ export function formatLastWorn(wearHistory: Date[]): string {
     Math.floor(days / 365) > 1 ? "s" : ""
   } ago`;
 }
+
+// Calculate the age of an item from purchase date
+export function calculateItemAge(purchaseDate: Date): {
+  years: number;
+  months: number;
+  days: number;
+} {
+  const now = new Date();
+  const purchase = new Date(purchaseDate);
+
+  let years = now.getFullYear() - purchase.getFullYear();
+  let months = now.getMonth() - purchase.getMonth();
+  let days = now.getDate() - purchase.getDate();
+
+  // Adjust for negative days
+  if (days < 0) {
+    months--;
+    const lastMonth = new Date(now.getFullYear(), now.getMonth(), 0);
+    days += lastMonth.getDate();
+  }
+
+  // Adjust for negative months
+  if (months < 0) {
+    years--;
+    months += 12;
+  }
+
+  return { years, months, days };
+}
+
+// Format item age as a compact string (e.g., "2y 3m", "6m 15d", "15d")
+export function formatItemAge(purchaseDate: Date | undefined): string {
+  if (!purchaseDate) return "";
+
+  const { years, months, days } = calculateItemAge(purchaseDate);
+
+  // Show years and months if item is over a year old
+  if (years > 0) {
+    if (months > 0) {
+      return `${years}y ${months}m`;
+    }
+    return `${years}y`;
+  }
+
+  // Show months and days if item is over a month old
+  if (months > 0) {
+    if (days > 0) {
+      return `${months}m ${days}d`;
+    }
+    return `${months}m`;
+  }
+
+  // Just show days for items less than a month old
+  if (days === 0) {
+    return "New today";
+  }
+  return `${days}d`;
+}

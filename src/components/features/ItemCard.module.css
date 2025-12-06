@@ -8,9 +8,7 @@
   background: var(--gray-3);
   border-radius: 12px;
   overflow: hidden;
-  transition:
-    transform 0.2s ease,
-    box-shadow 0.2s ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
   cursor: pointer;
   height: 100%;
   display: flex;
@@ -60,9 +58,7 @@
 @media (min-width: 769px) and (hover: hover) {
   .quickWearButton {
     opacity: 0;
-    transition:
-      opacity 0.2s ease,
-      transform 0.2s ease;
+    transition: opacity 0.2s ease, transform 0.2s ease;
   }
 
   .card:hover .quickWearButton {
@@ -142,9 +138,13 @@
   font-size: 11px;
 }
 
-.date {
-  color: var(--gray-10);
+.itemAge {
+  color: var(--gray-11);
+  font-weight: 500;
   font-size: 11px;
+  background: var(--gray-4);
+  padding: 2px 6px;
+  border-radius: 4px;
 }
 
 /* Responsive adjustments */
