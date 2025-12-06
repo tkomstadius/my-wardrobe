@@ -1,26 +1,24 @@
 import { Text } from "@radix-ui/themes";
 import { Link } from "react-router";
+import { ItemCard } from "../components/features/ItemCard";
 import { useWardrobe } from "../contexts/WardrobeContext";
-import type { ItemCategory } from "../types/wardrobe";
+import { getDaysAgo } from "../utils/dateFormatter";
 import styles from "./HomePage.module.css";
 
-const CATEGORIES: Array<{ id: ItemCategory; title: string }> = [
-  { id: "tops", title: "Tops" },
-  { id: "bottoms", title: "Bottoms" },
-  { id: "dresses", title: "Dresses & Jumpsuits" },
-  { id: "outerwear", title: "Outerwear" },
-  { id: "shoes", title: "Shoes" },
-  { id: "accessories", title: "Accessories" },
-];
-
 export function HomePage() {
-  const { items, getItemsByCategory, isLoading } = useWardrobe();
+  const { items, getItemsWornInPeriod, isLoading } = useWardrobe();
   const hasItems = items.length > 0;
+
+  // Get items worn in the last 7 days
+  const recentlyWornItems = getItemsWornInPeriod(getDaysAgo(7));
 
   return (
     <div className={styles.container}>
       <div className={styles.header}>
         <h2 className={styles.title}>My Wardrobe</h2>
+        <Text size="2" color="gray">
+          {items.length} {items.length === 1 ? "item" : "items"} total
+        </Text>
       </div>
 
       {isLoading && (
@@ -39,53 +37,43 @@ export function HomePage() {
         </div>
       )}
 
-      <div className={styles.categories}>
-        {CATEGORIES.map((cat) => {
-          const categoryItems = getItemsByCategory(cat.id);
-          return (
-            <CategoryCard
-              key={cat.id}
-              title={cat.title}
-              count={categoryItems.length}
-              category={cat.id}
-              items={categoryItems}
-            />
-          );
-        })}
-      </div>
-    </div>
-  );
-}
+      {!isLoading && hasItems && (
+        <div className={styles.content}>
+          <section className={styles.section}>
+            <div className={styles.sectionHeader}>
+              <h3 className={styles.sectionTitle}>Worn This Week</h3>
+              <Text size="2" color="gray">
+                Last 7 days
+              </Text>
+            </div>
 
-interface CategoryCardProps {
-  title: string;
-  count: number;
-  category: string;
-  items: Array<{ imageUrl: string; id: string }>;
-}
-
-function CategoryCard({ title, count, category, items }: CategoryCardProps) {
-  const hasItems = items.length > 0;
-
-  return (
-    <Link to={`/category/${category}`} className={styles.categoryCardLink}>
-      <div className={styles.categoryCard}>
-        {hasItems && (
-          <div className={styles.categoryPreview}>
-            {items.slice(0, 4).map((item) => (
-              <div key={item.id} className={styles.previewImage}>
-                <img src={item.imageUrl} alt="" />
+            {recentlyWornItems.length === 0 ? (
+              <div className={styles.emptySection}>
+                <Text size="2" color="gray">
+                  No items worn in the last 7 days.
+                  <br />
+                  Mark items as worn to track your wardrobe usage!
+                </Text>
               </div>
-            ))}
-          </div>
-        )}
-        <div className={styles.categoryContent}>
-          <h3 className={styles.categoryTitle}>{title}</h3>
-          <p className={styles.categoryCount}>
-            {count} {count === 1 ? "item" : "items"}
-          </p>
+            ) : (
+              <div className={styles.itemGrid}>
+                {recentlyWornItems.map(({ item, wearCount }) => (
+                  <Link
+                    key={item.id}
+                    to={`/category/${item.category}`}
+                    className={styles.itemLink}
+                  >
+                    <ItemCard item={item} />
+                    <div className={styles.wearBadge}>
+                      Worn {wearCount}x this week
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </section>
         </div>
-      </div>
-    </Link>
+      )}
+    </div>
   );
 }
