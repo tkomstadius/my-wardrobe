@@ -1,0 +1,216 @@
+import { useState, useRef } from "react";
+import { Button, Text, Card, Callout } from "@radix-ui/themes";
+import { InfoCircledIcon, CheckCircledIcon, CrossCircledIcon } from "@radix-ui/react-icons";
+import { useWardrobe } from "../contexts/WardrobeContext";
+import { useOutfit } from "../contexts/OutfitContext";
+import {
+  shareBackup,
+  parseBackupFile,
+  importBackup,
+  isShareSupported,
+} from "../utils/backup";
+import styles from "./SettingsPage.module.css";
+
+export function SettingsPage() {
+  const { items } = useWardrobe();
+  const { outfits } = useOutfit();
+  const [isExporting, setIsExporting] = useState(false);
+  const [isImporting, setIsImporting] = useState(false);
+  const [message, setMessage] = useState<{
+    type: "success" | "error" | "info";
+    text: string;
+  } | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleExport = async () => {
+    try {
+      setIsExporting(true);
+      setMessage(null);
+      
+      const success = await shareBackup();
+      
+      if (success) {
+        setMessage({
+          type: "success",
+          text: isShareSupported() 
+            ? "Backup file ready! Save it to iCloud Drive to keep it safe."
+            : "Backup file downloaded successfully!",
+        });
+      }
+    } catch (error) {
+      console.error("Export failed:", error);
+      setMessage({
+        type: "error",
+        text: "Failed to create backup. Please try again.",
+      });
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  const handleImportClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setIsImporting(true);
+      setMessage(null);
+
+      // Parse and validate the backup file
+      const backupData = await parseBackupFile(file);
+
+      // Import the data
+      const result = await importBackup(backupData, "replace");
+
+      setMessage({
+        type: "success",
+        text: `Successfully imported ${result.itemsImported} items and ${result.outfitsImported} outfits! Refresh the page to see your data.`,
+      });
+
+      // Reload the page after a short delay to refresh all data
+      setTimeout(() => {
+        window.location.reload();
+      }, 2000);
+    } catch (error) {
+      console.error("Import failed:", error);
+      setMessage({
+        type: "error",
+        text:
+          error instanceof Error
+            ? error.message
+            : "Failed to import backup. Please check the file and try again.",
+      });
+    } finally {
+      setIsImporting(false);
+      // Reset file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    }
+  };
+
+  return (
+    <div className={styles.container}>
+      <div className={styles.header}>
+        <h2 className={styles.title}>Settings</h2>
+      </div>
+
+      <div className={styles.content}>
+        {/* Backup & Restore Section */}
+        <section className={styles.section}>
+          <h3 className={styles.sectionTitle}>Backup & Restore</h3>
+          
+          <Card className={styles.card}>
+            <div className={styles.cardContent}>
+              <div className={styles.statsRow}>
+                <div className={styles.stat}>
+                  <Text size="1" color="gray">Items</Text>
+                  <Text size="5" weight="bold">{items.length}</Text>
+                </div>
+                <div className={styles.stat}>
+                  <Text size="1" color="gray">Outfits</Text>
+                  <Text size="5" weight="bold">{outfits.length}</Text>
+                </div>
+              </div>
+
+              <div className={styles.infoBox}>
+                <Callout.Root size="1">
+                  <Callout.Icon>
+                    <InfoCircledIcon />
+                  </Callout.Icon>
+                  <Callout.Text>
+                    {isShareSupported() 
+                      ? "Export your data and save it to iCloud Drive for safekeeping. You can restore it anytime or use it on another device."
+                      : "Export your data to keep a backup. You can restore it anytime or use it on another device."}
+                  </Callout.Text>
+                </Callout.Root>
+              </div>
+
+              <div className={styles.buttonGroup}>
+                <Button
+                  size="3"
+                  onClick={handleExport}
+                  disabled={isExporting || items.length === 0}
+                  className={styles.primaryButton}
+                >
+                  {isExporting ? "Creating Backup..." : "Export Backup"}
+                </Button>
+
+                <Button
+                  size="3"
+                  variant="outline"
+                  onClick={handleImportClick}
+                  disabled={isImporting}
+                  className={styles.secondaryButton}
+                >
+                  {isImporting ? "Importing..." : "Import Backup"}
+                </Button>
+
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="application/json,.json"
+                  onChange={handleFileSelect}
+                  style={{ display: "none" }}
+                />
+              </div>
+
+              {message && (
+                <div className={styles.message}>
+                  <Callout.Root
+                    color={
+                      message.type === "success"
+                        ? "green"
+                        : message.type === "error"
+                          ? "red"
+                          : "blue"
+                    }
+                  >
+                    <Callout.Icon>
+                      {message.type === "success" ? (
+                        <CheckCircledIcon />
+                      ) : message.type === "error" ? (
+                        <CrossCircledIcon />
+                      ) : (
+                        <InfoCircledIcon />
+                      )}
+                    </Callout.Icon>
+                    <Callout.Text>{message.text}</Callout.Text>
+                  </Callout.Root>
+                </div>
+              )}
+            </div>
+          </Card>
+
+          <div className={styles.helpText}>
+            <Text size="2" color="gray">
+              <strong>How it works:</strong>
+            </Text>
+            <ul className={styles.helpList}>
+              <li>
+                <Text size="2" color="gray">
+                  <strong>Export:</strong> Creates a backup file with all your items and outfits
+                </Text>
+              </li>
+              <li>
+                <Text size="2" color="gray">
+                  <strong>Import:</strong> Restores data from a backup file (replaces current data)
+                </Text>
+              </li>
+              <li>
+                <Text size="2" color="gray">
+                  <strong>Tip:</strong> Export regularly and save to iCloud Drive for peace of mind
+                </Text>
+              </li>
+            </ul>
+          </div>
+        </section>
+      </div>
+    </div>
+  );
+}
+

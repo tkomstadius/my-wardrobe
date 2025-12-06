@@ -11,7 +11,9 @@ import { OutfitsPage } from "./pages/OutfitsPage";
 import { CreateOutfitPage } from "./pages/CreateOutfitPage";
 import { OutfitDetailPage } from "./pages/OutfitDetailPage";
 import { EditOutfitPage } from "./pages/EditOutfitPage";
+import { SettingsPage } from "./pages/SettingsPage";
 
+// Backup and settings functionality
 function App() {
   return (
     <Routes>
@@ -27,6 +29,7 @@ function App() {
         <Route path="create-outfit" element={<CreateOutfitPage />} />
         <Route path="outfit/:id" element={<OutfitDetailPage />} />
         <Route path="edit-outfit/:id" element={<EditOutfitPage />} />
+        <Route path="settings" element={<SettingsPage />} />
       </Route>
     </Routes>
   );

@@ -1,4 +1,5 @@
-import { Text } from "@radix-ui/themes";
+import { Text, IconButton } from "@radix-ui/themes";
+import { GearIcon } from "@radix-ui/react-icons";
 import { useNavigate } from "react-router";
 import { ItemCard } from "../components/features/ItemCard";
 import { useWardrobe } from "../contexts/WardrobeContext";
@@ -16,10 +17,22 @@ export function HomePage() {
   return (
     <div className={styles.container}>
       <div className={styles.header}>
-        <h2 className={styles.title}>My Wardrobe</h2>
-        <Text size="2" color="gray">
-          {items.length} {items.length === 1 ? "item" : "items"} total
-        </Text>
+        <div className={styles.headerContent}>
+          <div>
+            <h2 className={styles.title}>My Wardrobe</h2>
+            <Text size="2" color="gray">
+              {items.length} {items.length === 1 ? "item" : "items"} total
+            </Text>
+          </div>
+          <IconButton
+            variant="ghost"
+            size="3"
+            onClick={() => navigate("/settings")}
+            aria-label="Settings"
+          >
+            <GearIcon width="20" height="20" />
+          </IconButton>
+        </div>
       </div>
 
       {isLoading && (
