@@ -8,6 +8,7 @@ export const CATEGORIES = [
   { id: "outerwear" as const, title: "Outerwear" },
   { id: "shoes" as const, title: "Shoes" },
   { id: "bags" as const, title: "Bags" },
+  { id: "jewelry" as const, title: "Jewelry" },
   { id: "accessories" as const, title: "Accessories" },
 ] as const;
 
