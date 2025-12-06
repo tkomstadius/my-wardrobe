@@ -48,7 +48,7 @@ export function ItemCard({ item, onClick }: ItemCardProps) {
       <div className={styles.imageContainer}>
         <img
           src={item.imageUrl}
-          alt={item.notes || item.brand || "Wardrobe item"}
+          alt={item.brand || "Wardrobe item"}
           className={styles.image}
         />
         <IconButton
@@ -62,7 +62,6 @@ export function ItemCard({ item, onClick }: ItemCardProps) {
         </IconButton>
       </div>
       <div className={styles.content}>
-        {item.notes && <h3 className={styles.type}>{item.notes}</h3>}
         <p className={styles.details}>
           {item.brand && <span className={styles.brand}>{item.brand}</span>}
         </p>
