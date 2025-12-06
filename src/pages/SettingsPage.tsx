@@ -13,6 +13,7 @@ import {
   importBackup,
   isShareSupported,
 } from "../utils/backup";
+import { repairWearCountMismatches } from "../utils/repairData";
 import styles from "./SettingsPage.module.css";
 
 export function SettingsPage() {
@@ -20,6 +21,7 @@ export function SettingsPage() {
   const { outfits } = useOutfit();
   const [isExporting, setIsExporting] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
+  const [isRepairing, setIsRepairing] = useState(false);
   const [message, setMessage] = useState<{
     type: "success" | "error" | "info";
     text: string;
@@ -54,6 +56,40 @@ export function SettingsPage() {
 
   const handleImportClick = () => {
     fileInputRef.current?.click();
+  };
+
+  const handleRepairData = async () => {
+    try {
+      setIsRepairing(true);
+      setMessage(null);
+
+      const result = await repairWearCountMismatches();
+
+      if (result.itemsRepaired > 0) {
+        setMessage({
+          type: "success",
+          text: `Repaired ${result.itemsRepaired} item(s) with data inconsistencies! Please refresh the page to see the changes.`,
+        });
+
+        // Reload the page after a short delay
+        setTimeout(() => {
+          window.location.reload();
+        }, 2000);
+      } else {
+        setMessage({
+          type: "info",
+          text: `All ${result.itemsChecked} items are healthy - no repairs needed!`,
+        });
+      }
+    } catch (error) {
+      console.error("Repair failed:", error);
+      setMessage({
+        type: "error",
+        text: "Failed to repair data. Please try again.",
+      });
+    } finally {
+      setIsRepairing(false);
+    }
   };
 
   const handleFileSelect = async (
@@ -225,6 +261,45 @@ export function SettingsPage() {
               </li>
             </ul>
           </div>
+        </section>
+
+        {/* Data Repair Section */}
+        <section className={styles.section}>
+          <h3 className={styles.sectionTitle}>Data Repair</h3>
+
+          <Card className={styles.card}>
+            <div className={styles.cardContent}>
+              <div className={styles.infoBox}>
+                <Callout.Root size="1" color="orange">
+                  <Callout.Icon>
+                    <InfoCircledIcon />
+                  </Callout.Icon>
+                  <Callout.Text>
+                    If you're experiencing issues like items disappearing or
+                    appearing in the wrong places, this repair tool can fix data
+                    inconsistencies.
+                  </Callout.Text>
+                </Callout.Root>
+              </div>
+
+              <Button
+                size="3"
+                variant="outline"
+                onClick={handleRepairData}
+                disabled={isRepairing}
+                className={styles.primaryButton}
+              >
+                {isRepairing ? "Repairing..." : "Repair Data"}
+              </Button>
+
+              <div className={styles.helpText}>
+                <Text size="2" color="gray">
+                  This will check all items for inconsistencies and automatically
+                  fix them. Safe to run anytime.
+                </Text>
+              </div>
+            </div>
+          </Card>
         </section>
       </div>
     </div>

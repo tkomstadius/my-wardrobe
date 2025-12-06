@@ -127,6 +127,7 @@ export async function saveItem(item: {
   brand?: string;
   category: ItemCategory;
   wearCount: number;
+  initialWearCount?: number;
   wearHistory: Date[];
   price?: number;
   isSecondHand?: boolean;
@@ -151,6 +152,7 @@ export async function saveItem(item: {
       brand: item.brand,
       category: item.category,
       wearCount: item.wearCount,
+      initialWearCount: item.initialWearCount,
       wearHistory: item.wearHistory.map((date) => date.toISOString()),
       price: item.price,
       isSecondHand: item.isSecondHand,
@@ -178,6 +180,7 @@ export async function loadAllItems(): Promise<
     brand?: string;
     category: ItemCategory;
     wearCount: number;
+    initialWearCount?: number;
     wearHistory: Date[];
     price?: number;
     isSecondHand?: boolean;
@@ -206,6 +209,7 @@ export async function loadAllItems(): Promise<
           brand: dbItem.brand,
           category: dbItem.category as ItemCategory,
           wearCount: dbItem.wearCount,
+          initialWearCount: dbItem.initialWearCount,
           wearHistory: dbItem.wearHistory
             ? dbItem.wearHistory.map((dateStr: string) => new Date(dateStr))
             : [],

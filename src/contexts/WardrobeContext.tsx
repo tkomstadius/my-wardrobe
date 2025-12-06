@@ -68,10 +68,12 @@ export function WardrobeProvider({ children }: WardrobeProviderProps) {
 
   const addItem = async (newItem: NewWardrobeItem): Promise<WardrobeItem> => {
     const now = new Date();
+    const initialWearCount = newItem.initialWearCount ?? 0;
     const item: WardrobeItem = {
       ...newItem,
       id: generateId(),
-      wearCount: newItem.wearCount ?? 0,
+      initialWearCount,
+      wearCount: initialWearCount, // Start with initial count (will increase as worn in app)
       wearHistory: [], // Initialize with empty wear history
       createdAt: now,
       updatedAt: now,
@@ -120,10 +122,13 @@ export function WardrobeProvider({ children }: WardrobeProviderProps) {
     }
 
     const now = new Date();
+    const newWearHistory = [...(itemToUpdate.wearHistory || []), now];
+    const initialCount = itemToUpdate.initialWearCount ?? 0;
+
     const updatedItem = {
       ...itemToUpdate,
-      wearCount: itemToUpdate.wearCount + 1,
-      wearHistory: [...(itemToUpdate.wearHistory || []), now], // Add current date to wear history
+      wearCount: initialCount + newWearHistory.length, // Calculate total: initial + history
+      wearHistory: newWearHistory, // Add current date to wear history
       updatedAt: now,
     };
 

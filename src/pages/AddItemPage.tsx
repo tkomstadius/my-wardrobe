@@ -105,7 +105,7 @@ export function AddItemPage() {
         purchaseDate: formData.purchaseDate
           ? new Date(formData.purchaseDate)
           : undefined,
-        wearCount: formData.initialWearCount
+        initialWearCount: formData.initialWearCount
           ? Number.parseInt(formData.initialWearCount, 10)
           : undefined,
       });

@@ -39,7 +39,7 @@ export function EditItemPage() {
     isSecondHand: false,
     isDogCasual: false,
     purchaseDate: "",
-    wearCount: "",
+    initialWearCount: "",
   });
   const [imagePreview, setImagePreview] = useState<string>("");
   const [error, setError] = useState("");
@@ -71,7 +71,7 @@ export function EditItemPage() {
       purchaseDate: item.purchaseDate
         ? new Date(item.purchaseDate).toISOString().split("T")[0] ?? ""
         : "",
-      wearCount: item.wearCount.toString(),
+      initialWearCount: (item.initialWearCount ?? 0).toString(),
     });
     setImagePreview(item.imageUrl);
   }, [id, getItemById]);
@@ -124,6 +124,19 @@ export function EditItemPage() {
     setIsSaving(true);
 
     try {
+      const item = getItemById(id!);
+      if (!item) {
+        throw new Error("Item not found");
+      }
+
+      const newInitialWearCount = formData.initialWearCount
+        ? Number.parseInt(formData.initialWearCount, 10)
+        : 0;
+
+      // Calculate total wear count: initial + wear history
+      const totalWearCount =
+        newInitialWearCount + (item.wearHistory?.length || 0);
+
       await updateItem(id!, {
         imageUrl: imagePreview,
         notes: formData.notes.trim() || undefined,
@@ -135,9 +148,8 @@ export function EditItemPage() {
         purchaseDate: formData.purchaseDate
           ? new Date(formData.purchaseDate)
           : undefined,
-        wearCount: formData.wearCount
-          ? Number.parseInt(formData.wearCount, 10)
-          : 0,
+        initialWearCount: newInitialWearCount,
+        wearCount: totalWearCount,
       });
 
       // Navigate back to category page
@@ -167,14 +179,8 @@ export function EditItemPage() {
 
     try {
       await incrementWearCount(id);
-      // Update the form data to reflect the new wear count
-      const updatedItem = getItemById(id);
-      if (updatedItem) {
-        setFormData((prev) => ({
-          ...prev,
-          wearCount: updatedItem.wearCount.toString(),
-        }));
-      }
+      // No need to update form data - initialWearCount doesn't change when marking as worn
+      // The total count display will update automatically when component re-renders
     } catch (err) {
       console.error("Failed to increment wear count:", err);
       setError("Failed to update wear count. Please try again.");
@@ -331,17 +337,37 @@ export function EditItemPage() {
           </div>
 
           <div className={styles.field}>
-            <span className={styles.label}>Wear Count</span>
+            <span className={styles.label}>
+              Initial Wear Count (before adding to app)
+            </span>
+            <TextField.Root
+              type="number"
+              placeholder="0"
+              value={formData.initialWearCount}
+              onChange={(e) =>
+                setFormData({ ...formData, initialWearCount: e.target.value })
+              }
+              size="3"
+            />
+            <Text size="1" color="gray" style={{ marginTop: "0.25rem" }}>
+              Use this for items you already owned. Leave at 0 for new items.
+            </Text>
+          </div>
+
+          <div className={styles.field}>
+            <span className={styles.label}>Total Wear Count</span>
             <div className={styles.wearCountContainer}>
               <TextField.Root
                 type="number"
-                placeholder="0"
-                value={formData.wearCount}
-                onChange={(e) =>
-                  setFormData({ ...formData, wearCount: e.target.value })
+                value={
+                  id && getItemById(id)
+                    ? getItemById(id)!.wearCount.toString()
+                    : "0"
                 }
                 size="3"
                 className={styles.wearCountInput}
+                disabled
+                readOnly
               />
               <Button
                 type="button"
@@ -353,6 +379,13 @@ export function EditItemPage() {
                 Mark as Worn
               </Button>
             </div>
+            <Text size="1" color="gray" style={{ marginTop: "0.25rem" }}>
+              {id && getItemById(id)
+                ? `${getItemById(id)!.initialWearCount || 0} initial + ${
+                    getItemById(id)!.wearHistory?.length || 0
+                  } worn in app`
+                : ""}
+            </Text>
           </div>
 
           <div className={styles.field}>
