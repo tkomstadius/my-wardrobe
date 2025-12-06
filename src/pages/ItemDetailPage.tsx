@@ -74,47 +74,6 @@ export function ItemDetailPage() {
         <Button variant="ghost" onClick={() => navigate(-1)}>
           <ArrowLeftIcon /> Back
         </Button>
-
-        <Flex gap="2">
-          <Button
-            variant="soft"
-            onClick={() => navigate(`/edit-item/${item.id}`)}
-          >
-            <Pencil1Icon /> Edit
-          </Button>
-
-          <AlertDialog.Root>
-            <AlertDialog.Trigger>
-              <Button variant="soft" color="red">
-                <TrashIcon />
-              </Button>
-            </AlertDialog.Trigger>
-            <AlertDialog.Content maxWidth="450px">
-              <AlertDialog.Title>Delete Item</AlertDialog.Title>
-              <AlertDialog.Description size="2">
-                Are you sure you want to delete this item? This action cannot be
-                undone.
-              </AlertDialog.Description>
-              <Flex gap="3" mt="4" justify="end">
-                <AlertDialog.Cancel>
-                  <Button variant="soft" color="gray">
-                    Cancel
-                  </Button>
-                </AlertDialog.Cancel>
-                <AlertDialog.Action>
-                  <Button
-                    variant="solid"
-                    color="red"
-                    onClick={handleDelete}
-                    disabled={isDeleting}
-                  >
-                    {isDeleting ? "Deleting..." : "Delete"}
-                  </Button>
-                </AlertDialog.Action>
-              </Flex>
-            </AlertDialog.Content>
-          </AlertDialog.Root>
-        </Flex>
       </header>
 
       <div className={styles.content}>
@@ -212,6 +171,55 @@ export function ItemDetailPage() {
               Mark as Worn Today
             </Button>
           </div>
+        </section>
+
+        {/* Edit and Delete Actions */}
+        <section className={styles.bottomActions}>
+          <AlertDialog.Root>
+            <AlertDialog.Trigger>
+              <Button
+                size="3"
+                variant="soft"
+                color="red"
+                className={styles.deleteButton}
+              >
+                <TrashIcon /> Delete
+              </Button>
+            </AlertDialog.Trigger>
+            <AlertDialog.Content maxWidth="450px">
+              <AlertDialog.Title>Delete Item</AlertDialog.Title>
+              <AlertDialog.Description size="2">
+                Are you sure you want to delete this item? This action cannot be
+                undone.
+              </AlertDialog.Description>
+              <Flex gap="3" mt="4" justify="end">
+                <AlertDialog.Cancel>
+                  <Button variant="soft" color="gray">
+                    Cancel
+                  </Button>
+                </AlertDialog.Cancel>
+                <AlertDialog.Action>
+                  <Button
+                    variant="solid"
+                    color="red"
+                    onClick={handleDelete}
+                    disabled={isDeleting}
+                  >
+                    {isDeleting ? "Deleting..." : "Delete"}
+                  </Button>
+                </AlertDialog.Action>
+              </Flex>
+            </AlertDialog.Content>
+          </AlertDialog.Root>
+
+          <Button
+            size="3"
+            variant="soft"
+            onClick={() => navigate(`/edit-item/${item.id}`)}
+            className={styles.editButton}
+          >
+            <Pencil1Icon /> Edit Item
+          </Button>
         </section>
 
         {/* Future: Statistics Section */}

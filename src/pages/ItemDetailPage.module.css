@@ -116,6 +116,22 @@
   flex: 1;
 }
 
+/* Bottom Actions */
+.bottomActions {
+  display: flex;
+  gap: 12px;
+  padding-top: 24px;
+  border-top: 1px solid var(--gray-6);
+}
+
+.editButton {
+  flex: 1;
+}
+
+.deleteButton {
+  flex: 1;
+}
+
 /* Mobile adjustments */
 @media (max-width: 768px) {
   .container {

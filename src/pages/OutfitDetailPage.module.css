@@ -129,6 +129,22 @@
   gap: 0.25rem;
 }
 
+/* Bottom Actions */
+.bottomActions {
+  display: flex;
+  gap: 12px;
+  padding-top: 24px;
+  border-top: 1px solid var(--gray-6);
+}
+
+.editButton {
+  flex: 1;
+}
+
+.deleteButton {
+  flex: 1;
+}
+
 /* Tablet and larger */
 @media (min-width: 768px) {
   .itemsGrid {
@@ -139,4 +155,3 @@
     gap: 3rem;
   }
 }
-

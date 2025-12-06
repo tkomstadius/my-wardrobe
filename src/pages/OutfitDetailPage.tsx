@@ -51,56 +51,6 @@ export function OutfitDetailPage() {
         <Button variant="ghost" onClick={() => navigate("/outfits")}>
           <ArrowLeftIcon /> Back
         </Button>
-
-        <Flex gap="2">
-          <Button
-            variant="soft"
-            onClick={() => navigate(`/edit-outfit/${outfit.id}`)}
-          >
-            <Pencil1Icon /> Edit
-          </Button>
-
-          <AlertDialog.Root>
-            <AlertDialog.Trigger>
-              <Button variant="soft" color="red">
-                <TrashIcon />
-              </Button>
-            </AlertDialog.Trigger>
-            <AlertDialog.Content maxWidth="450px">
-              <AlertDialog.Title>Delete Outfit</AlertDialog.Title>
-              <AlertDialog.Description size="2">
-                Are you sure you want to delete this outfit? This action cannot
-                be undone.
-                <br />
-                <Text
-                  size="1"
-                  color="gray"
-                  style={{ marginTop: "0.5rem", display: "block" }}
-                >
-                  Note: Item wear counts will not be decreased.
-                </Text>
-              </AlertDialog.Description>
-
-              <Flex gap="3" mt="4" justify="end">
-                <AlertDialog.Cancel>
-                  <Button variant="soft" color="gray">
-                    Cancel
-                  </Button>
-                </AlertDialog.Cancel>
-                <AlertDialog.Action>
-                  <Button
-                    variant="solid"
-                    color="red"
-                    onClick={handleDelete}
-                    disabled={isDeleting}
-                  >
-                    {isDeleting ? "Deleting..." : "Delete Outfit"}
-                  </Button>
-                </AlertDialog.Action>
-              </Flex>
-            </AlertDialog.Content>
-          </AlertDialog.Root>
-        </Flex>
       </header>
 
       <div className={styles.content}>
@@ -182,6 +132,64 @@ export function OutfitDetailPage() {
               ))}
             </div>
           )}
+        </section>
+
+        {/* Edit and Delete Actions */}
+        <section className={styles.bottomActions}>
+          <AlertDialog.Root>
+            <AlertDialog.Trigger>
+              <Button
+                size="3"
+                variant="soft"
+                color="red"
+                className={styles.deleteButton}
+              >
+                <TrashIcon /> Delete
+              </Button>
+            </AlertDialog.Trigger>
+            <AlertDialog.Content maxWidth="450px">
+              <AlertDialog.Title>Delete Outfit</AlertDialog.Title>
+              <AlertDialog.Description size="2">
+                Are you sure you want to delete this outfit? This action cannot
+                be undone.
+                <br />
+                <Text
+                  size="1"
+                  color="gray"
+                  style={{ marginTop: "0.5rem", display: "block" }}
+                >
+                  Note: Item wear counts will not be decreased.
+                </Text>
+              </AlertDialog.Description>
+
+              <Flex gap="3" mt="4" justify="end">
+                <AlertDialog.Cancel>
+                  <Button variant="soft" color="gray">
+                    Cancel
+                  </Button>
+                </AlertDialog.Cancel>
+                <AlertDialog.Action>
+                  <Button
+                    variant="solid"
+                    color="red"
+                    onClick={handleDelete}
+                    disabled={isDeleting}
+                  >
+                    {isDeleting ? "Deleting..." : "Delete Outfit"}
+                  </Button>
+                </AlertDialog.Action>
+              </Flex>
+            </AlertDialog.Content>
+          </AlertDialog.Root>
+
+          <Button
+            size="3"
+            variant="soft"
+            onClick={() => navigate(`/edit-outfit/${outfit.id}`)}
+            className={styles.editButton}
+          >
+            <Pencil1Icon /> Edit Outfit
+          </Button>
         </section>
       </div>
     </div>
