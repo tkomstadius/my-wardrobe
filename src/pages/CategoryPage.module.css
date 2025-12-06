@@ -29,10 +29,43 @@
   margin-bottom: 16px;
 }
 
+.filtersContainer {
+  margin-bottom: 20px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.filtersContainer::-webkit-scrollbar {
+  display: none;
+}
+
+.filters {
+  display: flex;
+  gap: 8px;
+  padding-bottom: 4px;
+  min-width: min-content;
+}
+
+.filterButton {
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
 .grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 16px;
+}
+
+.noResultsState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
 }
 
 .emptyState,
