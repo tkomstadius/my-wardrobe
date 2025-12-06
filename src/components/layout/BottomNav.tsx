@@ -1,6 +1,6 @@
 import {
   HomeIcon,
-  PlusIcon,
+  PlusCircledIcon,
   MixerVerticalIcon,
   ArchiveIcon,
 } from "@radix-ui/react-icons";
@@ -25,13 +25,6 @@ export function BottomNav() {
         <span className={styles.label}>Home</span>
       </Link>
 
-      <Link to="/add-item" className={styles.navItem}>
-        <div className={styles.addButton}>
-          <PlusIcon className={styles.addIcon} />
-        </div>
-        <span className={styles.label}>Add Item</span>
-      </Link>
-
       <Link
         to="/items"
         className={`${styles.navItem} ${
@@ -52,6 +45,16 @@ export function BottomNav() {
       >
         <MixerVerticalIcon className={styles.icon} />
         <span className={styles.label}>Outfits</span>
+      </Link>
+
+      <Link
+        to="/log-wear"
+        className={`${styles.navItem} ${
+          currentPath === "/log-wear" ? styles.active : ""
+        }`}
+      >
+        <PlusCircledIcon className={styles.icon} />
+        <span className={styles.label}>Log Wear</span>
       </Link>
     </nav>
   );

@@ -30,9 +30,6 @@ export function OutfitsPage() {
     <div className={styles.container}>
       <header className={styles.header}>
         <Heading size="6">My Outfits</Heading>
-        <Button onClick={() => navigate("/create-outfit")} size="2">
-          <PlusIcon /> Create Outfit
-        </Button>
       </header>
 
       {sortedOutfits.length === 0 ? (
@@ -97,6 +94,15 @@ export function OutfitsPage() {
           })}
         </div>
       )}
+
+      <button
+        type="button"
+        className={styles.fab}
+        onClick={() => navigate("/create-outfit")}
+        aria-label="Create outfit"
+      >
+        <PlusIcon className={styles.fabIcon} />
+      </button>
     </div>
   );
 }

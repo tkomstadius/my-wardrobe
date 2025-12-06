@@ -1,5 +1,4 @@
-import { CalendarIcon } from "@radix-ui/react-icons";
-import { Button, Text } from "@radix-ui/themes";
+import { Text } from "@radix-ui/themes";
 import { useNavigate } from "react-router";
 import { ItemCard } from "../components/features/ItemCard";
 import { useWardrobe } from "../contexts/WardrobeContext";
@@ -22,17 +21,6 @@ export function HomePage() {
           {items.length} {items.length === 1 ? "item" : "items"} total
         </Text>
       </div>
-
-      {!isLoading && hasItems && (
-        <Button
-          size="3"
-          className={styles.logWearButton}
-          onClick={() => navigate("/log-wear")}
-        >
-          <CalendarIcon />
-          Log Today's Outfit
-        </Button>
-      )}
 
       {isLoading && (
         <div className={styles.emptyState}>

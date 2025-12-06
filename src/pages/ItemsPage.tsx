@@ -1,9 +1,11 @@
-import { Link } from "react-router";
+import { PlusIcon } from "@radix-ui/react-icons";
+import { Link, useNavigate } from "react-router";
 import { useWardrobe } from "../contexts/WardrobeContext";
 import { CATEGORIES } from "../utils/categories";
 import styles from "./ItemsPage.module.css";
 
 export function ItemsPage() {
+  const navigate = useNavigate();
   const { getItemsByCategory } = useWardrobe();
 
   return (
@@ -50,6 +52,15 @@ export function ItemsPage() {
           );
         })}
       </div>
+
+      <button
+        type="button"
+        className={styles.fab}
+        onClick={() => navigate("/add-item")}
+        aria-label="Add item"
+      >
+        <PlusIcon className={styles.fabIcon} />
+      </button>
     </div>
   );
 }

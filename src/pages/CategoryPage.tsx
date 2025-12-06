@@ -1,6 +1,6 @@
-import { ArrowLeftIcon } from "@radix-ui/react-icons";
+import { ArrowLeftIcon, PlusIcon } from "@radix-ui/react-icons";
 import { Button, Text } from "@radix-ui/themes";
-import { Link, useParams } from "react-router";
+import { Link, useNavigate, useParams } from "react-router";
 import { ItemCard } from "../components/features/ItemCard";
 import { useWardrobe } from "../contexts/WardrobeContext";
 import type { ItemCategory } from "../types/wardrobe";
@@ -8,6 +8,7 @@ import { CATEGORY_TITLES } from "../utils/categories";
 import styles from "./CategoryPage.module.css";
 
 export function CategoryPage() {
+  const navigate = useNavigate();
   const { category } = useParams<{ category: string }>();
   const { getItemsByCategory, isLoading } = useWardrobe();
 
@@ -97,6 +98,15 @@ export function CategoryPage() {
           </div>
         </>
       )}
+
+      <button
+        type="button"
+        className={styles.fab}
+        onClick={() => navigate("/add-item")}
+        aria-label="Add item"
+      >
+        <PlusIcon className={styles.fabIcon} />
+      </button>
     </div>
   );
 }

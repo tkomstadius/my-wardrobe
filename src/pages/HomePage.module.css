@@ -16,10 +16,6 @@
   color: var(--gray-12);
 }
 
-.logWearButton {
-  width: 100%;
-}
-
 .emptyState {
   padding: 2rem;
   text-align: center;
