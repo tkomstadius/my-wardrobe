@@ -46,6 +46,7 @@ export function EditItemPage() {
   const [imagePreview, setImagePreview] = useState<string>("");
   const [error, setError] = useState("");
   const [isSaving, setIsSaving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [itemNotFound, setItemNotFound] = useState(false);
   const [categoryWarning, setCategoryWarning] = useState("");
 
@@ -184,12 +185,14 @@ export function EditItemPage() {
   const handleDelete = async () => {
     if (!id) return;
 
+    setIsDeleting(true);
     try {
       await deleteItem(id);
       navigate("/"); // Navigate to home after delete
     } catch (err) {
       console.error("Failed to delete item:", err);
       setError("Failed to delete item. Please try again.");
+      setIsDeleting(false);
     }
   };
 
@@ -481,6 +484,7 @@ export function EditItemPage() {
             title="Delete Item"
             description="Are you sure you want to delete this item? This action cannot be undone."
             onConfirm={handleDelete}
+            isDeleting={isDeleting}
             triggerButton={
               <Button type="button" color="red" variant="soft" size="3">
                 <TrashIcon />

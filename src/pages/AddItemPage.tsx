@@ -30,7 +30,7 @@ export function AddItemPage() {
   const [formData, setFormData] = useState({
     notes: "",
     brand: "",
-    category: "tops" as ItemCategory,
+    category: "" as ItemCategory | "",
     price: "",
     isSecondHand: false,
     isDogCasual: false,
@@ -82,6 +82,11 @@ export function AddItemPage() {
     // Validate form
     if (!imagePreview) {
       setError("Please add an image of the item");
+      return;
+    }
+
+    if (!formData.category) {
+      setError("Please select a category");
       return;
     }
 
@@ -180,7 +185,7 @@ export function AddItemPage() {
           <div className={styles.field}>
             <span className={styles.label}>Category</span>
             <Select.Root
-              value={formData.category}
+              value={formData.category || undefined}
               onValueChange={(value) => {
                 // Ignore empty string changes (component initialization artifact)
                 if (value && CATEGORY_IDS.includes(value as ItemCategory)) {
