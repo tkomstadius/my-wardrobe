@@ -13,6 +13,7 @@ export interface WardrobeItem {
   brand?: string;
   category: ItemCategory;
   wearCount: number;
+  wearHistory: Date[]; // Array of dates when item was worn
   price?: number;
   isSecondHand?: boolean;
   isDogCasual?: boolean;
