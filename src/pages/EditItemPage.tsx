@@ -1,17 +1,11 @@
 import { ArrowLeftIcon, TrashIcon } from "@radix-ui/react-icons";
-import {
-  Button,
-  Checkbox,
-  Flex,
-  Select,
-  Text,
-  TextField,
-} from "@radix-ui/themes";
+import { Button, Select, Text, TextField } from "@radix-ui/themes";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router";
 import { useWardrobe } from "../contexts/WardrobeContext";
 import { useImageUpload } from "../hooks/useImageUpload";
 import { DeleteConfirmDialog } from "../components/common/DeleteConfirmDialog";
+import { CheckboxField } from "../components/common/CheckboxField";
 import type { ItemCategory } from "../types/wardrobe";
 import { CATEGORIES, CATEGORY_IDS } from "../utils/categories";
 import styles from "./EditItemPage.module.css";
@@ -264,15 +258,14 @@ export function EditItemPage() {
         <div className={styles.fields}>
           <div className={styles.field}>
             <span className={styles.label}>Brand</span>
-            <input
-              type="text"
+            <TextField.Root
               placeholder="e.g., Nike, Zara, H&M"
               value={formData.brand}
               onChange={(e) =>
                 setFormData({ ...formData, brand: e.target.value })
               }
               list="brand-suggestions-edit"
-              className={styles.input}
+              size="3"
             />
             <datalist id="brand-suggestions-edit">
               {getAllBrands().map((brand) => (
@@ -392,41 +385,29 @@ export function EditItemPage() {
             />
           </div>
 
-          <Text as="label" size="3">
-            <Flex gap="2" align="center">
-              <Checkbox
-                checked={formData.isSecondHand}
-                onCheckedChange={(checked) =>
-                  setFormData({ ...formData, isSecondHand: checked === true })
-                }
-              />
-              Second Hand / Thrifted
-            </Flex>
-          </Text>
+          <CheckboxField
+            checked={formData.isSecondHand}
+            onCheckedChange={(checked) =>
+              setFormData({ ...formData, isSecondHand: checked })
+            }
+            label="Second Hand / Thrifted"
+          />
 
-          <Text as="label" size="3">
-            <Flex gap="2" align="center">
-              <Checkbox
-                checked={formData.isDogCasual}
-                onCheckedChange={(checked) =>
-                  setFormData({ ...formData, isDogCasual: checked === true })
-                }
-              />
-              Dog casual
-            </Flex>
-          </Text>
+          <CheckboxField
+            checked={formData.isDogCasual}
+            onCheckedChange={(checked) =>
+              setFormData({ ...formData, isDogCasual: checked })
+            }
+            label="Dog casual"
+          />
 
-          <Text as="label" size="3">
-            <Flex gap="2" align="center">
-              <Checkbox
-                checked={formData.isHandmade}
-                onCheckedChange={(checked) =>
-                  setFormData({ ...formData, isHandmade: checked === true })
-                }
-              />
-              Handmade
-            </Flex>
-          </Text>
+          <CheckboxField
+            checked={formData.isHandmade}
+            onCheckedChange={(checked) =>
+              setFormData({ ...formData, isHandmade: checked })
+            }
+            label="Handmade"
+          />
         </div>
 
         {error && (

@@ -1,17 +1,10 @@
 import { ArrowLeftIcon, CameraIcon } from "@radix-ui/react-icons";
-import {
-  Button,
-  Callout,
-  Checkbox,
-  Flex,
-  Select,
-  Text,
-  TextField,
-} from "@radix-ui/themes";
+import { Button, Callout, Select, TextField } from "@radix-ui/themes";
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import { useWardrobe } from "../contexts/WardrobeContext";
 import { useImageUpload } from "../hooks/useImageUpload";
+import { CheckboxField } from "../components/common/CheckboxField";
 import type { ItemCategory } from "../types/wardrobe";
 import { CATEGORIES, CATEGORY_IDS } from "../utils/categories";
 import styles from "./AddItemPage.module.css";
@@ -222,41 +215,29 @@ export function AddItemPage() {
             />
           </div>
 
-          <Text as="label" size="3">
-            <Flex gap="2" align="center">
-              <Checkbox
-                checked={formData.isSecondHand}
-                onCheckedChange={(checked) =>
-                  setFormData({ ...formData, isSecondHand: checked === true })
-                }
-              />
-              Second Hand / Thrifted
-            </Flex>
-          </Text>
+          <CheckboxField
+            checked={formData.isSecondHand}
+            onCheckedChange={(checked) =>
+              setFormData({ ...formData, isSecondHand: checked })
+            }
+            label="Second Hand / Thrifted"
+          />
 
-          <Text as="label" size="3">
-            <Flex gap="2" align="center">
-              <Checkbox
-                checked={formData.isDogCasual}
-                onCheckedChange={(checked) =>
-                  setFormData({ ...formData, isDogCasual: checked === true })
-                }
-              />
-              Dog casual
-            </Flex>
-          </Text>
+          <CheckboxField
+            checked={formData.isDogCasual}
+            onCheckedChange={(checked) =>
+              setFormData({ ...formData, isDogCasual: checked })
+            }
+            label="Dog casual"
+          />
 
-          <Text as="label" size="3">
-            <Flex gap="2" align="center">
-              <Checkbox
-                checked={formData.isHandmade}
-                onCheckedChange={(checked) =>
-                  setFormData({ ...formData, isHandmade: checked === true })
-                }
-              />
-              Handmade
-            </Flex>
-          </Text>
+          <CheckboxField
+            checked={formData.isHandmade}
+            onCheckedChange={(checked) =>
+              setFormData({ ...formData, isHandmade: checked })
+            }
+            label="Handmade"
+          />
         </div>
 
         <Button
