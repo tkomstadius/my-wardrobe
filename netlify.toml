@@ -1,6 +1,7 @@
 [build]
   command = "pnpm build"
   publish = "dist"
+  functions = "netlify/functions"
 
 [dev]
   command = "pnpm dev"
@@ -8,9 +9,9 @@
   port = 8888
   autoLaunch = false
 
+# SPA redirect - enables client-side routing in production
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
-  force = false
 
