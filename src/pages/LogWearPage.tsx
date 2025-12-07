@@ -1,11 +1,14 @@
 import { Button, Text, Callout, Heading } from "@radix-ui/themes";
 import { CameraIcon } from "@radix-ui/react-icons";
-import { useState, useOptimistic } from "react";
+import { useState, useOptimistic, useRef } from "react";
 import { useNavigate } from "react-router";
+import ReactCrop, { type Crop, type PixelCrop } from "react-image-crop";
+import "react-image-crop/dist/ReactCrop.css";
 import { useWardrobe } from "../contexts/WardrobeContext";
 import { ItemSelector } from "../components/common/ItemSelector";
 import { useImageUpload } from "../hooks/useImageUpload";
 import { findMatchingItems, type ItemMatch } from "../utils/aiMatching";
+import { getCroppedImage } from "../utils/imageCrop";
 import styles from "./LogWearPage.module.css";
 
 export function LogWearPage() {
@@ -17,6 +20,19 @@ export function LogWearPage() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [aiMatches, setAIMatches] = useState<ItemMatch[]>([]);
   const { imagePreview, handleImageUpload, clearImage } = useImageUpload();
+
+  // Cropping state
+  const [showCropper, setShowCropper] = useState(false);
+  const [crop, setCrop] = useState<Crop>({
+    unit: "%",
+    x: 10,
+    y: 10,
+    width: 80,
+    height: 80,
+  });
+  const [completedCrop, setCompletedCrop] = useState<PixelCrop | null>(null);
+  const [croppedImage, setCroppedImage] = useState<string | null>(null);
+  const imgRef = useRef<HTMLImageElement | null>(null);
 
   // useOptimistic: Track items that are being logged optimistically
   // This lets us show instant UI feedback while the database updates happen
@@ -50,14 +66,45 @@ export function LogWearPage() {
     });
   };
 
+  const handleCropConfirm = async () => {
+    if (!imagePreview || !completedCrop || !imgRef.current) return;
+
+    try {
+      const cropped = await getCroppedImage(
+        imagePreview,
+        completedCrop,
+        imgRef.current
+      );
+      setCroppedImage(cropped);
+      setShowCropper(false);
+    } catch (error) {
+      console.error("Failed to crop image:", error);
+      setError("Failed to crop image. Please try again.");
+    }
+  };
+
+  const handleCropCancel = () => {
+    setShowCropper(false);
+    setCrop({
+      unit: "%",
+      x: 10,
+      y: 10,
+      width: 80,
+      height: 80,
+    });
+    setCompletedCrop(null);
+  };
+
   const handleAnalyzeOutfit = async () => {
-    if (!imagePreview) return;
+    // Use cropped image if available, otherwise original
+    const imageToAnalyze = croppedImage || imagePreview;
+    if (!imageToAnalyze) return;
 
     setIsAnalyzing(true);
     setError("");
 
     try {
-      const matches = await findMatchingItems(imagePreview, items, {
+      const matches = await findMatchingItems(imageToAnalyze, items, {
         minThreshold: 0.55,
       });
 
@@ -196,11 +243,56 @@ export function LogWearPage() {
                 style={{ display: "none" }}
               />
             </div>
+          ) : showCropper ? (
+            <div className={styles.cropperContainer}>
+              <ReactCrop
+                crop={crop}
+                onChange={(c) => setCrop(c)}
+                onComplete={(c) => setCompletedCrop(c)}
+                className={styles.cropperWrapper}
+              >
+                <img
+                  ref={imgRef}
+                  src={imagePreview}
+                  alt="Crop preview"
+                  style={{ maxWidth: "100%" }}
+                />
+              </ReactCrop>
+              <div className={styles.cropperActions}>
+                <Button variant="soft" color="gray" onClick={handleCropCancel}>
+                  Cancel
+                </Button>
+                <Button onClick={handleCropConfirm}>Confirm Crop</Button>
+              </div>
+            </div>
           ) : (
             <div className={styles.photoPreview}>
-              <img src={imagePreview} alt="Outfit" />
+              <div className={styles.imageContainer}>
+                <img src={croppedImage || imagePreview} alt="Outfit" />
+                <button
+                  type="button"
+                  className={styles.cropButton}
+                  onClick={() => {
+                    if (croppedImage) {
+                      setCroppedImage(null);
+                    }
+                    setShowCropper(true);
+                  }}
+                  title={croppedImage ? "Adjust Crop" : "Crop Photo"}
+                >
+                  ✂️
+                </button>
+              </div>
               <div className={styles.photoActions}>
-                <Button variant="soft" color="red" onClick={clearImage}>
+                <Button
+                  variant="soft"
+                  color="red"
+                  onClick={() => {
+                    clearImage();
+                    setCroppedImage(null);
+                    setAIMatches([]);
+                  }}
+                >
                   Remove Photo
                 </Button>
                 <Button
