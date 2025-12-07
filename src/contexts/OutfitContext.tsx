@@ -5,7 +5,6 @@ import {
   useEffect,
   useState,
 } from "react";
-import { compareDesc } from "date-fns";
 import type { NewOutfit, Outfit } from "../types/outfit";
 import {
   generateId,
@@ -13,7 +12,6 @@ import {
   removeOutfit,
   saveOutfitToStorage,
 } from "../utils/storage";
-import { useWardrobe } from "./WardrobeContext";
 
 interface OutfitContextValue {
   outfits: Outfit[];
@@ -35,7 +33,6 @@ interface OutfitProviderProps {
 export function OutfitProvider({ children }: OutfitProviderProps) {
   const [outfits, setOutfits] = useState<Outfit[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const { incrementWearCount } = useWardrobe();
 
   // Load outfits from IndexedDB on mount
   useEffect(() => {
@@ -58,25 +55,12 @@ export function OutfitProvider({ children }: OutfitProviderProps) {
     const outfit: Outfit = {
       ...newOutfit,
       id: generateId(),
-      wornDate: newOutfit.wornDate ?? now,
-      createdAt: now,
+      createdAt: newOutfit.createdAt ?? now, // Use provided date or default to now
       updatedAt: now,
     };
 
     // Save to IndexedDB first
     await saveOutfitToStorage(outfit);
-
-    // Increment wear count for all items in the outfit
-    for (const itemId of outfit.itemIds) {
-      try {
-        await incrementWearCount(itemId);
-      } catch (error) {
-        console.error(
-          `Failed to increment wear count for item ${itemId}:`,
-          error
-        );
-      }
-    }
 
     // Then update state
     setOutfits((prev) => [outfit, ...prev]);
@@ -121,14 +105,14 @@ export function OutfitProvider({ children }: OutfitProviderProps) {
 
   const getRecentOutfits = (limit = 10): Outfit[] => {
     return [...outfits]
-      .sort((a, b) => compareDesc(a.wornDate, b.wornDate))
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
       .slice(0, limit);
   };
 
   const getOutfitsByItemId = (itemId: string): Outfit[] => {
     return outfits
       .filter((outfit) => outfit.itemIds.includes(itemId))
-      .sort((a, b) => compareDesc(a.wornDate, b.wornDate));
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
   };
 
   const value: OutfitContextValue = {

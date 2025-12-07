@@ -16,8 +16,11 @@ export function EditOutfitPage() {
   const { items } = useWardrobe();
 
   const [formData, setFormData] = useState({
+    createdDate: new Date().toISOString().split("T")[0] as string,
     notes: "",
-    wornDate: new Date().toISOString().split("T")[0] as string,
+    comfortRating: 0,
+    confidenceRating: 0,
+    creativityRating: 0,
   });
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
@@ -40,8 +43,11 @@ export function EditOutfitPage() {
 
     // Pre-fill form with existing data
     setFormData({
+      createdDate: new Date(outfit.createdAt).toISOString().split("T")[0] ?? "",
       notes: outfit.notes || "",
-      wornDate: new Date(outfit.wornDate).toISOString().split("T")[0] ?? "",
+      comfortRating: outfit.comfortRating || 0,
+      confidenceRating: outfit.confidenceRating || 0,
+      creativityRating: outfit.creativityRating || 0,
     });
     setImagePreview(outfit.photo || null);
     setSelectedItems(new Set(outfit.itemIds));
@@ -97,8 +103,11 @@ export function EditOutfitPage() {
       await updateOutfit(id, {
         photo: imagePreview || undefined,
         itemIds: Array.from(selectedItems),
-        wornDate: new Date(formData.wornDate),
+        createdAt: new Date(formData.createdDate),
         notes: formData.notes.trim() || undefined,
+        comfortRating: formData.comfortRating || undefined,
+        confidenceRating: formData.confidenceRating || undefined,
+        creativityRating: formData.creativityRating || undefined,
       });
 
       // Navigate to outfit detail page
@@ -214,13 +223,13 @@ export function EditOutfitPage() {
         <section className={styles.section}>
           <label className={styles.label}>
             <Text weight="bold" size="2">
-              Date Worn
+              Created
             </Text>
             <input
               type="date"
-              value={formData.wornDate}
+              value={formData.createdDate}
               onChange={(e) =>
-                setFormData({ ...formData, wornDate: e.target.value })
+                setFormData({ ...formData, createdDate: e.target.value })
               }
               className={styles.dateInput}
               required
@@ -239,6 +248,103 @@ export function EditOutfitPage() {
               }
               rows={3}
               size="3"
+            />
+          </label>
+        </section>
+
+        {/* Rating Scales */}
+        <section className={styles.section}>
+          <Text weight="bold" size="2" style={{ marginBottom: "1rem" }}>
+            Rate This Outfit (Optional)
+          </Text>
+
+          <label className={styles.label}>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+            >
+              <Text size="2">Comfortable</Text>
+              <Text size="1" color="gray">
+                {formData.comfortRating > 0
+                  ? formData.comfortRating
+                  : "Not rated"}
+              </Text>
+            </div>
+            <input
+              type="range"
+              min="0"
+              max="5"
+              value={formData.comfortRating}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  comfortRating: Number(e.target.value),
+                })
+              }
+              className={styles.slider}
+            />
+          </label>
+
+          <label className={styles.label}>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+            >
+              <Text size="2">Confident</Text>
+              <Text size="1" color="gray">
+                {formData.confidenceRating > 0
+                  ? formData.confidenceRating
+                  : "Not rated"}
+              </Text>
+            </div>
+            <input
+              type="range"
+              min="0"
+              max="5"
+              value={formData.confidenceRating}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  confidenceRating: Number(e.target.value),
+                })
+              }
+              className={styles.slider}
+            />
+          </label>
+
+          <label className={styles.label}>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+            >
+              <Text size="2">Creative</Text>
+              <Text size="1" color="gray">
+                {formData.creativityRating > 0
+                  ? formData.creativityRating
+                  : "Not rated"}
+              </Text>
+            </div>
+            <input
+              type="range"
+              min="0"
+              max="5"
+              value={formData.creativityRating}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  creativityRating: Number(e.target.value),
+                })
+              }
+              className={styles.slider}
             />
           </label>
         </section>

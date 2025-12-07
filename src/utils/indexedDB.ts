@@ -31,7 +31,6 @@ function openDB(): Promise<IDBDatabase> {
             const outfitsStore = upgradedDb.createObjectStore(OUTFITS_STORE, {
               keyPath: "id",
             });
-            outfitsStore.createIndex("wornDate", "wornDate", { unique: false });
             outfitsStore.createIndex("createdAt", "createdAt", {
               unique: false,
             });
@@ -57,7 +56,6 @@ function openDB(): Promise<IDBDatabase> {
         const outfitsStore = db.createObjectStore(OUTFITS_STORE, {
           keyPath: "id",
         });
-        outfitsStore.createIndex("wornDate", "wornDate", { unique: false });
         outfitsStore.createIndex("createdAt", "createdAt", { unique: false });
       }
     };
@@ -275,8 +273,10 @@ export async function saveOutfit(outfit: Outfit): Promise<void> {
       id: outfit.id,
       photoBlob: outfit.photo ? dataURLtoBlob(outfit.photo) : undefined,
       itemIds: outfit.itemIds,
-      wornDate: outfit.wornDate.toISOString(),
       notes: outfit.notes,
+      comfortRating: outfit.comfortRating,
+      confidenceRating: outfit.confidenceRating,
+      creativityRating: outfit.creativityRating,
       createdAt: outfit.createdAt.toISOString(),
       updatedAt: outfit.updatedAt.toISOString(),
     };
@@ -310,8 +310,10 @@ export async function loadAllOutfits(): Promise<Outfit[]> {
             ? await blobToDataURL(dbOutfit.photoBlob)
             : undefined,
           itemIds: dbOutfit.itemIds,
-          wornDate: new Date(dbOutfit.wornDate),
           notes: dbOutfit.notes,
+          comfortRating: dbOutfit.comfortRating,
+          confidenceRating: dbOutfit.confidenceRating,
+          creativityRating: dbOutfit.creativityRating,
           createdAt: new Date(dbOutfit.createdAt),
           updatedAt: new Date(dbOutfit.updatedAt),
         }))

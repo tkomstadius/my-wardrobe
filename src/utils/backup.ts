@@ -162,7 +162,6 @@ function convertDatesToObjects(data: BackupData): BackupData {
     })),
     outfits: data.outfits.map((outfit) => ({
       ...outfit,
-      wornDate: new Date(outfit.wornDate),
       createdAt: new Date(outfit.createdAt),
       updatedAt: new Date(outfit.updatedAt),
     })),

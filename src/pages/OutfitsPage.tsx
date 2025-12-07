@@ -1,6 +1,5 @@
 import { PlusIcon, MixIcon } from "@radix-ui/react-icons";
 import { Button, Heading, Text } from "@radix-ui/themes";
-import { compareDesc } from "date-fns";
 import { useNavigate } from "react-router";
 import { useOutfit } from "../contexts/OutfitContext";
 import { useWardrobe } from "../contexts/WardrobeContext";
@@ -22,8 +21,8 @@ export function OutfitsPage() {
     );
   }
 
-  const sortedOutfits = [...outfits].sort((a, b) =>
-    compareDesc(a.wornDate, b.wornDate)
+  const sortedOutfits = [...outfits].sort(
+    (a, b) => b.createdAt.getTime() - a.createdAt.getTime()
   );
 
   return (
@@ -37,7 +36,7 @@ export function OutfitsPage() {
           <MixIcon className={styles.emptyIcon} />
           <Heading size="4">No outfits yet</Heading>
           <Text color="gray">
-            Create your first outfit to start tracking what you wear
+            Create outfit combinations for inspiration and planning
           </Text>
           <Button
             onClick={() => navigate("/create-outfit")}
@@ -79,7 +78,7 @@ export function OutfitsPage() {
 
                 <div className={styles.outfitInfo}>
                   <Text weight="bold" size="2">
-                    {formatDate(outfit.wornDate)}
+                    {formatDate(outfit.createdAt)}
                   </Text>
                   {outfit.notes && (
                     <Text size="1" color="gray" className={styles.outfitNotes}>

@@ -243,7 +243,7 @@ export function ItemDetailPage() {
         {outfitsWithItem.length > 0 && (
           <section className={styles.outfitSection}>
             <Heading size="4" className={styles.outfitHeading}>
-              Worn in {outfitsWithItem.length}{" "}
+              Featured in {outfitsWithItem.length}{" "}
               {outfitsWithItem.length === 1 ? "Outfit" : "Outfits"}
             </Heading>
             <div className={styles.outfitGrid}>
@@ -256,7 +256,7 @@ export function ItemDetailPage() {
                   {outfit.photo ? (
                     <img
                       src={outfit.photo}
-                      alt={`Outfit from ${formatDateDisplay(outfit.wornDate)}`}
+                      alt="Outfit"
                       className={styles.outfitImage}
                     />
                   ) : (
@@ -268,7 +268,7 @@ export function ItemDetailPage() {
                   )}
                   <div className={styles.outfitInfo}>
                     <Text size="2" weight="medium">
-                      {formatDateDisplay(outfit.wornDate)}
+                      Outfit
                     </Text>
                     {outfit.notes && (
                       <Text

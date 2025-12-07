@@ -64,15 +64,15 @@ export function OutfitDetailPage() {
 
         {/* Outfit Info */}
         <section className={styles.infoSection}>
-          <Heading size="6">{formatDate(outfit.wornDate)}</Heading>
+          <Heading size="6">Outfit</Heading>
 
           <div className={styles.metadata}>
             <div className={styles.metadataItem}>
               <Text size="2" color="gray">
-                Date Worn
+                Created
               </Text>
               <Text size="3" weight="bold">
-                {formatDate(outfit.wornDate)}
+                {formatDate(outfit.createdAt)}
               </Text>
             </div>
 
@@ -92,6 +92,49 @@ export function OutfitDetailPage() {
                 Notes
               </Text>
               <Text size="2">{outfit.notes}</Text>
+            </div>
+          )}
+
+          {/* Ratings */}
+          {(outfit.comfortRating ||
+            outfit.confidenceRating ||
+            outfit.creativityRating) && (
+            <div className={styles.ratings}>
+              <Text size="2" color="gray" style={{ marginBottom: "0.5rem" }}>
+                Ratings
+              </Text>
+              <div className={styles.ratingsGrid}>
+                {outfit.comfortRating && (
+                  <div className={styles.ratingItem}>
+                    <Text size="1" color="gray">
+                      Comfortable
+                    </Text>
+                    <Text size="3" weight="bold">
+                      {outfit.comfortRating}/5
+                    </Text>
+                  </div>
+                )}
+                {outfit.confidenceRating && (
+                  <div className={styles.ratingItem}>
+                    <Text size="1" color="gray">
+                      Confident
+                    </Text>
+                    <Text size="3" weight="bold">
+                      {outfit.confidenceRating}/5
+                    </Text>
+                  </div>
+                )}
+                {outfit.creativityRating && (
+                  <div className={styles.ratingItem}>
+                    <Text size="1" color="gray">
+                      Creative
+                    </Text>
+                    <Text size="3" weight="bold">
+                      {outfit.creativityRating}/5
+                    </Text>
+                  </div>
+                )}
+              </div>
             </div>
           )}
         </section>
@@ -139,20 +182,7 @@ export function OutfitDetailPage() {
         <section className={styles.bottomActions}>
           <DeleteConfirmDialog
             title="Delete Outfit"
-            description={
-              <>
-                Are you sure you want to delete this outfit? This action cannot
-                be undone.
-                <br />
-                <Text
-                  size="1"
-                  color="gray"
-                  style={{ marginTop: "0.5rem", display: "block" }}
-                >
-                  Note: Item wear counts will not be decreased.
-                </Text>
-              </>
-            }
+            description="Are you sure you want to delete this outfit? This action cannot be undone."
             onConfirm={handleDelete}
             isDeleting={isDeleting}
             confirmText="Delete Outfit"
