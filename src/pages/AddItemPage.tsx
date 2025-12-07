@@ -22,10 +22,20 @@ export function AddItemPage() {
   const { imagePreview, handleImageUpload } = useImageUpload();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string>("");
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{
+    notes: string;
+    brand: string;
+    category: ItemCategory | undefined;
+    price: string;
+    isSecondHand: boolean;
+    isDogCasual: boolean;
+    isHandmade: boolean;
+    purchaseDate: string;
+    initialWearCount: string;
+  }>({
     notes: "",
     brand: "",
-    category: "" as ItemCategory | "",
+    category: undefined,
     price: "",
     isSecondHand: false,
     isDogCasual: false,
@@ -144,10 +154,9 @@ export function AddItemPage() {
           <div className={styles.field}>
             <span className={styles.label}>Category</span>
             <Select.Root
-              value={formData.category || undefined}
+              value={formData.category}
               onValueChange={(value) => {
-                // Ignore empty string changes (component initialization artifact)
-                if (value && CATEGORY_IDS.includes(value as ItemCategory)) {
+                if (CATEGORY_IDS.includes(value as ItemCategory)) {
                   setFormData({ ...formData, category: value as ItemCategory });
                 }
               }}
