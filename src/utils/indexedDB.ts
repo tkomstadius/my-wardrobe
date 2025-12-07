@@ -105,6 +105,7 @@ export async function saveItem(item: {
   purchaseDate?: Date;
   createdAt: Date;
   updatedAt: Date;
+  embedding?: number[];
 }): Promise<void> {
   const db = await openDB();
 
@@ -131,6 +132,7 @@ export async function saveItem(item: {
       purchaseDate: item.purchaseDate?.toISOString(),
       createdAt: item.createdAt.toISOString(),
       updatedAt: item.updatedAt.toISOString(),
+      embedding: item.embedding,
     };
 
     const request = store.put(dbItem);
@@ -160,6 +162,7 @@ export async function loadAllItems(): Promise<
     purchaseDate?: Date;
     createdAt: Date;
     updatedAt: Date;
+    embedding?: number[];
   }>
 > {
   const db = await openDB();
@@ -194,6 +197,7 @@ export async function loadAllItems(): Promise<
             : undefined,
           createdAt: new Date(dbItem.createdAt),
           updatedAt: new Date(dbItem.updatedAt),
+          embedding: dbItem.embedding,
         }))
       );
 
