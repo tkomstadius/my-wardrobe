@@ -15,6 +15,7 @@ interface WardrobeContextValue {
   items: WardrobeItem[];
   addItem: (newItem: NewWardrobeItem) => Promise<WardrobeItem>;
   updateItem: (id: string, updates: Partial<WardrobeItem>) => Promise<void>;
+  updateItemEmbedding: (id: string, embedding: number[]) => Promise<void>;
   deleteItem: (id: string) => Promise<void>;
   incrementWearCount: (id: string) => Promise<void>;
   removeWear: (id: string, wearIndex: number) => Promise<void>;
@@ -98,6 +99,30 @@ export function WardrobeProvider({ children }: WardrobeProviderProps) {
     }
 
     const updatedItem = { ...itemToUpdate, ...updates, updatedAt: new Date() };
+
+    // Save to IndexedDB first
+    await saveItem(updatedItem);
+
+    // Then update state
+    setItems((prev) =>
+      prev.map((item) => (item.id === id ? updatedItem : item))
+    );
+  };
+
+  const updateItemEmbedding = async (
+    id: string,
+    embedding: number[]
+  ): Promise<void> => {
+    const itemToUpdate = items.find((item) => item.id === id);
+    if (!itemToUpdate) {
+      throw new Error("Item not found");
+    }
+
+    const updatedItem = {
+      ...itemToUpdate,
+      embedding,
+      updatedAt: new Date(),
+    };
 
     // Save to IndexedDB first
     await saveItem(updatedItem);
@@ -259,6 +284,7 @@ export function WardrobeProvider({ children }: WardrobeProviderProps) {
     items,
     addItem,
     updateItem,
+    updateItemEmbedding,
     deleteItem,
     incrementWearCount,
     removeWear,

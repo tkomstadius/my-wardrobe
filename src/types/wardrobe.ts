@@ -24,6 +24,7 @@ export interface WardrobeItem {
   purchaseDate?: Date;
   createdAt: Date;
   updatedAt: Date;
+  embedding?: number[]; // CLIP embedding vector (512 dimensions) for AI matching
 }
 
 export interface NewWardrobeItem {
@@ -38,4 +39,5 @@ export interface NewWardrobeItem {
   isDogCasual?: boolean;
   isHandmade?: boolean;
   purchaseDate?: Date;
+  embedding?: number[]; // CLIP embedding vector (512 dimensions) for AI matching
 }

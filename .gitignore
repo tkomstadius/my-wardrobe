@@ -23,6 +23,7 @@ dist-ssr
 AI_AGENT_GUIDELINES.md
 CHANGELOG.md
 AI_WEAR_LOGGING_IMPLEMENTATION.md
+ARCHITECTURE_SUMMARY.md
 .DS_Store
 *.suo
 *.ntvs*
@@ -41,3 +42,6 @@ test-results/
 playwright-report/
 playwright/.cache/
 
+
+# Local Netlify folder
+.netlify
