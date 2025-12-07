@@ -21,9 +21,8 @@ dist-ssr
 .idea
 .cursorrules
 AI_AGENT_GUIDELINES.md
-PROJECT_PLAN.md
-CODEBASE_EVALUATION.md
 CHANGELOG.md
+AI_WEAR_LOGGING_IMPLEMENTATION.md
 .DS_Store
 *.suo
 *.ntvs*
