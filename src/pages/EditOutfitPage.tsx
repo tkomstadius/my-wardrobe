@@ -6,6 +6,7 @@ import { useOutfit } from "../contexts/OutfitContext";
 import { useWardrobe } from "../contexts/WardrobeContext";
 import { DeleteConfirmDialog } from "../components/common/DeleteConfirmDialog";
 import { ItemSelector } from "../components/common/ItemSelector";
+import { RatingSlider } from "../components/common/RatingSlider";
 import { compressImage } from "../utils/imageCompression";
 import styles from "./CreateOutfitPage.module.css";
 
@@ -254,99 +255,33 @@ export function EditOutfitPage() {
 
         {/* Rating Scales */}
         <section className={styles.section}>
-          <Text weight="bold" size="2" style={{ marginBottom: "1rem" }}>
+          <Text weight="bold" size="2" className={styles.ratingHeader}>
             Rate This Outfit (Optional)
           </Text>
 
-          <label className={styles.label}>
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-              }}
-            >
-              <Text size="2">Comfortable</Text>
-              <Text size="1" color="gray">
-                {formData.comfortRating > 0
-                  ? formData.comfortRating
-                  : "Not rated"}
-              </Text>
-            </div>
-            <input
-              type="range"
-              min="0"
-              max="5"
-              value={formData.comfortRating}
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  comfortRating: Number(e.target.value),
-                })
-              }
-              className={styles.slider}
-            />
-          </label>
+          <RatingSlider
+            label="Comfortable"
+            value={formData.comfortRating}
+            onChange={(value) =>
+              setFormData({ ...formData, comfortRating: value })
+            }
+          />
 
-          <label className={styles.label}>
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-              }}
-            >
-              <Text size="2">Confident</Text>
-              <Text size="1" color="gray">
-                {formData.confidenceRating > 0
-                  ? formData.confidenceRating
-                  : "Not rated"}
-              </Text>
-            </div>
-            <input
-              type="range"
-              min="0"
-              max="5"
-              value={formData.confidenceRating}
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  confidenceRating: Number(e.target.value),
-                })
-              }
-              className={styles.slider}
-            />
-          </label>
+          <RatingSlider
+            label="Confident"
+            value={formData.confidenceRating}
+            onChange={(value) =>
+              setFormData({ ...formData, confidenceRating: value })
+            }
+          />
 
-          <label className={styles.label}>
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-              }}
-            >
-              <Text size="2">Creative</Text>
-              <Text size="1" color="gray">
-                {formData.creativityRating > 0
-                  ? formData.creativityRating
-                  : "Not rated"}
-              </Text>
-            </div>
-            <input
-              type="range"
-              min="0"
-              max="5"
-              value={formData.creativityRating}
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  creativityRating: Number(e.target.value),
-                })
-              }
-              className={styles.slider}
-            />
-          </label>
+          <RatingSlider
+            label="Creative"
+            value={formData.creativityRating}
+            onChange={(value) =>
+              setFormData({ ...formData, creativityRating: value })
+            }
+          />
         </section>
 
         {/* Item Selection */}
@@ -361,7 +296,7 @@ export function EditOutfitPage() {
                 type="submit"
                 size="3"
                 disabled={isSaving || selectedItems.size === 0}
-                style={{ flex: 1 }}
+                className={styles.submitButton}
               >
                 {isSaving ? "Saving..." : "Save Changes"}
               </Button>

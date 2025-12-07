@@ -374,7 +374,7 @@ export function EditItemPage() {
               }
               size="3"
             />
-            <Text size="1" color="gray" style={{ marginTop: "0.25rem" }}>
+            <Text size="1" color="gray" className={styles.helpText}>
               Use this for items you already owned. Leave at 0 for new items.
             </Text>
           </div>
@@ -404,7 +404,7 @@ export function EditItemPage() {
                 Mark as Worn
               </Button>
             </div>
-            <Text size="1" color="gray" style={{ marginTop: "0.25rem" }}>
+            <Text size="1" color="gray" className={styles.helpText}>
               {id && getItemById(id)
                 ? `${getItemById(id)!.initialWearCount || 0} initial + ${
                     getItemById(id)!.wearHistory?.length || 0

@@ -28,3 +28,7 @@
   min-height: 0;
   overflow: hidden;
 }
+
+.callout {
+  margin: 0 1rem;
+}

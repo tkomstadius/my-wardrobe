@@ -3,7 +3,6 @@ import { Button, Heading, Text } from "@radix-ui/themes";
 import { useNavigate } from "react-router";
 import { useOutfit } from "../contexts/OutfitContext";
 import { useWardrobe } from "../contexts/WardrobeContext";
-import { formatDate } from "../utils/dateFormatter";
 import styles from "./OutfitsPage.module.css";
 
 export function OutfitsPage() {
@@ -41,7 +40,7 @@ export function OutfitsPage() {
           <Button
             onClick={() => navigate("/create-outfit")}
             size="3"
-            style={{ marginTop: "1rem" }}
+            className={styles.emptyButton}
           >
             <PlusIcon /> Create Your First Outfit
           </Button>
@@ -77,9 +76,54 @@ export function OutfitsPage() {
                 </div>
 
                 <div className={styles.outfitInfo}>
-                  <Text weight="bold" size="2">
-                    {formatDate(outfit.createdAt)}
-                  </Text>
+                  {(outfit.comfortRating ||
+                    outfit.confidenceRating ||
+                    outfit.creativityRating) && (
+                    <div className={styles.ratings}>
+                      {outfit.comfortRating && (
+                        <div className={styles.ratingBadge}>
+                          <Text size="1" className={styles.ratingLabel}>
+                            Comfort
+                          </Text>
+                          <div className={styles.ratingBarContainer}>
+                            <div
+                              className={`${styles.ratingBar} ${
+                                styles[`rating${outfit.comfortRating}`]
+                              }`}
+                            />
+                          </div>
+                        </div>
+                      )}
+                      {outfit.confidenceRating && (
+                        <div className={styles.ratingBadge}>
+                          <Text size="1" className={styles.ratingLabel}>
+                            Confidence
+                          </Text>
+                          <div className={styles.ratingBarContainer}>
+                            <div
+                              className={`${styles.ratingBar} ${
+                                styles[`rating${outfit.confidenceRating}`]
+                              }`}
+                            />
+                          </div>
+                        </div>
+                      )}
+                      {outfit.creativityRating && (
+                        <div className={styles.ratingBadge}>
+                          <Text size="1" className={styles.ratingLabel}>
+                            Creativity
+                          </Text>
+                          <div className={styles.ratingBarContainer}>
+                            <div
+                              className={`${styles.ratingBar} ${
+                                styles[`rating${outfit.creativityRating}`]
+                              }`}
+                            />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
                   {outfit.notes && (
                     <Text size="1" color="gray" className={styles.outfitNotes}>
                       {outfit.notes.length > 40

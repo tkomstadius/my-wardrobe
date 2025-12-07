@@ -95,6 +95,14 @@
   color: var(--gray-11);
 }
 
+.hiddenInput {
+  display: none;
+}
+
+.flexButton {
+  flex: 1;
+}
+
 /* Responsive adjustments */
 @media (min-width: 640px) {
   .container {

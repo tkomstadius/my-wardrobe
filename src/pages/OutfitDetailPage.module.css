@@ -86,6 +86,10 @@
   border-radius: var(--radius-3);
 }
 
+.ratingsTitle {
+  margin-bottom: 0.5rem;
+}
+
 .ratingsGrid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);

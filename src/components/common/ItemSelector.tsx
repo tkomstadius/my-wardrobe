@@ -240,10 +240,6 @@ export function ItemSelector({
                   isSelected ? styles.selected : ""
                 }`}
                 disabled={isDisabled}
-                style={{
-                  opacity: isDisabled ? 0.5 : 1,
-                  cursor: isDisabled ? "not-allowed" : "pointer",
-                }}
               >
                 <div className={styles.imageWrapper}>
                   <img

@@ -90,13 +90,13 @@ export function LogWearPage() {
       </div>
 
       {error && (
-        <Callout.Root color="red" size="1" style={{ margin: "0 1rem" }}>
+        <Callout.Root color="red" size="1" className={styles.callout}>
           <Callout.Text>{error}</Callout.Text>
         </Callout.Root>
       )}
 
       {isPending && (
-        <Callout.Root color="blue" size="1" style={{ margin: "0 1rem" }}>
+        <Callout.Root color="blue" size="1" className={styles.callout}>
           <Callout.Text>
             Logging {optimisticLoggedItems.size}{" "}
             {optimisticLoggedItems.size === 1 ? "item" : "items"}...

@@ -100,7 +100,7 @@ export function OutfitDetailPage() {
             outfit.confidenceRating ||
             outfit.creativityRating) && (
             <div className={styles.ratings}>
-              <Text size="2" color="gray" style={{ marginBottom: "0.5rem" }}>
+              <Text size="2" color="gray" className={styles.ratingsTitle}>
                 Ratings
               </Text>
               <div className={styles.ratingsGrid}>

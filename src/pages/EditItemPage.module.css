@@ -220,6 +220,10 @@
   white-space: nowrap;
 }
 
+.helpText {
+  margin-top: 0.25rem;
+}
+
 /* Mobile adjustments */
 @media (max-width: 768px) {
   .container {

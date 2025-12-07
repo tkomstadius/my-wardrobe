@@ -208,7 +208,7 @@ export function SettingsPage() {
                   type="file"
                   accept="application/json,.json"
                   onChange={handleFileSelect}
-                  style={{ display: "none" }}
+                  className={styles.hiddenInput}
                 />
               </div>
 
@@ -291,7 +291,7 @@ export function SettingsPage() {
                   variant="outline"
                   onClick={handleRepairData}
                   disabled={isRepairing}
-                  style={{ flex: 1 }}
+                  className={styles.flexButton}
                 >
                   {isRepairing ? "Repairing..." : "Repair Data"}
                 </Button>
@@ -307,7 +307,7 @@ export function SettingsPage() {
                       text: "Diagnostic report printed to browser console (F12 → Console tab)",
                     });
                   }}
-                  style={{ flex: 1 }}
+                  className={styles.flexButton}
                 >
                   Run Diagnostic
                 </Button>
