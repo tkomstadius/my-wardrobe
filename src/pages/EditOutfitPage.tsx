@@ -4,10 +4,10 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router";
 import { useOutfit } from "../contexts/OutfitContext";
 import { useWardrobe } from "../contexts/WardrobeContext";
+import { useImageUpload } from "../hooks/useImageUpload";
 import { DeleteConfirmDialog } from "../components/common/DeleteConfirmDialog";
 import { ItemSelector } from "../components/common/ItemSelector";
 import { RatingSlider } from "../components/common/RatingSlider";
-import { compressImage } from "../utils/imageCompression";
 import styles from "./CreateOutfitPage.module.css";
 
 export function EditOutfitPage() {
@@ -15,6 +15,8 @@ export function EditOutfitPage() {
   const navigate = useNavigate();
   const { updateOutfit, getOutfitById, deleteOutfit } = useOutfit();
   const { items } = useWardrobe();
+  const { imagePreview, setImagePreview, handleImageUpload, clearImage } =
+    useImageUpload();
 
   const [formData, setFormData] = useState({
     createdDate: new Date().toISOString().split("T")[0] as string,
@@ -23,7 +25,6 @@ export function EditOutfitPage() {
     confidenceRating: 0,
     creativityRating: 0,
   });
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -50,31 +51,9 @@ export function EditOutfitPage() {
       confidenceRating: outfit.confidenceRating || 0,
       creativityRating: outfit.creativityRating || 0,
     });
-    setImagePreview(outfit.photo || null);
+    setImagePreview(outfit.photo || "");
     setSelectedItems(new Set(outfit.itemIds));
-  }, [id, getOutfitById]);
-
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      try {
-        const reader = new FileReader();
-        reader.onloadend = async () => {
-          const originalDataURL = reader.result as string;
-          const compressedDataUrl = await compressImage(originalDataURL);
-          setImagePreview(compressedDataUrl);
-        };
-        reader.readAsDataURL(file);
-      } catch (error) {
-        console.error("Failed to process image:", error);
-        alert("Failed to process image. Please try another file.");
-      }
-    }
-  };
-
-  const handleRemoveImage = () => {
-    setImagePreview(null);
-  };
+  }, [id, getOutfitById, setImagePreview]);
 
   const toggleItemSelection = (itemId: string) => {
     setSelectedItems((prev) => {
@@ -191,7 +170,7 @@ export function EditOutfitPage() {
                     variant="soft"
                     color="red"
                     size="1"
-                    onClick={handleRemoveImage}
+                    onClick={clearImage}
                     className={styles.removeButton}
                   >
                     <TrashIcon /> Remove

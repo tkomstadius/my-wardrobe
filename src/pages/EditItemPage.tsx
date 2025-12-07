@@ -10,14 +10,9 @@ import {
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router";
 import { useWardrobe } from "../contexts/WardrobeContext";
+import { useImageUpload } from "../hooks/useImageUpload";
 import { DeleteConfirmDialog } from "../components/common/DeleteConfirmDialog";
 import type { ItemCategory } from "../types/wardrobe";
-import {
-  compressImage,
-  formatBytes,
-  getCompressionStats,
-  getDataURLSize,
-} from "../utils/imageCompression";
 import { CATEGORIES, CATEGORY_IDS } from "../utils/categories";
 import styles from "./EditItemPage.module.css";
 
@@ -32,6 +27,8 @@ export function EditItemPage() {
     incrementWearCount,
   } = useWardrobe();
 
+  const { imagePreview, setImagePreview, handleImageUpload } = useImageUpload();
+
   const [formData, setFormData] = useState({
     notes: "",
     brand: "",
@@ -43,7 +40,6 @@ export function EditItemPage() {
     purchaseDate: "",
     initialWearCount: "",
   });
-  const [imagePreview, setImagePreview] = useState<string>("");
   const [error, setError] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -90,36 +86,7 @@ export function EditItemPage() {
       initialWearCount: (item.initialWearCount ?? 0).toString(),
     });
     setImagePreview(item.imageUrl);
-  }, [id, getItemById]);
-
-  const handleImageUpload = async (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = async () => {
-        const originalDataURL = reader.result as string;
-        const originalSize = getDataURLSize(originalDataURL);
-
-        console.log(`📸 Original image: ${formatBytes(originalSize)}`);
-
-        try {
-          // Compress the image
-          const compressedDataURL = await compressImage(originalDataURL);
-          const stats = getCompressionStats(originalDataURL, compressedDataURL);
-
-          console.log("✅ Compressed image:", stats);
-
-          setImagePreview(compressedDataURL);
-        } catch (err) {
-          console.error("Compression failed, using original:", err);
-          setImagePreview(originalDataURL);
-        }
-      };
-      reader.readAsDataURL(file);
-    }
-  };
+  }, [id, getItemById, setImagePreview]);
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
