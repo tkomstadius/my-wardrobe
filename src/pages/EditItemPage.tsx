@@ -6,6 +6,7 @@ import { useWardrobe } from "../contexts/WardrobeContext";
 import { useImageUpload } from "../hooks/useImageUpload";
 import { DeleteConfirmDialog } from "../components/common/DeleteConfirmDialog";
 import { CheckboxField } from "../components/common/CheckboxField";
+import { getImageEmbedding } from "../utils/aiEmbedding";
 import type { ItemCategory } from "../types/wardrobe";
 import { CATEGORIES, CATEGORY_IDS } from "../utils/categories";
 import styles from "./EditItemPage.module.css";
@@ -37,8 +38,10 @@ export function EditItemPage() {
   const [error, setError] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isGeneratingEmbedding, setIsGeneratingEmbedding] = useState(false);
   const [itemNotFound, setItemNotFound] = useState(false);
   const [categoryWarning, setCategoryWarning] = useState("");
+  const [originalImageData, setOriginalImageData] = useState<string>("");
 
   // Load item data
   useEffect(() => {
@@ -80,6 +83,7 @@ export function EditItemPage() {
       initialWearCount: (item.initialWearCount ?? 0).toString(),
     });
     setImagePreview(item.imageUrl);
+    setOriginalImageData(item.imageUrl);
   }, [id, getItemById, setImagePreview]);
 
   const handleSubmit = async (event: React.FormEvent) => {
@@ -109,6 +113,21 @@ export function EditItemPage() {
         throw new Error("Item not found");
       }
 
+      // Regenerate embedding if image has changed
+      let embeddingUpdate: number[] | undefined;
+
+      if (imagePreview !== originalImageData) {
+        try {
+          setIsGeneratingEmbedding(true);
+          embeddingUpdate = await getImageEmbedding(imagePreview);
+        } catch (error) {
+          console.error("Failed to generate embedding:", error);
+          // Continue without embedding - user can generate later in Settings
+        } finally {
+          setIsGeneratingEmbedding(false);
+        }
+      }
+
       const newInitialWearCount = formData.initialWearCount
         ? Number.parseInt(formData.initialWearCount, 10)
         : 0;
@@ -131,6 +150,7 @@ export function EditItemPage() {
           : undefined,
         initialWearCount: newInitialWearCount,
         wearCount: totalWearCount,
+        ...(embeddingUpdate && { embedding: embeddingUpdate }),
       });
 
       // Navigate back to category page
@@ -422,10 +442,14 @@ export function EditItemPage() {
           <Button
             type="submit"
             size="3"
-            disabled={isSaving}
+            disabled={isSaving || isGeneratingEmbedding}
             className={styles.saveButton}
           >
-            {isSaving ? "Saving..." : "Save Changes"}
+            {isGeneratingEmbedding
+              ? "Processing image..."
+              : isSaving
+              ? "Saving..."
+              : "Save Changes"}
           </Button>
 
           <DeleteConfirmDialog

@@ -17,19 +17,29 @@ import {
   repairWearCountMismatches,
   diagnoseAllItems,
 } from "../utils/repairData";
+import { getImageEmbedding } from "../utils/aiEmbedding";
 import styles from "./SettingsPage.module.css";
 
 export function SettingsPage() {
-  const { items } = useWardrobe();
+  const { items, updateItemEmbedding } = useWardrobe();
   const { outfits } = useOutfit();
   const [isExporting, setIsExporting] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
   const [isRepairing, setIsRepairing] = useState(false);
+  const [isGeneratingEmbeddings, setIsGeneratingEmbeddings] = useState(false);
+  const [embeddingProgress, setEmbeddingProgress] = useState({
+    current: 0,
+    total: 0,
+  });
   const [message, setMessage] = useState<{
     type: "success" | "error" | "info";
     text: string;
   } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Count items without embeddings
+  const itemsNeedingEmbeddings = items.filter((item) => !item.embedding);
+  const hasEmbeddingGap = itemsNeedingEmbeddings.length > 0;
 
   const handleExport = async () => {
     try {
@@ -135,6 +145,58 @@ export function SettingsPage() {
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
       }
+    }
+  };
+
+  const handleGenerateEmbeddings = async () => {
+    setIsGeneratingEmbeddings(true);
+    setMessage(null);
+    const total = itemsNeedingEmbeddings.length;
+    setEmbeddingProgress({ current: 0, total });
+
+    let successCount = 0;
+    let errorCount = 0;
+
+    try {
+      for (let i = 0; i < itemsNeedingEmbeddings.length; i++) {
+        const item = itemsNeedingEmbeddings[i];
+        if (!item) continue;
+
+        try {
+          const embedding = await getImageEmbedding(item.imageUrl);
+          await updateItemEmbedding(item.id, embedding);
+          successCount++;
+          setEmbeddingProgress({ current: i + 1, total });
+        } catch (error) {
+          console.error(
+            `Failed to generate embedding for item ${item.id}:`,
+            error
+          );
+          errorCount++;
+          // Continue with next item
+        }
+      }
+
+      if (errorCount === 0) {
+        setMessage({
+          type: "success",
+          text: `✅ Successfully generated embeddings for all ${successCount} items!`,
+        });
+      } else {
+        setMessage({
+          type: "info",
+          text: `Generated embeddings for ${successCount} items. ${errorCount} items failed (check console for details).`,
+        });
+      }
+    } catch (error) {
+      console.error("Embedding generation failed:", error);
+      setMessage({
+        type: "error",
+        text: "Failed to generate embeddings. Check console for details.",
+      });
+    } finally {
+      setIsGeneratingEmbeddings(false);
+      setEmbeddingProgress({ current: 0, total: 0 });
     }
   };
 
@@ -266,6 +328,98 @@ export function SettingsPage() {
           </div>
         </section>
 
+        {/* AI Wear Logging Section */}
+        <section className={styles.section}>
+          <h3 className={styles.sectionTitle}>AI Wear Logging</h3>
+
+          <Card className={styles.card}>
+            <div className={styles.cardContent}>
+              <div className={styles.infoBox}>
+                <Callout.Root size="1" color="blue">
+                  <Callout.Icon>
+                    <InfoCircledIcon />
+                  </Callout.Icon>
+                  <Callout.Text>
+                    Enable AI-powered wear logging by generating embeddings for
+                    your wardrobe items. This is a one-time setup that allows
+                    the app to automatically recognize items in outfit photos.
+                  </Callout.Text>
+                </Callout.Root>
+              </div>
+
+              {hasEmbeddingGap && (
+                <div className={styles.infoBox}>
+                  <Callout.Root color="amber">
+                    <Callout.Text>
+                      {itemsNeedingEmbeddings.length}{" "}
+                      {itemsNeedingEmbeddings.length === 1 ? "item" : "items"}{" "}
+                      need embeddings for AI wear logging. Click below to
+                      generate them.
+                    </Callout.Text>
+                  </Callout.Root>
+                </div>
+              )}
+
+              {!hasEmbeddingGap && items.length > 0 && (
+                <div className={styles.infoBox}>
+                  <Callout.Root color="green">
+                    <Callout.Text>
+                      ✅ All {items.length}{" "}
+                      {items.length === 1 ? "item has" : "items have"}{" "}
+                      embeddings. AI wear logging ready!
+                    </Callout.Text>
+                  </Callout.Root>
+                </div>
+              )}
+
+              <div className={styles.buttonGroup}>
+                <Button
+                  size="3"
+                  onClick={handleGenerateEmbeddings}
+                  disabled={isGeneratingEmbeddings || !hasEmbeddingGap}
+                  className={styles.primaryButton}
+                >
+                  {isGeneratingEmbeddings
+                    ? `Generating... ${embeddingProgress.current}/${embeddingProgress.total}`
+                    : `Generate Embeddings (${itemsNeedingEmbeddings.length} items)`}
+                </Button>
+              </div>
+
+              {isGeneratingEmbeddings && (
+                <div className={styles.progressContainer}>
+                  <div className={styles.progressBar}>
+                    <div
+                      className={styles.progressFill}
+                      style={{
+                        width: `${
+                          (embeddingProgress.current /
+                            embeddingProgress.total) *
+                          100
+                        }%`,
+                      }}
+                    />
+                  </div>
+                  <Text size="1" color="gray" className={styles.progressText}>
+                    Processing item {embeddingProgress.current} of{" "}
+                    {embeddingProgress.total}...
+                  </Text>
+                </div>
+              )}
+
+              <div className={styles.helpText}>
+                <Text size="2" color="gray">
+                  <strong>What are embeddings?</strong> AI "fingerprints" of
+                  your items that enable photo-based wear logging.
+                </Text>
+                <Text size="2" color="gray">
+                  <strong>When to regenerate:</strong> If you've imported a
+                  backup or added items while AI was offline.
+                </Text>
+              </div>
+            </div>
+          </Card>
+        </section>
+
         {/* Data Repair Section */}
         <section className={styles.section}>
           <h3 className={styles.sectionTitle}>Data Repair</h3>
@@ -315,8 +469,8 @@ export function SettingsPage() {
 
               <div className={styles.helpText}>
                 <Text size="2" color="gray">
-                  <strong>Repair:</strong> Fixes invalid categories, wear counts,
-                  and missing fields.
+                  <strong>Repair:</strong> Fixes invalid categories, wear
+                  counts, and missing fields.
                 </Text>
                 <Text size="2" color="gray">
                   <strong>Diagnostic:</strong> Shows detailed info in browser

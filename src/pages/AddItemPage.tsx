@@ -5,6 +5,7 @@ import { useNavigate } from "react-router";
 import { useWardrobe } from "../contexts/WardrobeContext";
 import { useImageUpload } from "../hooks/useImageUpload";
 import { CheckboxField } from "../components/common/CheckboxField";
+import { getImageEmbedding } from "../utils/aiEmbedding";
 import type { ItemCategory } from "../types/wardrobe";
 import { CATEGORIES, CATEGORY_IDS } from "../utils/categories";
 import styles from "./AddItemPage.module.css";
@@ -14,6 +15,7 @@ export function AddItemPage() {
   const { addItem, getAllBrands } = useWardrobe();
   const { imagePreview, handleImageUpload } = useImageUpload();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isGeneratingEmbedding, setIsGeneratingEmbedding] = useState(false);
   const [error, setError] = useState<string>("");
   const [formData, setFormData] = useState<{
     notes: string;
@@ -55,6 +57,19 @@ export function AddItemPage() {
     setIsSubmitting(true);
 
     try {
+      // Generate embedding for AI wear logging
+      let embedding: number[] | undefined;
+
+      try {
+        setIsGeneratingEmbedding(true);
+        embedding = await getImageEmbedding(imagePreview);
+      } catch (error) {
+        console.error("Failed to generate embedding:", error);
+        // Continue without embedding - user can generate later in Settings
+      } finally {
+        setIsGeneratingEmbedding(false);
+      }
+
       // Save item to context (which persists to IndexedDB)
       await addItem({
         imageUrl: imagePreview,
@@ -71,6 +86,7 @@ export function AddItemPage() {
         initialWearCount: formData.initialWearCount
           ? Number.parseInt(formData.initialWearCount, 10)
           : undefined,
+        embedding, // Add embedding if generated
       });
 
       // Navigate to category page
@@ -244,9 +260,13 @@ export function AddItemPage() {
           type="submit"
           size="3"
           className={styles.saveButton}
-          disabled={isSubmitting}
+          disabled={isSubmitting || isGeneratingEmbedding}
         >
-          {isSubmitting ? "Saving..." : "Save Item"}
+          {isGeneratingEmbedding
+            ? "Processing image..."
+            : isSubmitting
+            ? "Saving..."
+            : "Save Item"}
         </Button>
       </form>
     </div>

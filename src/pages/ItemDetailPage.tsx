@@ -173,6 +173,21 @@ export function ItemDetailPage() {
             )}
           </div>
 
+          {/* AI Embedding Debug Info */}
+          {item.embedding && (
+            <div className={styles.embeddingDebug}>
+              <Text size="1" color="gray">
+                AI Embedding (first 3 values):
+              </Text>
+              <Text size="1" className={styles.embeddingValues}>
+                [{item.embedding.slice(0, 3).map(v => v.toFixed(4)).join(", ")}...]
+              </Text>
+              <Badge color="green" size="1">
+                ✓ AI Ready
+              </Badge>
+            </div>
+          )}
+
           {/* Mark as Worn Button */}
           <div className={styles.actions}>
             <Button

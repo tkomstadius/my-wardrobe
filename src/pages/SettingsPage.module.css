@@ -103,6 +103,31 @@
   flex: 1;
 }
 
+.progressContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.progressBar {
+  width: 100%;
+  height: 8px;
+  background: var(--gray-5);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background: var(--accent-9);
+  transition: width 0.3s ease;
+}
+
+.progressText {
+  text-align: center;
+}
+
 /* Responsive adjustments */
 @media (min-width: 640px) {
   .container {
