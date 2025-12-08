@@ -7,7 +7,7 @@ import { useImageUpload } from "../hooks/useImageUpload";
 import { DeleteConfirmDialog } from "../components/common/DeleteConfirmDialog";
 import { CheckboxField } from "../components/common/CheckboxField";
 import { getImageEmbedding } from "../utils/aiEmbedding";
-import type { ItemCategory } from "../types/wardrobe";
+import type { ItemCategory, ItemTrait } from "../types/wardrobe";
 import { CATEGORIES, CATEGORY_IDS } from "../utils/categories";
 import styles from "./EditItemPage.module.css";
 
@@ -32,6 +32,7 @@ export function EditItemPage() {
     isSecondHand: false,
     isDogCasual: false,
     isHandmade: false,
+    trait: undefined as ItemTrait | undefined,
     purchaseDate: "",
     initialWearCount: "",
   });
@@ -77,6 +78,7 @@ export function EditItemPage() {
       isSecondHand: item.isSecondHand || false,
       isDogCasual: item.isDogCasual || false,
       isHandmade: item.isHandmade || false,
+      trait: item.trait,
       purchaseDate: item.purchaseDate
         ? new Date(item.purchaseDate).toISOString().split("T")[0] ?? ""
         : "",
@@ -145,6 +147,7 @@ export function EditItemPage() {
         isSecondHand: formData.isSecondHand,
         isDogCasual: formData.isDogCasual,
         isHandmade: formData.isHandmade,
+        trait: formData.trait,
         purchaseDate: formData.purchaseDate
           ? new Date(formData.purchaseDate)
           : undefined,
@@ -428,6 +431,33 @@ export function EditItemPage() {
             }
             label="Handmade"
           />
+
+          <div className={styles.field}>
+            <span className={styles.label}>Item Trait (Optional)</span>
+            <Select.Root
+              value={formData.trait}
+              onValueChange={(value) =>
+                setFormData({
+                  ...formData,
+                  trait: value as ItemTrait | undefined,
+                })
+              }
+            >
+              <Select.Trigger placeholder="Select a vibe..." />
+              <Select.Content>
+                <Select.Item value="none">None</Select.Item>
+                <Select.Item value="comfort">
+                  Comfort (cozy, relaxed)
+                </Select.Item>
+                <Select.Item value="confidence">
+                  Confidence (powerful, bold)
+                </Select.Item>
+                <Select.Item value="creative">
+                  Creative (expressive, artistic)
+                </Select.Item>
+              </Select.Content>
+            </Select.Root>
+          </div>
         </div>
 
         {error && (

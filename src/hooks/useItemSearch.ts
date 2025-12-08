@@ -27,6 +27,7 @@ export function useItemSearch(items: WardrobeItem[]) {
         item.isSecondHand ? "thrifted secondhand" : "",
         item.isDogCasual ? "casual dogcasual" : "",
         item.isHandmade ? "handmade" : "",
+        item.trait ? item.trait : "",
       ]
         .filter(Boolean)
         .join(" ")

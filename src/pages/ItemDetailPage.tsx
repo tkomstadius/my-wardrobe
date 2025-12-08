@@ -171,6 +171,21 @@ export function ItemDetailPage() {
                 Handmade
               </Badge>
             )}
+            {item.trait === "comfort" && (
+              <Badge color="purple" size="2">
+                Comfort
+              </Badge>
+            )}
+            {item.trait === "confidence" && (
+              <Badge color="orange" size="2">
+                Confidence
+              </Badge>
+            )}
+            {item.trait === "creative" && (
+              <Badge color="pink" size="2">
+                Creative
+              </Badge>
+            )}
           </div>
 
           {/* AI Embedding Debug Info */}
@@ -180,7 +195,12 @@ export function ItemDetailPage() {
                 AI Embedding (first 3 values):
               </Text>
               <Text size="1" className={styles.embeddingValues}>
-                [{item.embedding.slice(0, 3).map(v => v.toFixed(4)).join(", ")}...]
+                [
+                {item.embedding
+                  .slice(0, 3)
+                  .map((v) => v.toFixed(4))
+                  .join(", ")}
+                ...]
               </Text>
               <Badge color="green" size="1">
                 ✓ AI Ready

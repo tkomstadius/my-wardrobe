@@ -8,6 +8,8 @@ export type ItemCategory =
   | "bags"
   | "jewelry";
 
+export type ItemTrait = "comfort" | "confidence" | "creative";
+
 export interface WardrobeItem {
   id: string;
   imageUrl: string;
@@ -21,6 +23,7 @@ export interface WardrobeItem {
   isSecondHand?: boolean;
   isDogCasual?: boolean;
   isHandmade?: boolean;
+  trait?: ItemTrait; // What vibe does this item give? (comfort, confidence, creative)
   purchaseDate?: Date;
   createdAt: Date;
   updatedAt: Date;
@@ -38,6 +41,7 @@ export interface NewWardrobeItem {
   isSecondHand?: boolean;
   isDogCasual?: boolean;
   isHandmade?: boolean;
+  trait?: ItemTrait;
   purchaseDate?: Date;
   embedding?: number[]; // CLIP embedding vector (512 dimensions) for AI matching
 }

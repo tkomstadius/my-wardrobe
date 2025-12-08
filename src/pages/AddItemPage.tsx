@@ -6,7 +6,7 @@ import { useWardrobe } from "../contexts/WardrobeContext";
 import { useImageUpload } from "../hooks/useImageUpload";
 import { CheckboxField } from "../components/common/CheckboxField";
 import { getImageEmbedding } from "../utils/aiEmbedding";
-import type { ItemCategory } from "../types/wardrobe";
+import type { ItemCategory, ItemTrait } from "../types/wardrobe";
 import { CATEGORIES, CATEGORY_IDS } from "../utils/categories";
 import styles from "./AddItemPage.module.css";
 
@@ -25,6 +25,7 @@ export function AddItemPage() {
     isSecondHand: boolean;
     isDogCasual: boolean;
     isHandmade: boolean;
+    trait: ItemTrait | undefined;
     purchaseDate: string;
     initialWearCount: string;
   }>({
@@ -35,6 +36,7 @@ export function AddItemPage() {
     isSecondHand: false,
     isDogCasual: false,
     isHandmade: false,
+    trait: undefined,
     purchaseDate: "",
     initialWearCount: "",
   });
@@ -80,6 +82,7 @@ export function AddItemPage() {
         isSecondHand: formData.isSecondHand,
         isDogCasual: formData.isDogCasual,
         isHandmade: formData.isHandmade,
+        trait: formData.trait,
         purchaseDate: formData.purchaseDate
           ? new Date(formData.purchaseDate)
           : undefined,
@@ -255,6 +258,30 @@ export function AddItemPage() {
             }
             label="Handmade"
           />
+
+          <div className={styles.field}>
+            <span className={styles.label}>Item Trait (Optional)</span>
+            <Select.Root
+              value={formData.trait}
+              onValueChange={(value) =>
+                setFormData({ ...formData, trait: value as ItemTrait })
+              }
+            >
+              <Select.Trigger placeholder="Select a vibe..." />
+              <Select.Content>
+                <Select.Item value="none">None</Select.Item>
+                <Select.Item value="comfort">
+                  Comfort (cozy, relaxed)
+                </Select.Item>
+                <Select.Item value="confidence">
+                  Confidence (powerful, bold)
+                </Select.Item>
+                <Select.Item value="creative">
+                  Creative (expressive, artistic)
+                </Select.Item>
+              </Select.Content>
+            </Select.Root>
+          </div>
         </div>
 
         <Button
