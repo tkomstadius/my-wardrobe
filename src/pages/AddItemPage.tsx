@@ -149,7 +149,7 @@ export function AddItemPage() {
           <div className={styles.field}>
             <span className={styles.label}>Brand (Optional)</span>
             <TextField.Root
-              placeholder="e.g., Nike, Zara"
+              placeholder="e.g., Ganni, Hope"
               value={formData.brand}
               onChange={(e) =>
                 setFormData({ ...formData, brand: e.target.value })
@@ -225,42 +225,6 @@ export function AddItemPage() {
           </div>
 
           <div className={styles.field}>
-            <span className={styles.label}>Notes (Optional)</span>
-            <TextField.Root
-              placeholder="e.g., T-shirt, favorite jeans, scratched"
-              value={formData.notes}
-              onChange={(e) =>
-                setFormData({ ...formData, notes: e.target.value })
-              }
-              size="3"
-            />
-          </div>
-
-          <CheckboxField
-            checked={formData.isSecondHand}
-            onCheckedChange={(checked) =>
-              setFormData({ ...formData, isSecondHand: checked })
-            }
-            label="Second Hand / Thrifted"
-          />
-
-          <CheckboxField
-            checked={formData.isDogCasual}
-            onCheckedChange={(checked) =>
-              setFormData({ ...formData, isDogCasual: checked })
-            }
-            label="Dog casual"
-          />
-
-          <CheckboxField
-            checked={formData.isHandmade}
-            onCheckedChange={(checked) =>
-              setFormData({ ...formData, isHandmade: checked })
-            }
-            label="Handmade"
-          />
-
-          <div className={styles.field}>
             <span className={styles.label}>Item Trait (Optional)</span>
             <Select.Root
               value={formData.trait || "none"}
@@ -288,6 +252,42 @@ export function AddItemPage() {
             </Select.Root>
           </div>
         </div>
+
+        <div className={styles.field}>
+          <span className={styles.label}>Notes (Optional)</span>
+          <TextField.Root
+            placeholder="e.g., T-shirt, favorite jeans, scratched"
+            value={formData.notes}
+            onChange={(e) =>
+              setFormData({ ...formData, notes: e.target.value })
+            }
+            size="3"
+          />
+        </div>
+
+        <CheckboxField
+          checked={formData.isSecondHand}
+          onCheckedChange={(checked) =>
+            setFormData({ ...formData, isSecondHand: checked })
+          }
+          label="Second Hand / Thrifted"
+        />
+
+        <CheckboxField
+          checked={formData.isDogCasual}
+          onCheckedChange={(checked) =>
+            setFormData({ ...formData, isDogCasual: checked })
+          }
+          label="Dog casual"
+        />
+
+        <CheckboxField
+          checked={formData.isHandmade}
+          onCheckedChange={(checked) =>
+            setFormData({ ...formData, isHandmade: checked })
+          }
+          label="Handmade"
+        />
 
         <Button
           type="submit"

@@ -66,7 +66,6 @@
   flex-direction: column;
   gap: 8px;
   padding-top: 16px;
-  border-top: 1px solid var(--gray-6);
 }
 
 .category {

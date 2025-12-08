@@ -14,7 +14,7 @@ export function SearchBar({
   value,
   onChange,
   onClear,
-  placeholder = "Search items (category, brand, notes, tags...)",
+  placeholder = "category, brand, notes, tags...",
   resultCount,
 }: SearchBarProps) {
   return (
