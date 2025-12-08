@@ -1,7 +1,7 @@
 // IndexedDB wrapper for wardrobe storage
 // More capacity than localStorage, stores images as Blobs for efficiency
 
-import type { ItemCategory } from "../types/wardrobe";
+import type { ItemCategory, ItemTrait } from "../types/wardrobe";
 import type { Outfit } from "../types/outfit";
 
 const DB_NAME = "MyWardrobeDB";
@@ -102,6 +102,7 @@ export async function saveItem(item: {
   isSecondHand?: boolean;
   isDogCasual?: boolean;
   isHandmade?: boolean;
+  trait?: ItemTrait;
   purchaseDate?: Date;
   createdAt: Date;
   updatedAt: Date;
@@ -129,6 +130,7 @@ export async function saveItem(item: {
       isSecondHand: item.isSecondHand,
       isDogCasual: item.isDogCasual,
       isHandmade: item.isHandmade,
+      trait: item.trait,
       purchaseDate: item.purchaseDate?.toISOString(),
       createdAt: item.createdAt.toISOString(),
       updatedAt: item.updatedAt.toISOString(),
@@ -159,6 +161,7 @@ export async function loadAllItems(): Promise<
     isSecondHand?: boolean;
     isDogCasual?: boolean;
     isHandmade?: boolean;
+    trait?: ItemTrait;
     purchaseDate?: Date;
     createdAt: Date;
     updatedAt: Date;
@@ -192,6 +195,7 @@ export async function loadAllItems(): Promise<
           isSecondHand: dbItem.isSecondHand,
           isDogCasual: dbItem.isDogCasual,
           isHandmade: dbItem.isHandmade,
+          trait: dbItem.trait as ItemTrait | undefined,
           purchaseDate: dbItem.purchaseDate
             ? new Date(dbItem.purchaseDate)
             : undefined,
@@ -278,9 +282,7 @@ export async function saveOutfit(outfit: Outfit): Promise<void> {
       photoBlob: outfit.photo ? dataURLtoBlob(outfit.photo) : undefined,
       itemIds: outfit.itemIds,
       notes: outfit.notes,
-      comfortRating: outfit.comfortRating,
-      confidenceRating: outfit.confidenceRating,
-      creativityRating: outfit.creativityRating,
+      rating: outfit.rating,
       createdAt: outfit.createdAt.toISOString(),
       updatedAt: outfit.updatedAt.toISOString(),
     };
@@ -306,21 +308,39 @@ export async function loadAllOutfits(): Promise<Outfit[]> {
     request.onsuccess = async () => {
       const dbOutfits = request.result;
 
-      // Convert Blobs back to data URLs
+      // Convert Blobs back to data URLs and migrate old rating format
       const outfits = await Promise.all(
-        dbOutfits.map(async (dbOutfit) => ({
-          id: dbOutfit.id,
-          photo: dbOutfit.photoBlob
-            ? await blobToDataURL(dbOutfit.photoBlob)
-            : undefined,
-          itemIds: dbOutfit.itemIds,
-          notes: dbOutfit.notes,
-          comfortRating: dbOutfit.comfortRating,
-          confidenceRating: dbOutfit.confidenceRating,
-          creativityRating: dbOutfit.creativityRating,
-          createdAt: new Date(dbOutfit.createdAt),
-          updatedAt: new Date(dbOutfit.updatedAt),
-        }))
+        dbOutfits.map(async (dbOutfit) => {
+          // Migration: If outfit has old rating fields but no new rating, convert
+          let rating = dbOutfit.rating;
+          if (
+            !rating &&
+            (dbOutfit.comfortRating ||
+              dbOutfit.confidenceRating ||
+              dbOutfit.creativityRating)
+          ) {
+            // Use the highest of the old ratings as the new rating
+            rating = Math.max(
+              dbOutfit.comfortRating || 0,
+              dbOutfit.confidenceRating || 0,
+              dbOutfit.creativityRating || 0
+            );
+            // Only set if it's a valid rating
+            rating = rating > 0 ? rating : undefined;
+          }
+
+          return {
+            id: dbOutfit.id,
+            photo: dbOutfit.photoBlob
+              ? await blobToDataURL(dbOutfit.photoBlob)
+              : undefined,
+            itemIds: dbOutfit.itemIds,
+            notes: dbOutfit.notes,
+            rating,
+            createdAt: new Date(dbOutfit.createdAt),
+            updatedAt: new Date(dbOutfit.updatedAt),
+          };
+        })
       );
 
       resolve(outfits);
