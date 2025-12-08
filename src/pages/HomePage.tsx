@@ -4,15 +4,36 @@ import { useNavigate } from "react-router";
 import { ItemCard } from "../components/features/ItemCard";
 import { useWardrobe } from "../contexts/WardrobeContext";
 import { getDaysAgo } from "../utils/dateFormatter";
+import { CATEGORIES } from "../utils/categories";
 import styles from "./HomePage.module.css";
 
 export function HomePage() {
   const navigate = useNavigate();
-  const { items, getItemsWornInPeriod, isLoading } = useWardrobe();
+  const { items, getItemsWornInPeriod, getLastWornDate, isLoading } =
+    useWardrobe();
   const hasItems = items.length > 0;
 
   // Get items worn in the last 7 days
   const recentlyWornItems = getItemsWornInPeriod(getDaysAgo(7));
+
+  // Sort by last worn date (most recent first)
+  const itemsSortedByLastWorn = [...recentlyWornItems].sort((a, b) => {
+    const dateA = getLastWornDate(a.item.id);
+    const dateB = getLastWornDate(b.item.id);
+    if (!dateA && !dateB) return 0;
+    if (!dateA) return 1;
+    if (!dateB) return -1;
+    return dateB.getTime() - dateA.getTime();
+  });
+
+  // Group by category
+  const itemsByCategory = CATEGORIES.map((category) => ({
+    category: category.id,
+    title: category.title,
+    items: itemsSortedByLastWorn.filter(
+      ({ item }) => item.category === category.id
+    ),
+  })).filter((group) => group.items.length > 0); // Only show categories with items
 
   return (
     <div className={styles.container}>
@@ -70,14 +91,35 @@ export function HomePage() {
                 </Text>
               </div>
             ) : (
-              <div className={styles.compactGrid}>
-                {recentlyWornItems.map(({ item }) => (
-                  <div key={item.id} className={styles.compactItemWrapper}>
-                    <ItemCard
-                      item={item}
-                      onClick={() => navigate(`/item/${item.id}`)}
-                      compact
-                    />
+              <div className={styles.categorySections}>
+                {itemsByCategory.map(({ category, title, items }) => (
+                  <div key={category} className={styles.categorySection}>
+                    <div className={styles.categoryHeader}>
+                      <Text
+                        size="2"
+                        weight="medium"
+                        className={styles.categoryTitle}
+                      >
+                        {title}
+                      </Text>
+                      <Text size="1" color="gray">
+                        {items.length} {items.length === 1 ? "item" : "items"}
+                      </Text>
+                    </div>
+                    <div className={styles.compactGrid}>
+                      {items.map(({ item }) => (
+                        <div
+                          key={item.id}
+                          className={styles.compactItemWrapper}
+                        >
+                          <ItemCard
+                            item={item}
+                            onClick={() => navigate(`/item/${item.id}`)}
+                            compact
+                          />
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 ))}
               </div>

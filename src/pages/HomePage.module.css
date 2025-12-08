@@ -77,6 +77,32 @@
   gap: 0.5rem;
 }
 
+/* Category sections */
+.categorySections {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.categorySection {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.categoryHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 0.25rem;
+  border-bottom: 1px solid var(--gray-5);
+}
+
+.categoryTitle {
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+}
+
 /* Compact grid for "Worn This Week" - smaller thumbnails, more columns */
 .compactGrid {
   display: grid;
