@@ -307,6 +307,7 @@ export function EditItemPage() {
                   setFormData({ ...formData, category: value as ItemCategory });
                 }
               }}
+              size="3"
             >
               <Select.Trigger placeholder="Select category" />
               <Select.Content>
@@ -435,13 +436,14 @@ export function EditItemPage() {
           <div className={styles.field}>
             <span className={styles.label}>Item Trait (Optional)</span>
             <Select.Root
-              value={formData.trait}
+              value={formData.trait || "none"}
               onValueChange={(value) =>
                 setFormData({
                   ...formData,
-                  trait: value as ItemTrait | undefined,
+                  trait: value === "none" ? undefined : (value as ItemTrait),
                 })
               }
+              size="3"
             >
               <Select.Trigger placeholder="Select a vibe..." />
               <Select.Content>
