@@ -1,20 +1,18 @@
 import { ArrowLeftIcon, PlusIcon } from "@radix-ui/react-icons";
-import { Button, Text, Select } from "@radix-ui/themes";
-import { useState, useMemo } from "react";
+import { Button, Text } from "@radix-ui/themes";
 import { Link, useNavigate, useParams } from "react-router";
 import { ItemCard } from "../components/features/ItemCard";
+import { SearchBar } from "../components/common/SearchBar";
 import { useWardrobe } from "../contexts/WardrobeContext";
+import { useItemSearch } from "../hooks/useItemSearch";
 import type { ItemCategory } from "../types/wardrobe";
 import { CATEGORY_TITLES, CATEGORY_IDS } from "../utils/categories";
-import { FILTERS, type FilterType } from "../utils/filters";
 import styles from "./CategoryPage.module.css";
 
 export function CategoryPage() {
   const navigate = useNavigate();
   const { category } = useParams<{ category: string }>();
   const { getItemsByCategory, isLoading } = useWardrobe();
-  const [activeFilter, setActiveFilter] = useState<FilterType>("all");
-  const [selectedBrand, setSelectedBrand] = useState<string>("all");
 
   // Validate category
   const isValidCategory = (cat: string | undefined): cat is ItemCategory => {
@@ -44,54 +42,9 @@ export function CategoryPage() {
   const categoryItems = getItemsByCategory(category);
   const title = CATEGORY_TITLES[category];
 
-  // Get brands available in this category
-  const availableBrands = useMemo(() => {
-    const brands = new Set<string>();
-    for (const item of categoryItems) {
-      if (item.brand?.trim()) {
-        brands.add(item.brand.trim());
-      }
-    }
-    return Array.from(brands).sort();
-  }, [categoryItems]);
-
-  // Filter items based on active filter and brand
-  const filteredItems = useMemo(() => {
-    let items = [...categoryItems];
-
-    // Apply brand filter first
-    if (selectedBrand !== "all") {
-      items = items.filter((item) => item.brand === selectedBrand);
-    }
-
-    // Apply type filters
-    switch (activeFilter) {
-      case "thrifted":
-        items = items.filter((item) => item.isSecondHand);
-        break;
-      case "casual":
-        items = items.filter((item) => item.isDogCasual);
-        break;
-      case "handmade":
-        items = items.filter((item) => item.isHandmade);
-        break;
-      case "recent":
-        items = items.sort(
-          (a, b) =>
-            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-        );
-        break;
-      case "most-worn":
-        items = items.sort((a, b) => b.wearCount - a.wearCount);
-        break;
-      case "all":
-      default:
-        // No filtering, show all items in default order
-        break;
-    }
-
-    return items;
-  }, [categoryItems, activeFilter, selectedBrand]);
+  // Use search hook
+  const { searchQuery, setSearchQuery, clearSearch, filteredItems } =
+    useItemSearch(categoryItems);
 
   const hasItems = categoryItems.length > 0;
   const hasFilteredItems = filteredItems.length > 0;
@@ -130,57 +83,14 @@ export function CategoryPage() {
 
       {!isLoading && hasItems && (
         <>
-          <div className={styles.itemCount}>
-            <Text size="2" color="gray">
-              {categoryItems.length}{" "}
-              {categoryItems.length === 1 ? "item" : "items"}
-            </Text>
-          </div>
-
-          {/* Filter Buttons */}
-          <div className={styles.filtersContainer}>
-            <div className={styles.filters}>
-              {FILTERS.map((filter) => (
-                <Button
-                  key={filter.id}
-                  size="2"
-                  variant={activeFilter === filter.id ? "solid" : "soft"}
-                  color={filter.color}
-                  onClick={() => setActiveFilter(filter.id)}
-                  className={styles.filterButton}
-                >
-                  {filter.label}
-                </Button>
-              ))}
-            </div>
-          </div>
-
-          {/* Brand Filter */}
-          {availableBrands.length > 0 && (
-            <div className={styles.brandFilterContainer}>
-              <Text
-                size="2"
-                weight="medium"
-                className={styles.brandFilterLabel}
-              >
-                Brand:
-              </Text>
-              <Select.Root
-                value={selectedBrand}
-                onValueChange={setSelectedBrand}
-              >
-                <Select.Trigger className={styles.brandSelect} />
-                <Select.Content>
-                  <Select.Item value="all">All Brands</Select.Item>
-                  {availableBrands.map((brand) => (
-                    <Select.Item key={brand} value={brand}>
-                      {brand}
-                    </Select.Item>
-                  ))}
-                </Select.Content>
-              </Select.Root>
-            </div>
-          )}
+          {/* Search Bar */}
+          <SearchBar
+            value={searchQuery}
+            onChange={setSearchQuery}
+            onClear={clearSearch}
+            placeholder="Search in this category..."
+            resultCount={filteredItems.length}
+          />
 
           {hasFilteredItems ? (
             <div className={styles.grid}>
@@ -191,8 +101,15 @@ export function CategoryPage() {
           ) : (
             <div className={styles.noResultsState}>
               <Text size="2" color="gray">
-                No items match this filter
+                {searchQuery
+                  ? `No items match "${searchQuery}"`
+                  : "No items found"}
               </Text>
+              {searchQuery && (
+                <Text size="2" color="gray">
+                  Try: brand names, colors, notes, or tags like "thrifted"
+                </Text>
+              )}
             </div>
           )}
         </>

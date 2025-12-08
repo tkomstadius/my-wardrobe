@@ -1,10 +1,11 @@
-import { CheckIcon } from "@radix-ui/react-icons";
-import { Select, Button, Text, Badge } from "@radix-ui/themes";
-import { useState, useMemo } from "react";
+import { CheckIcon, ArrowUpIcon } from "@radix-ui/react-icons";
+import { Text, Badge } from "@radix-ui/themes";
+import { useState, useMemo, useEffect } from "react";
 import type { ReactNode } from "react";
-import type { WardrobeItem, ItemCategory } from "../../types/wardrobe";
+import type { WardrobeItem } from "../../types/wardrobe";
 import { CATEGORIES } from "../../utils/categories";
-import { FILTER_ALL } from "../../utils/filters";
+import { useItemSearch } from "../../hooks/useItemSearch";
+import { SearchBar } from "./SearchBar";
 import styles from "./ItemSelector.module.css";
 
 // Helper function to check if item was worn recently
@@ -42,171 +43,55 @@ export function ItemSelector({
   emptyMessage = "No items found",
   actionButtons,
 }: ItemSelectorProps) {
-  const [categoryFilter, setCategoryFilter] = useState<ItemCategory | "all">(
-    FILTER_ALL
-  );
-  const [brandFilter, setBrandFilter] = useState<string>(FILTER_ALL);
-  const [thriftedFilter, setThriftedFilter] = useState(false);
-  const [casualFilter, setCasualFilter] = useState(false);
-  const [handmadeFilter, setHandmadeFilter] = useState(false);
+  const [showBackToTop, setShowBackToTop] = useState(false);
 
-  // Get all unique brands from items
-  const allBrands = useMemo(() => {
-    const brands = new Set<string>();
-    for (const item of items) {
-      if (item.brand?.trim()) {
-        brands.add(item.brand.trim());
-      }
-    }
-    return Array.from(brands).sort();
-  }, [items]);
+  // Use search hook
+  const { searchQuery, setSearchQuery, clearSearch, filteredItems, hasSearch } =
+    useItemSearch(items);
 
-  // Filter items based on active filters
-  const filteredItems = useMemo(() => {
-    return items.filter((item) => {
-      // Category filter
-      if (categoryFilter !== FILTER_ALL && item.category !== categoryFilter) {
-        return false;
-      }
+  // Track scroll position to show/hide back to top button
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowBackToTop(window.scrollY > 300);
+    };
 
-      // Brand filter
-      if (brandFilter !== FILTER_ALL && item.brand !== brandFilter) {
-        return false;
-      }
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
-      // Thrifted filter
-      if (thriftedFilter && !item.isSecondHand) {
-        return false;
-      }
-
-      // Casual filter
-      if (casualFilter && !item.isDogCasual) {
-        return false;
-      }
-
-      // Handmade filter
-      if (handmadeFilter && !item.isHandmade) {
-        return false;
-      }
-
-      return true;
-    });
-  }, [
-    items,
-    categoryFilter,
-    brandFilter,
-    thriftedFilter,
-    casualFilter,
-    handmadeFilter,
-  ]);
-
-  const hasActiveFilters =
-    categoryFilter !== FILTER_ALL ||
-    brandFilter !== FILTER_ALL ||
-    thriftedFilter ||
-    casualFilter ||
-    handmadeFilter;
-
-  const clearFilters = () => {
-    setCategoryFilter(FILTER_ALL);
-    setBrandFilter(FILTER_ALL);
-    setThriftedFilter(false);
-    setCasualFilter(false);
-    setHandmadeFilter(false);
+  // Scroll to top function
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
+
+  // Group filtered items by category
+  const itemsByCategory = useMemo(() => {
+    return CATEGORIES.map((category) => ({
+      category: category.id,
+      title: category.title,
+      items: filteredItems.filter((item) => item.category === category.id),
+    })).filter((group) => group.items.length > 0); // Only show categories with items
+  }, [filteredItems]);
 
   return (
     <div className={styles.container}>
-      {/* Sticky Filter Bar */}
-      <div className={styles.filterBar}>
-        <div className={styles.filterRow}>
-          {/* Category Filter */}
-          <Select.Root
-            value={categoryFilter}
-            onValueChange={(value) =>
-              setCategoryFilter(value as ItemCategory | "all")
-            }
-          >
-            <Select.Trigger
-              placeholder="Category"
-              className={styles.filterSelect}
-            />
-            <Select.Content>
-              <Select.Item value={FILTER_ALL}>All Categories</Select.Item>
-              {CATEGORIES.map((category) => (
-                <Select.Item key={category.id} value={category.id}>
-                  {category.title}
-                </Select.Item>
-              ))}
-            </Select.Content>
-          </Select.Root>
+      {/* Search Bar */}
+      <div className={styles.searchSection}>
+        <SearchBar
+          value={searchQuery}
+          onChange={setSearchQuery}
+          onClear={clearSearch}
+          resultCount={filteredItems.length}
+        />
 
-          {/* Brand Filter */}
-          <Select.Root value={brandFilter} onValueChange={setBrandFilter}>
-            <Select.Trigger
-              placeholder="Brand"
-              className={styles.filterSelect}
-            />
-            <Select.Content>
-              <Select.Item value={FILTER_ALL}>All Brands</Select.Item>
-              {allBrands.map((brand) => (
-                <Select.Item key={brand} value={brand}>
-                  {brand}
-                </Select.Item>
-              ))}
-            </Select.Content>
-          </Select.Root>
-        </div>
-
-        <div className={styles.filterRow}>
-          {/* Toggle Filters */}
-          <Button
-            size="2"
-            variant={thriftedFilter ? "solid" : "soft"}
-            color="amber"
-            onClick={() => setThriftedFilter(!thriftedFilter)}
-          >
-            Thrifted
-          </Button>
-
-          <Button
-            size="2"
-            variant={casualFilter ? "solid" : "soft"}
-            color="cyan"
-            onClick={() => setCasualFilter(!casualFilter)}
-          >
-            Casual
-          </Button>
-
-          <Button
-            size="2"
-            variant={handmadeFilter ? "solid" : "soft"}
-            color="green"
-            onClick={() => setHandmadeFilter(!handmadeFilter)}
-          >
-            Handmade
-          </Button>
-
-          {hasActiveFilters && (
-            <Button
-              size="2"
-              variant="outline"
-              color="gray"
-              onClick={clearFilters}
-            >
-              Clear
-            </Button>
-          )}
-        </div>
-
-        {/* Results Count */}
-        <div className={styles.resultsCount}>
-          <Text size="2" color="gray">
-            {filteredItems.length}{" "}
-            {filteredItems.length === 1 ? "item" : "items"}
-            {selectedItems.size > 0 && <> • {selectedItems.size} selected</>}
-          </Text>
-        </div>
+        {/* Selection Count */}
+        {selectedItems.size > 0 && (
+          <div className={styles.selectionCount}>
+            <Text size="2" color="gray">
+              {selectedItems.size} selected
+            </Text>
+          </div>
+        )}
 
         {/* Action Buttons (optional) */}
         {actionButtons && (
@@ -214,67 +99,104 @@ export function ItemSelector({
         )}
       </div>
 
-      {/* Items Grid */}
-      <div className={styles.itemsGrid}>
+      {/* Items by Category */}
+      <div className={styles.itemsSection}>
         {filteredItems.length === 0 ? (
           <div className={styles.emptyState}>
-            <Text color="gray">{emptyMessage}</Text>
-            {hasActiveFilters && (
-              <Button variant="soft" size="2" onClick={clearFilters}>
-                Clear Filters
-              </Button>
+            <Text color="gray">
+              {hasSearch ? `No items match "${searchQuery}"` : emptyMessage}
+            </Text>
+            {hasSearch && (
+              <Text size="2" color="gray">
+                Try: "tops", "nike", "blue", "thrifted", "casual", etc.
+              </Text>
             )}
           </div>
         ) : (
-          filteredItems.map((item) => {
-            const isSelected = selectedItems.has(item.id);
-            const isDisabled = disabledItems.has(item.id);
-            const recentBadge = getRecentWearBadge(item.wearHistory);
+          <div className={styles.categorySections}>
+            {itemsByCategory.map(
+              ({ category, title, items: categoryItems }) => (
+                <div key={category} className={styles.categorySection}>
+                  <div className={styles.categoryHeader}>
+                    <Text
+                      size="2"
+                      weight="medium"
+                      className={styles.categoryTitle}
+                    >
+                      {title}
+                    </Text>
+                    <Text size="1" color="gray">
+                      {categoryItems.length}{" "}
+                      {categoryItems.length === 1 ? "item" : "items"}
+                    </Text>
+                  </div>
+                  <div className={styles.itemsGrid}>
+                    {categoryItems.map((item) => {
+                      const isSelected = selectedItems.has(item.id);
+                      const isDisabled = disabledItems.has(item.id);
+                      const recentBadge = getRecentWearBadge(item.wearHistory);
 
-            return (
-              <button
-                key={item.id}
-                type="button"
-                onClick={() => onToggleSelection(item.id)}
-                className={`${styles.itemCard} ${
-                  isSelected ? styles.selected : ""
-                }`}
-                disabled={isDisabled}
-              >
-                <div className={styles.imageWrapper}>
-                  <img
-                    src={item.imageUrl}
-                    alt={item.brand || item.notes || "Item"}
-                    className={styles.itemImage}
-                  />
-                  {recentBadge && (
-                    <div className={styles.recentBadge}>
-                      <Badge size="1" color="orange" variant="solid">
-                        {recentBadge}
-                      </Badge>
-                    </div>
-                  )}
-                  {(isSelected || isDisabled) && (
-                    <div className={styles.checkOverlay}>
-                      <div className={styles.checkIcon}>
-                        <CheckIcon />
-                      </div>
-                    </div>
-                  )}
+                      return (
+                        <button
+                          key={item.id}
+                          type="button"
+                          onClick={() => onToggleSelection(item.id)}
+                          className={`${styles.itemCard} ${
+                            isSelected ? styles.selected : ""
+                          }`}
+                          disabled={isDisabled}
+                        >
+                          <div className={styles.imageWrapper}>
+                            <img
+                              src={item.imageUrl}
+                              alt={item.brand || item.notes || "Item"}
+                              className={styles.itemImage}
+                            />
+                            {recentBadge && (
+                              <div className={styles.recentBadge}>
+                                <Badge size="1" color="orange" variant="solid">
+                                  {recentBadge}
+                                </Badge>
+                              </div>
+                            )}
+                            {(isSelected || isDisabled) && (
+                              <div className={styles.checkOverlay}>
+                                <div className={styles.checkIcon}>
+                                  <CheckIcon />
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                          <div className={styles.itemInfo}>
+                            {item.brand && (
+                              <p className={styles.itemBrand}>{item.brand}</p>
+                            )}
+                            {item.notes && (
+                              <p className={styles.itemNotes}>{item.notes}</p>
+                            )}
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
-                <div className={styles.itemInfo}>
-                  {item.brand && (
-                    <p className={styles.itemBrand}>{item.brand}</p>
-                  )}
-                  {item.notes && (
-                    <p className={styles.itemNotes}>{item.notes}</p>
-                  )}
-                </div>
-              </button>
-            );
-          })
+              )
+            )}
+          </div>
         )}
       </div>
+
+      {/* Floating Back to Top Button */}
+      {showBackToTop && (
+        <button
+          type="button"
+          onClick={scrollToTop}
+          className={styles.backToTop}
+          aria-label="Back to top"
+        >
+          <ArrowUpIcon width={20} height={20} />
+        </button>
+      )}
     </div>
   );
 }

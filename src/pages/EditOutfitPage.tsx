@@ -264,7 +264,7 @@ export function EditOutfitPage() {
         </section>
 
         {/* Item Selection */}
-        <section className={styles.selectorSection}>
+        <section>
           <ItemSelector
             items={items}
             selectedItems={selectedItems}

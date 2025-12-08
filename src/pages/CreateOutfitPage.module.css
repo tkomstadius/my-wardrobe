@@ -114,16 +114,6 @@
   box-shadow: 0 0 0 1px var(--accent-8);
 }
 
-.selectorSection {
-  min-height: 400px;
-  max-height: 600px;
-  border: 1px solid var(--gray-6);
-  border-radius: var(--radius-3);
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-}
-
 .ratingHeader {
   margin-bottom: 1rem;
 }

@@ -1,47 +1,26 @@
 .container {
   display: flex;
   flex-direction: column;
-  flex: 1;
-  overflow-y: auto;
-  overflow-x: hidden;
-  min-height: 0;
+  gap: 1.5rem;
+  position: relative;
 }
 
-/* Sticky Filter Bar */
-.filterBar {
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  background: var(--color-background);
-  padding: 1rem;
-  border-bottom: 1px solid var(--gray-6);
+/* Search Section */
+.searchSection {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  gap: 1rem;
 }
 
-.filterRow {
+.selectionCount {
   display: flex;
-  gap: 0.5rem;
-  flex-wrap: wrap;
+  justify-content: center;
   align-items: center;
-}
-
-.filterSelect {
-  flex: 1;
-  min-width: 120px;
-}
-
-.resultsCount {
-  padding-top: 0.5rem;
-  border-top: 1px solid var(--gray-5);
 }
 
 .actionButtons {
   display: flex;
   gap: 0.75rem;
-  padding-top: 0.75rem;
 }
 
 .actionButtons button:first-child {
@@ -50,6 +29,38 @@
 
 .actionButtons button:last-child {
   flex: 2;
+}
+
+/* Items Section */
+.itemsSection {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Category Sections */
+.categorySections {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.categorySection {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.categoryHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--gray-5);
+}
+
+.categoryTitle {
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
 }
 
 /* Items Grid */
@@ -183,11 +194,40 @@
 
 /* Empty State */
 .emptyState {
-  grid-column: 1 / -1;
   padding: 3rem 1rem;
   text-align: center;
   display: flex;
   flex-direction: column;
   gap: 1rem;
   align-items: center;
+}
+
+/* Floating Back to Top Button */
+.backToTop {
+  position: fixed;
+  bottom: 6rem;
+  right: 1.5rem;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--accent-9);
+  color: white;
+  border: none;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  z-index: 100;
+}
+
+.backToTop:hover {
+  background: var(--accent-10);
+  transform: scale(1.05);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+}
+
+.backToTop:active {
+  transform: scale(0.95);
 }

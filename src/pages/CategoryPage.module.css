@@ -25,49 +25,6 @@
   width: 80px; /* Match button width for centering */
 }
 
-.itemCount {
-  margin-bottom: 16px;
-}
-
-.filtersContainer {
-  margin-bottom: 20px;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-}
-
-.filtersContainer::-webkit-scrollbar {
-  display: none;
-}
-
-.filters {
-  display: flex;
-  gap: 8px;
-  padding-bottom: 4px;
-  min-width: min-content;
-}
-
-.filterButton {
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-
-.brandFilterContainer {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 20px;
-}
-
-.brandFilterLabel {
-  color: var(--gray-11);
-}
-
-.brandSelect {
-  min-width: 200px;
-}
-
 .grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
