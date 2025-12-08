@@ -152,6 +152,7 @@ export function AddItemPage() {
                 setFormData({ ...formData, brand: e.target.value })
               }
               list="brand-suggestions"
+              size="3"
             />
             <datalist id="brand-suggestions">
               {getAllBrands().map((brand) => (
