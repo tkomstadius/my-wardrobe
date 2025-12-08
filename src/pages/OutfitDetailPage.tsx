@@ -34,6 +34,19 @@ export function OutfitDetailPage() {
     .map((itemId) => getItemById(itemId))
     .filter((item): item is NonNullable<typeof item> => item !== undefined);
 
+  // Calculate trait summary
+  const traitCounts = {
+    comfort: outfitItems.filter((item) => item.trait === "comfort").length,
+    confidence: outfitItems.filter((item) => item.trait === "confidence")
+      .length,
+    creative: outfitItems.filter((item) => item.trait === "creative").length,
+  };
+  const totalItems = outfitItems.length;
+  const hasTraits =
+    traitCounts.comfort > 0 ||
+    traitCounts.confidence > 0 ||
+    traitCounts.creative > 0;
+
   const handleDelete = async () => {
     setIsDeleting(true);
     try {
@@ -104,6 +117,47 @@ export function OutfitDetailPage() {
               <Text size="4" weight="bold" color="blue">
                 {outfit.rating}/5
               </Text>
+            </div>
+          )}
+
+          {/* Trait Summary */}
+          {hasTraits && (
+            <div className={styles.traitSummary}>
+              <Text size="2" color="gray" weight="medium">
+                Outfit Vibe
+              </Text>
+              <div className={styles.traitCounts}>
+                {traitCounts.comfort > 0 && (
+                  <div className={styles.traitItem}>
+                    <Text size="2" color="purple" weight="bold">
+                      🟣 Comfort
+                    </Text>
+                    <Text size="2" color="gray">
+                      {traitCounts.comfort}/{totalItems} items
+                    </Text>
+                  </div>
+                )}
+                {traitCounts.confidence > 0 && (
+                  <div className={styles.traitItem}>
+                    <Text size="2" color="orange" weight="bold">
+                      🟠 Confidence
+                    </Text>
+                    <Text size="2" color="gray">
+                      {traitCounts.confidence}/{totalItems} items
+                    </Text>
+                  </div>
+                )}
+                {traitCounts.creative > 0 && (
+                  <div className={styles.traitItem}>
+                    <Text size="2" color="pink" weight="bold">
+                      🩷 Creative
+                    </Text>
+                    <Text size="2" color="gray">
+                      {traitCounts.creative}/{totalItems} items
+                    </Text>
+                  </div>
+                )}
+              </div>
             </div>
           )}
         </section>
