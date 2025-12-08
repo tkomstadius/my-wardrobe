@@ -7,7 +7,7 @@ import { useWardrobe } from "../contexts/WardrobeContext";
 import { useImageUpload } from "../hooks/useImageUpload";
 import { DeleteConfirmDialog } from "../components/common/DeleteConfirmDialog";
 import { ItemSelector } from "../components/common/ItemSelector";
-import { RatingSlider } from "../components/common/RatingSlider";
+import { RatingButtons } from "../components/common/RatingButtons";
 import styles from "./CreateOutfitPage.module.css";
 
 export function EditOutfitPage() {
@@ -21,9 +21,7 @@ export function EditOutfitPage() {
   const [formData, setFormData] = useState({
     createdDate: new Date().toISOString().split("T")[0] as string,
     notes: "",
-    comfortRating: 0,
-    confidenceRating: 0,
-    creativityRating: 0,
+    rating: undefined as number | undefined,
   });
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
   const [isSaving, setIsSaving] = useState(false);
@@ -47,9 +45,7 @@ export function EditOutfitPage() {
     setFormData({
       createdDate: new Date(outfit.createdAt).toISOString().split("T")[0] ?? "",
       notes: outfit.notes || "",
-      comfortRating: outfit.comfortRating || 0,
-      confidenceRating: outfit.confidenceRating || 0,
-      creativityRating: outfit.creativityRating || 0,
+      rating: outfit.rating,
     });
     setImagePreview(outfit.photo || "");
     setSelectedItems(new Set(outfit.itemIds));
@@ -85,9 +81,7 @@ export function EditOutfitPage() {
         itemIds: Array.from(selectedItems),
         createdAt: new Date(formData.createdDate),
         notes: formData.notes.trim() || undefined,
-        comfortRating: formData.comfortRating || undefined,
-        confidenceRating: formData.confidenceRating || undefined,
-        creativityRating: formData.creativityRating || undefined,
+        rating: formData.rating,
       });
 
       // Navigate to outfit detail page
@@ -238,28 +232,10 @@ export function EditOutfitPage() {
             Rate This Outfit (Optional)
           </Text>
 
-          <RatingSlider
-            label="Comfortable"
-            value={formData.comfortRating}
-            onChange={(value) =>
-              setFormData({ ...formData, comfortRating: value })
-            }
-          />
-
-          <RatingSlider
-            label="Confident"
-            value={formData.confidenceRating}
-            onChange={(value) =>
-              setFormData({ ...formData, confidenceRating: value })
-            }
-          />
-
-          <RatingSlider
-            label="Creative"
-            value={formData.creativityRating}
-            onChange={(value) =>
-              setFormData({ ...formData, creativityRating: value })
-            }
+          <RatingButtons
+            label="How do you feel about this outfit? (Optional)"
+            value={formData.rating}
+            onChange={(value) => setFormData({ ...formData, rating: value })}
           />
         </section>
 

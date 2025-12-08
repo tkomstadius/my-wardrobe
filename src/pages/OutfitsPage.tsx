@@ -76,53 +76,10 @@ export function OutfitsPage() {
                 </div>
 
                 <div className={styles.outfitInfo}>
-                  {(outfit.comfortRating ||
-                    outfit.confidenceRating ||
-                    outfit.creativityRating) && (
-                    <div className={styles.ratings}>
-                      {outfit.comfortRating && (
-                        <div className={styles.ratingBadge}>
-                          <Text size="1" className={styles.ratingLabel}>
-                            Comfort
-                          </Text>
-                          <div className={styles.ratingBarContainer}>
-                            <div
-                              className={`${styles.ratingBar} ${
-                                styles[`rating${outfit.comfortRating}`]
-                              }`}
-                            />
-                          </div>
-                        </div>
-                      )}
-                      {outfit.confidenceRating && (
-                        <div className={styles.ratingBadge}>
-                          <Text size="1" className={styles.ratingLabel}>
-                            Confidence
-                          </Text>
-                          <div className={styles.ratingBarContainer}>
-                            <div
-                              className={`${styles.ratingBar} ${
-                                styles[`rating${outfit.confidenceRating}`]
-                              }`}
-                            />
-                          </div>
-                        </div>
-                      )}
-                      {outfit.creativityRating && (
-                        <div className={styles.ratingBadge}>
-                          <Text size="1" className={styles.ratingLabel}>
-                            Creativity
-                          </Text>
-                          <div className={styles.ratingBarContainer}>
-                            <div
-                              className={`${styles.ratingBar} ${
-                                styles[`rating${outfit.creativityRating}`]
-                              }`}
-                            />
-                          </div>
-                        </div>
-                      )}
-                    </div>
+                  {outfit.rating && (
+                    <Text size="2" weight="bold" color="blue">
+                      ⭐ {outfit.rating}/5
+                    </Text>
                   )}
                   {outfit.notes && (
                     <Text size="1" color="gray" className={styles.outfitNotes}>

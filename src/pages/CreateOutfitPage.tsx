@@ -6,7 +6,7 @@ import { useOutfit } from "../contexts/OutfitContext";
 import { useWardrobe } from "../contexts/WardrobeContext";
 import { useImageUpload } from "../hooks/useImageUpload";
 import { ItemSelector } from "../components/common/ItemSelector";
-import { RatingSlider } from "../components/common/RatingSlider";
+import { RatingButtons } from "../components/common/RatingButtons";
 import styles from "./CreateOutfitPage.module.css";
 
 export function CreateOutfitPage() {
@@ -18,9 +18,7 @@ export function CreateOutfitPage() {
   const [formData, setFormData] = useState({
     createdDate: new Date().toISOString().split("T")[0] as string, // Default to today
     notes: "",
-    comfortRating: 0,
-    confidenceRating: 0,
-    creativityRating: 0,
+    rating: undefined as number | undefined,
   });
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
   const [isSaving, setIsSaving] = useState(false);
@@ -53,9 +51,7 @@ export function CreateOutfitPage() {
         itemIds: Array.from(selectedItems),
         createdAt: new Date(formData.createdDate),
         notes: formData.notes.trim() || undefined,
-        comfortRating: formData.comfortRating || undefined,
-        confidenceRating: formData.confidenceRating || undefined,
-        creativityRating: formData.creativityRating || undefined,
+        rating: formData.rating,
       });
 
       // Navigate to outfits page
@@ -166,28 +162,10 @@ export function CreateOutfitPage() {
             Rate This Outfit (Optional)
           </Text>
 
-          <RatingSlider
-            label="Comfortable"
-            value={formData.comfortRating}
-            onChange={(value) =>
-              setFormData({ ...formData, comfortRating: value })
-            }
-          />
-
-          <RatingSlider
-            label="Confident"
-            value={formData.confidenceRating}
-            onChange={(value) =>
-              setFormData({ ...formData, confidenceRating: value })
-            }
-          />
-
-          <RatingSlider
-            label="Creative"
-            value={formData.creativityRating}
-            onChange={(value) =>
-              setFormData({ ...formData, creativityRating: value })
-            }
+          <RatingButtons
+            label="How do you feel about this outfit? (Optional)"
+            value={formData.rating}
+            onChange={(value) => setFormData({ ...formData, rating: value })}
           />
         </section>
 

@@ -96,45 +96,14 @@ export function OutfitDetailPage() {
           )}
 
           {/* Ratings */}
-          {(outfit.comfortRating ||
-            outfit.confidenceRating ||
-            outfit.creativityRating) && (
-            <div className={styles.ratings}>
-              <Text size="2" color="gray" className={styles.ratingsTitle}>
-                Ratings
+          {outfit.rating && (
+            <div className={styles.rating}>
+              <Text size="2" color="gray">
+                Rating
               </Text>
-              <div className={styles.ratingsGrid}>
-                {outfit.comfortRating && (
-                  <div className={styles.ratingItem}>
-                    <Text size="1" color="gray">
-                      Comfortable
-                    </Text>
-                    <Text size="3" weight="bold">
-                      {outfit.comfortRating}/5
-                    </Text>
-                  </div>
-                )}
-                {outfit.confidenceRating && (
-                  <div className={styles.ratingItem}>
-                    <Text size="1" color="gray">
-                      Confident
-                    </Text>
-                    <Text size="3" weight="bold">
-                      {outfit.confidenceRating}/5
-                    </Text>
-                  </div>
-                )}
-                {outfit.creativityRating && (
-                  <div className={styles.ratingItem}>
-                    <Text size="1" color="gray">
-                      Creative
-                    </Text>
-                    <Text size="3" weight="bold">
-                      {outfit.creativityRating}/5
-                    </Text>
-                  </div>
-                )}
-              </div>
+              <Text size="4" weight="bold" color="blue">
+                {outfit.rating}/5
+              </Text>
             </div>
           )}
         </section>
