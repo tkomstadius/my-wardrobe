@@ -102,7 +102,7 @@
   margin: 0 auto;
 }
 
-.costPerWearCard Text:first-child {
+.costPerWearCard > :first-child {
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
@@ -139,12 +139,55 @@
 /* Actions */
 .actions {
   display: flex;
+  flex-direction: column;
   gap: 12px;
   margin-top: 8px;
 }
 
+.buttonGroup {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+}
+
 .wornButton {
   flex: 1;
+  min-width: 0; /* Allow flex items to shrink below content size */
+  white-space: normal; /* Allow text to wrap if needed */
+}
+
+/* Date Picker */
+.datePickerContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  background: var(--gray-2);
+  border: 1px solid var(--gray-6);
+  border-radius: var(--radius-3);
+}
+
+.datePicker {
+  width: 100%;
+  padding: 10px 12px;
+  font-size: 16px;
+  border: 1px solid var(--gray-7);
+  border-radius: var(--radius-2);
+  background: var(--gray-1);
+  color: var(--gray-12);
+  font-family: inherit;
+}
+
+.datePicker:focus {
+  outline: none;
+  border-color: var(--blue-9);
+  box-shadow: 0 0 0 3px var(--blue-4);
+}
+
+.datePickerActions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
 }
 
 /* Wear History Section */
@@ -275,7 +318,7 @@
 }
 
 /* Mobile adjustments */
-@media (max-width: 768px) {
+@media (max-width: 900px) {
   .container {
     padding: 16px;
   }
@@ -286,5 +329,14 @@
 
   .costPerWearCard {
     padding: 20px;
+  }
+
+  .buttonGroup {
+    flex-direction: column;
+  }
+
+  .wornButton {
+    width: 100%;
+    min-height: 48px; /* Better touch target for mobile */
   }
 }

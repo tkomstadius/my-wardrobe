@@ -1,3 +1,4 @@
+import { compareAsc, isBefore, subDays } from "date-fns";
 import {
   createContext,
   type ReactNode,
@@ -5,7 +6,6 @@ import {
   useEffect,
   useState,
 } from "react";
-import { isBefore, subDays } from "date-fns";
 import type { NewWardrobeItem, WardrobeItem } from "../types/wardrobe";
 import { countWearsInRange } from "../utils/dateFormatter";
 import { saveItem } from "../utils/indexedDB";
@@ -18,6 +18,7 @@ interface WardrobeContextValue {
   updateItemEmbedding: (id: string, embedding: number[]) => Promise<void>;
   deleteItem: (id: string) => Promise<void>;
   incrementWearCount: (id: string) => Promise<void>;
+  logWearOnDate: (id: string, date: Date) => Promise<void>;
   removeWear: (id: string, wearIndex: number) => Promise<void>;
   getItemById: (id: string) => WardrobeItem | undefined;
   getItemsByCategory: (category: string) => WardrobeItem[];
@@ -167,6 +168,34 @@ export function WardrobeProvider({ children }: WardrobeProviderProps) {
     );
   };
 
+  const logWearOnDate = async (id: string, date: Date): Promise<void> => {
+    const itemToUpdate = items.find((item) => item.id === id);
+    if (!itemToUpdate) {
+      throw new Error("Item not found");
+    }
+
+    // Add the new date to wear history and sort chronologically using date-fns
+    const newWearHistory = [...(itemToUpdate.wearHistory || []), date].sort(
+      compareAsc
+    );
+    const initialCount = itemToUpdate.initialWearCount ?? 0;
+
+    const updatedItem = {
+      ...itemToUpdate,
+      wearCount: initialCount + newWearHistory.length, // Calculate total: initial + history
+      wearHistory: newWearHistory, // Add specified date to wear history (sorted)
+      updatedAt: new Date(),
+    };
+
+    // Save to IndexedDB first
+    await saveItem(updatedItem);
+
+    // Then update state
+    setItems((prev) =>
+      prev.map((item) => (item.id === id ? updatedItem : item))
+    );
+  };
+
   const removeWear = async (id: string, wearIndex: number): Promise<void> => {
     const itemToUpdate = items.find((item) => item.id === id);
     if (!itemToUpdate) {
@@ -245,7 +274,7 @@ export function WardrobeProvider({ children }: WardrobeProviderProps) {
     limit = 10,
     startDate?: Date
   ): Array<{ item: WardrobeItem; wearCount: number }> => {
-    let itemsWithCounts;
+    let itemsWithCounts: Array<{ item: WardrobeItem; wearCount: number }>;
 
     if (startDate) {
       // Filter by time period
@@ -287,6 +316,7 @@ export function WardrobeProvider({ children }: WardrobeProviderProps) {
     updateItemEmbedding,
     deleteItem,
     incrementWearCount,
+    logWearOnDate,
     removeWear,
     getItemById,
     getItemsByCategory,

@@ -1,10 +1,11 @@
 import { ArrowLeftIcon, Pencil1Icon, TrashIcon } from "@radix-ui/react-icons";
-import { Button, Heading, Text, Badge } from "@radix-ui/themes";
+import { Badge, Button, Heading, Text } from "@radix-ui/themes";
+import { set } from "date-fns";
 import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router";
-import { useWardrobe } from "../contexts/WardrobeContext";
-import { useOutfit } from "../contexts/OutfitContext";
 import { DeleteConfirmDialog } from "../components/common/DeleteConfirmDialog";
+import { useOutfit } from "../contexts/OutfitContext";
+import { useWardrobe } from "../contexts/WardrobeContext";
 import {
   formatDateDisplay,
   formatItemAge,
@@ -15,14 +16,21 @@ import styles from "./ItemDetailPage.module.css";
 export function ItemDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { getItemById, deleteItem, incrementWearCount, removeWear } =
-    useWardrobe();
+  const {
+    getItemById,
+    deleteItem,
+    incrementWearCount,
+    logWearOnDate,
+    removeWear,
+  } = useWardrobe();
   const { getOutfitsByItemId } = useOutfit();
   const [isDeleting, setIsDeleting] = useState(false);
   const [deletingWearIndex, setDeletingWearIndex] = useState<number | null>(
     null
   );
   const [showAllWears, setShowAllWears] = useState(false);
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [selectedDate, setSelectedDate] = useState("");
 
   const item = id ? getItemById(id) : null;
   const outfitsWithItem = id ? getOutfitsByItemId(id) : [];
@@ -62,6 +70,26 @@ export function ItemDetailPage() {
     } catch (error) {
       console.error("Failed to mark as worn:", error);
       alert("Failed to update wear count. Please try again.");
+    }
+  };
+
+  const handleLogWearOnDate = async () => {
+    if (!id || !selectedDate) return;
+
+    try {
+      // Set to noon to avoid timezone issues using date-fns
+      const date = set(new Date(selectedDate), {
+        hours: 12,
+        minutes: 0,
+        seconds: 0,
+        milliseconds: 0,
+      });
+      await logWearOnDate(id, date);
+      setShowDatePicker(false);
+      setSelectedDate("");
+    } catch (error) {
+      console.error("Failed to log wear:", error);
+      alert("Failed to log wear. Please try again.");
     }
   };
 
@@ -208,15 +236,66 @@ export function ItemDetailPage() {
             </div>
           )}
 
-          {/* Mark as Worn Button */}
+          {/* Mark as Worn Buttons */}
           <div className={styles.actions}>
-            <Button
-              size="3"
-              onClick={handleMarkAsWorn}
-              className={styles.wornButton}
-            >
-              Mark as Worn Today
-            </Button>
+            {!showDatePicker ? (
+              <div className={styles.buttonGroup}>
+                <Button
+                  size="3"
+                  onClick={handleMarkAsWorn}
+                  className={styles.wornButton}
+                >
+                  Mark as Worn Today
+                </Button>
+                <Button
+                  size="3"
+                  variant="soft"
+                  onClick={() => {
+                    // Default to today's date
+                    const today = new Date();
+                    const dateStr = today.toISOString().split("T")[0];
+                    setSelectedDate(dateStr);
+                    setShowDatePicker(true);
+                  }}
+                  className={styles.wornButton}
+                >
+                  Log Wear on Different Date
+                </Button>
+              </div>
+            ) : (
+              <div className={styles.datePickerContainer}>
+                <Text size="2" weight="medium">
+                  Select the date you wore this item:
+                </Text>
+                <input
+                  type="date"
+                  value={selectedDate}
+                  onChange={(e) => setSelectedDate(e.target.value)}
+                  max={new Date().toISOString().split("T")[0]}
+                  className={styles.datePicker}
+                />
+                <div className={styles.datePickerActions}>
+                  <Button
+                    size="2"
+                    variant="soft"
+                    color="gray"
+                    onClick={() => {
+                      setShowDatePicker(false);
+                      setSelectedDate("");
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    size="2"
+                    onClick={handleLogWearOnDate}
+                    disabled={!selectedDate}
+                  >
+                    Log Wear
+                  </Button>
+                </div>
+              </div>
+            )}
           </div>
         </section>
 
