@@ -7,6 +7,7 @@ import { DeleteConfirmDialog } from "../components/common/DeleteConfirmDialog";
 import { useOutfit } from "../contexts/OutfitContext";
 import { useWardrobe } from "../contexts/WardrobeContext";
 import {
+  formatDate,
   formatDateDisplay,
   formatItemAge,
   formatLastWorn,
@@ -251,9 +252,8 @@ export function ItemDetailPage() {
                   size="3"
                   variant="soft"
                   onClick={() => {
-                    // Default to today's date
-                    const today = new Date();
-                    const dateStr = today.toISOString().split("T")[0];
+                    // Default to today's date using date-fns formatDate (Swedish ISO 8601)
+                    const dateStr = formatDate(new Date());
                     setSelectedDate(dateStr);
                     setShowDatePicker(true);
                   }}
@@ -271,7 +271,7 @@ export function ItemDetailPage() {
                   type="date"
                   value={selectedDate}
                   onChange={(e) => setSelectedDate(e.target.value)}
-                  max={new Date().toISOString().split("T")[0]}
+                  max={formatDate(new Date())}
                   className={styles.datePicker}
                 />
                 <div className={styles.datePickerActions}>
