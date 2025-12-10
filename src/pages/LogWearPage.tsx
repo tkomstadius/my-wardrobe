@@ -1,5 +1,5 @@
 import { CameraIcon } from "@radix-ui/react-icons";
-import { Button, Callout, Heading, Text } from "@radix-ui/themes";
+import { Button, Callout, Heading, Text, Tabs } from "@radix-ui/themes";
 import { differenceInDays } from "date-fns";
 import { useOptimistic, useRef, useState } from "react";
 import ReactCrop, { type Crop, type PixelCrop } from "react-image-crop";
@@ -314,34 +314,25 @@ export function LogWearPage() {
       )}
 
       {/* Mode Toggle */}
-      <div className={styles.modeToggle}>
-        <Button
-          variant={isAIMode ? "solid" : "outline"}
-          onClick={() => {
-            setIsAIMode(true);
-            setSelectedItems(new Set());
-            setAcceptedItems(new Set());
-            setRejectedItems(new Set());
-          }}
-          size="2"
-        >
-          🤖 AI Matching
-        </Button>
-        <Button
-          variant={!isAIMode ? "solid" : "outline"}
-          onClick={() => {
-            setIsAIMode(false);
+      <Tabs.Root
+        value={isAIMode ? "ai" : "manual"}
+        onValueChange={(value) => {
+          const newIsAIMode = value === "ai";
+          setIsAIMode(newIsAIMode);
+          setSelectedItems(new Set());
+          setAcceptedItems(new Set());
+          setRejectedItems(new Set());
+          if (!newIsAIMode) {
             setAIMatches([]);
-            setSelectedItems(new Set());
-            setAcceptedItems(new Set());
-            setRejectedItems(new Set());
             clearImage();
-          }}
-          size="2"
-        >
-          👆 Manual Selection
-        </Button>
-      </div>
+          }
+        }}
+      >
+        <Tabs.List className={styles.tabsList}>
+          <Tabs.Trigger value="ai">🤖 AI Matching</Tabs.Trigger>
+          <Tabs.Trigger value="manual">👆 Manual Selection</Tabs.Trigger>
+        </Tabs.List>
+      </Tabs.Root>
 
       {/* AI Mode */}
       {isAIMode && (

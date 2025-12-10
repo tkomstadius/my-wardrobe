@@ -30,9 +30,7 @@
   margin: 0 1rem;
 }
 
-.modeToggle {
-  display: flex;
-  gap: 0.5rem;
+.tabsList {
   padding: 0 1rem;
   margin-bottom: 0.5rem;
 }
