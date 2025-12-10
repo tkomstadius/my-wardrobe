@@ -1,23 +1,29 @@
-import { useState, useRef } from "react";
-import { Button, Text, Card, Callout } from "@radix-ui/themes";
 import {
-  InfoCircledIcon,
   CheckCircledIcon,
   CrossCircledIcon,
+  InfoCircledIcon,
 } from "@radix-ui/react-icons";
-import { useWardrobe } from "../contexts/WardrobeContext";
+import { Button, Callout, Card, Text } from "@radix-ui/themes";
+import { useEffect, useRef, useState } from "react";
 import { useOutfit } from "../contexts/OutfitContext";
+import { useWardrobe } from "../contexts/WardrobeContext";
+import { getImageEmbedding } from "../utils/aiEmbedding";
 import {
-  shareBackup,
-  parseBackupFile,
+  clearAllFeedback,
+  getFeedbackStats,
+  resetUserPreferences,
+  updatePreferencesFromFeedback,
+} from "../utils/aiLearning";
+import {
   importBackup,
   isShareSupported,
+  parseBackupFile,
+  shareBackup,
 } from "../utils/backup";
 import {
-  repairWearCountMismatches,
   diagnoseAllItems,
+  repairWearCountMismatches,
 } from "../utils/repairData";
-import { getImageEmbedding } from "../utils/aiEmbedding";
 import styles from "./SettingsPage.module.css";
 
 export function SettingsPage() {
@@ -37,9 +43,32 @@ export function SettingsPage() {
   } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // AI Learning state
+  const [feedbackStats, setFeedbackStats] = useState<{
+    totalFeedback: number;
+    acceptedCount: number;
+    rejectedCount: number;
+    acceptanceRate: number;
+  } | null>(null);
+  const [isUpdatingPreferences, setIsUpdatingPreferences] = useState(false);
+  const [isResettingLearning, setIsResettingLearning] = useState(false);
+
   // Count items without embeddings
   const itemsNeedingEmbeddings = items.filter((item) => !item.embedding);
   const hasEmbeddingGap = itemsNeedingEmbeddings.length > 0;
+
+  // Load feedback stats on mount
+  useEffect(() => {
+    async function loadStats() {
+      try {
+        const stats = await getFeedbackStats();
+        setFeedbackStats(stats);
+      } catch (error) {
+        console.error("Failed to load feedback stats:", error);
+      }
+    }
+    loadStats();
+  }, []);
 
   const handleExport = async () => {
     try {
@@ -145,6 +174,67 @@ export function SettingsPage() {
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
       }
+    }
+  };
+
+  const handleUpdatePreferences = async () => {
+    try {
+      setIsUpdatingPreferences(true);
+      setMessage(null);
+
+      const updatedPreferences = await updatePreferencesFromFeedback();
+
+      setMessage({
+        type: "success",
+        text: `AI learning updated! Processed ${updatedPreferences.totalFeedbackCount} feedback examples.`,
+      });
+
+      // Reload stats
+      const stats = await getFeedbackStats();
+      setFeedbackStats(stats);
+    } catch (error) {
+      console.error("Failed to update preferences:", error);
+      setMessage({
+        type: "error",
+        text: "Failed to update AI learning. Please try again.",
+      });
+    } finally {
+      setIsUpdatingPreferences(false);
+    }
+  };
+
+  const handleResetLearning = async () => {
+    if (
+      !confirm(
+        "Are you sure you want to reset AI learning? This will clear all feedback and preferences."
+      )
+    ) {
+      return;
+    }
+
+    try {
+      setIsResettingLearning(true);
+      setMessage(null);
+
+      await clearAllFeedback();
+      await resetUserPreferences();
+
+      setMessage({
+        type: "info",
+        text: "AI learning has been reset to defaults.",
+      });
+
+      // Reload stats
+      const stats = await getFeedbackStats();
+      setFeedbackStats(stats);
+    } catch (error) {
+      console.error("Failed to reset learning:", error);
+      setMessage({
+        type: "error",
+        text: "Failed to reset AI learning. Please try again.",
+      });
+    } finally {
+      setIsResettingLearning(false);
     }
   };
 
@@ -414,6 +504,149 @@ export function SettingsPage() {
                 <Text size="2" color="gray">
                   <strong>When to regenerate:</strong> If you've imported a
                   backup or added items while AI was offline.
+                </Text>
+              </div>
+            </div>
+          </Card>
+        </section>
+
+        {/* AI Learning Section */}
+        <section className={styles.section}>
+          <h3 className={styles.sectionTitle}>AI Learning</h3>
+
+          <Card className={styles.card}>
+            <div className={styles.cardContent}>
+              <div className={styles.infoBox}>
+                <Callout.Root size="1" color="purple">
+                  <Callout.Icon>
+                    <InfoCircledIcon />
+                  </Callout.Icon>
+                  <Callout.Text>
+                    The AI learns from your accept/reject feedback to improve
+                    matching accuracy over time. The more you use it, the better
+                    it gets!
+                  </Callout.Text>
+                </Callout.Root>
+              </div>
+
+              {feedbackStats && feedbackStats.totalFeedback > 0 && (
+                <>
+                  <div className={styles.statsRow}>
+                    <div className={styles.stat}>
+                      <Text size="1" color="gray">
+                        Total Feedback
+                      </Text>
+                      <Text size="5" weight="bold">
+                        {feedbackStats.totalFeedback}
+                      </Text>
+                    </div>
+                    <div className={styles.stat}>
+                      <Text size="1" color="gray">
+                        Accepted
+                      </Text>
+                      <Text size="5" weight="bold" style={{ color: "green" }}>
+                        {feedbackStats.acceptedCount}
+                      </Text>
+                    </div>
+                    <div className={styles.stat}>
+                      <Text size="1" color="gray">
+                        Rejected
+                      </Text>
+                      <Text size="5" weight="bold" style={{ color: "red" }}>
+                        {feedbackStats.rejectedCount}
+                      </Text>
+                    </div>
+                    <div className={styles.stat}>
+                      <Text size="1" color="gray">
+                        Accuracy
+                      </Text>
+                      <Text size="5" weight="bold">
+                        {Math.round(feedbackStats.acceptanceRate * 100)}%
+                      </Text>
+                    </div>
+                  </div>
+
+                  {feedbackStats.totalFeedback >= 5 && (
+                    <div className={styles.infoBox}>
+                      <Callout.Root color="green">
+                        <Callout.Text>
+                          ✅ Enough feedback collected! The AI can now learn
+                          from your preferences. Click "Update AI Learning" to
+                          apply.
+                        </Callout.Text>
+                      </Callout.Root>
+                    </div>
+                  )}
+
+                  {feedbackStats.totalFeedback < 5 && (
+                    <div className={styles.infoBox}>
+                      <Callout.Root color="amber">
+                        <Callout.Text>
+                          ⏳ Keep providing feedback! Need{" "}
+                          {5 - feedbackStats.totalFeedback} more to start
+                          learning.
+                        </Callout.Text>
+                      </Callout.Root>
+                    </div>
+                  )}
+                </>
+              )}
+
+              {(!feedbackStats || feedbackStats.totalFeedback === 0) && (
+                <div className={styles.infoBox}>
+                  <Callout.Root color="blue">
+                    <Callout.Text>
+                      No feedback yet. Use the accept ✓ and reject ✗ buttons in
+                      the AI Wear Logging page to start teaching the AI your
+                      preferences.
+                    </Callout.Text>
+                  </Callout.Root>
+                </div>
+              )}
+
+              <div className={styles.buttonGroup}>
+                <Button
+                  size="3"
+                  onClick={handleUpdatePreferences}
+                  disabled={
+                    isUpdatingPreferences ||
+                    !feedbackStats ||
+                    feedbackStats.totalFeedback < 5
+                  }
+                  className={styles.primaryButton}
+                >
+                  {isUpdatingPreferences ? "Updating..." : "Update AI Learning"}
+                </Button>
+
+                <Button
+                  size="3"
+                  variant="outline"
+                  color="red"
+                  onClick={handleResetLearning}
+                  disabled={
+                    isResettingLearning ||
+                    !feedbackStats ||
+                    feedbackStats.totalFeedback === 0
+                  }
+                  className={styles.secondaryButton}
+                >
+                  {isResettingLearning ? "Resetting..." : "Reset Learning"}
+                </Button>
+              </div>
+
+              <div className={styles.helpText}>
+                <Text size="2" color="gray">
+                  <strong>How it works:</strong> The AI analyzes your
+                  accept/reject patterns to understand which items you prefer
+                  (favorites, new items, specific brands, etc.)
+                </Text>
+                <Text size="2" color="gray">
+                  <strong>When to update:</strong> After providing feedback on
+                  10-20 outfit photos for best results.
+                </Text>
+                <Text size="2" color="gray">
+                  <strong>Privacy:</strong> All learning happens locally on your
+                  device. No data is sent anywhere.
                 </Text>
               </div>
             </div>
