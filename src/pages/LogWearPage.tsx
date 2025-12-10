@@ -28,6 +28,15 @@ export function LogWearPage() {
   const [aiMatches, setAIMatches] = useState<ItemMatch[]>([]);
   const [acceptedItems, setAcceptedItems] = useState<Set<string>>(new Set());
   const [rejectedItems, setRejectedItems] = useState<Set<string>>(new Set());
+  const [expandedSections, setExpandedSections] = useState<{
+    high: boolean;
+    medium: boolean;
+    low: boolean;
+  }>({
+    high: true, // High confidence expanded by default
+    medium: false,
+    low: false,
+  });
   const { imagePreview, handleImageUpload, clearImage } = useImageUpload();
 
   // Cropping state
@@ -224,6 +233,8 @@ export function LogWearPage() {
       setAcceptedItems(new Set());
       setRejectedItems(new Set());
       setSelectedItems(new Set());
+      // Reset expanded sections (high expanded by default)
+      setExpandedSections({ high: true, medium: false, low: false });
     } catch (error) {
       console.error("Failed to analyze outfit:", error);
       setError(
@@ -435,78 +446,115 @@ export function LogWearPage() {
                   );
                   if (matchesAtLevel.length === 0) return null;
 
+                  const isExpanded = expandedSections[confidenceLevel];
+
                   return (
                     <div
                       key={confidenceLevel}
                       className={styles.confidenceGroup}
                     >
-                      <Text size="2" weight="bold" color="gray">
-                        {confidenceLevel === "high" && "🟢 High Confidence"}
-                        {confidenceLevel === "medium" && "🟡 Likely Match"}
-                        {confidenceLevel === "low" && "🟠 Possible Match"}
-                      </Text>
+                      <div className={styles.confidenceHeader}>
+                        <Text size="2" weight="bold" color="gray">
+                          {confidenceLevel === "high" && "🟢 High Confidence"}
+                          {confidenceLevel === "medium" && "🟡 Likely Match"}
+                          {confidenceLevel === "low" && "🟠 Possible Match"} (
+                          {matchesAtLevel.length})
+                        </Text>
 
-                      <div className={styles.matchList}>
-                        {matchesAtLevel.map((match) => {
-                          const isAccepted = acceptedItems.has(match.item.id);
-                          const isRejected = rejectedItems.has(match.item.id);
+                        {!isExpanded && (
+                          <Button
+                            size="1"
+                            variant="ghost"
+                            onClick={() =>
+                              setExpandedSections((prev) => ({
+                                ...prev,
+                                [confidenceLevel]: true,
+                              }))
+                            }
+                          >
+                            Show {matchesAtLevel.length} matches
+                          </Button>
+                        )}
 
-                          return (
-                            <div
-                              key={match.item.id}
-                              className={`${styles.matchRow} ${
-                                isRejected ? styles.rejected : ""
-                              }`}
-                            >
-                              <img
-                                src={match.item.imageUrl}
-                                alt={match.item.brand || match.item.category}
-                                className={styles.matchThumbnail}
-                              />
-                              <div className={styles.matchDetails}>
-                                <Text size="2" weight="bold">
-                                  {match.item.brand || match.item.category}
-                                </Text>
-                                <div className={styles.matchMetadata}>
-                                  <Text size="1" color="gray">
-                                    {match.item.category}
-                                    {match.item.brand &&
-                                      ` • ${match.item.brand}`}
-                                    {` • Worn ${match.item.wearCount}×`}
+                        {isExpanded && confidenceLevel !== "high" && (
+                          <Button
+                            size="1"
+                            variant="ghost"
+                            onClick={() =>
+                              setExpandedSections((prev) => ({
+                                ...prev,
+                                [confidenceLevel]: false,
+                              }))
+                            }
+                          >
+                            Hide
+                          </Button>
+                        )}
+                      </div>
+
+                      {isExpanded && (
+                        <div className={styles.matchList}>
+                          {matchesAtLevel.map((match) => {
+                            const isAccepted = acceptedItems.has(match.item.id);
+                            const isRejected = rejectedItems.has(match.item.id);
+
+                            return (
+                              <div
+                                key={match.item.id}
+                                className={`${styles.matchRow} ${
+                                  isRejected ? styles.rejected : ""
+                                }`}
+                              >
+                                <img
+                                  src={match.item.imageUrl}
+                                  alt={match.item.brand || match.item.category}
+                                  className={styles.matchThumbnail}
+                                />
+                                <div className={styles.matchDetails}>
+                                  <Text size="2" weight="bold">
+                                    {match.item.brand || match.item.category}
+                                  </Text>
+                                  <div className={styles.matchMetadata}>
+                                    <Text size="1" color="gray">
+                                      {match.item.category}
+                                      {match.item.brand &&
+                                        ` • ${match.item.brand}`}
+                                      {` • Worn ${match.item.wearCount}×`}
+                                    </Text>
+                                  </div>
+                                  <Text size="1" weight="bold" color="gray">
+                                    Match: {match.percentage}%
                                   </Text>
                                 </div>
-                                <Text size="1" weight="bold" color="gray">
-                                  Match: {match.percentage}%
-                                </Text>
+                                <div className={styles.matchActions}>
+                                  <Button
+                                    size="2"
+                                    variant={isAccepted ? "solid" : "soft"}
+                                    color="green"
+                                    onClick={() =>
+                                      handleAcceptItem(match.item.id)
+                                    }
+                                    className={styles.acceptButton}
+                                  >
+                                    ✓
+                                  </Button>
+                                  <Button
+                                    size="2"
+                                    variant={isRejected ? "solid" : "soft"}
+                                    color="red"
+                                    onClick={() =>
+                                      handleRejectItem(match.item.id)
+                                    }
+                                    className={styles.rejectButton}
+                                  >
+                                    ✗
+                                  </Button>
+                                </div>
                               </div>
-                              <div className={styles.matchActions}>
-                                <Button
-                                  size="2"
-                                  variant={isAccepted ? "solid" : "soft"}
-                                  color="green"
-                                  onClick={() =>
-                                    handleAcceptItem(match.item.id)
-                                  }
-                                  className={styles.acceptButton}
-                                >
-                                  ✓
-                                </Button>
-                                <Button
-                                  size="2"
-                                  variant={isRejected ? "solid" : "soft"}
-                                  color="red"
-                                  onClick={() =>
-                                    handleRejectItem(match.item.id)
-                                  }
-                                  className={styles.rejectButton}
-                                >
-                                  ✗
-                                </Button>
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
+                            );
+                          })}
+                        </div>
+                      )}
                     </div>
                   );
                 })}
