@@ -5,9 +5,11 @@ import type { ItemCategory, ItemTrait } from "../types/wardrobe";
 import type { Outfit } from "../types/outfit";
 
 const DB_NAME = "MyWardrobeDB";
-const DB_VERSION = 3;
+const DB_VERSION = 4; // Updated to match aiLearning.ts
 const STORE_NAME = "items";
 const OUTFITS_STORE = "outfits";
+const FEEDBACK_STORE = "matchFeedback"; // Version 4+
+const PREFERENCES_STORE = "userPreferences"; // Version 4+
 
 // Open or create the database
 function openDB(): Promise<IDBDatabase> {
@@ -43,21 +45,53 @@ function openDB(): Promise<IDBDatabase> {
 
     request.onupgradeneeded = (event) => {
       const db = (event.target as IDBOpenDBRequest).result;
+      const oldVersion = event.oldVersion;
 
-      // Create object store if it doesn't exist (initial setup)
+      console.log(
+        `Upgrading database from version ${oldVersion} to ${DB_VERSION}`
+      );
+
+      // Version 1: Create items store (initial setup)
       if (!db.objectStoreNames.contains(STORE_NAME)) {
+        console.log("Creating items store");
         const objectStore = db.createObjectStore(STORE_NAME, { keyPath: "id" });
         objectStore.createIndex("category", "category", { unique: false });
         objectStore.createIndex("createdAt", "createdAt", { unique: false });
       }
 
-      // Create outfits store (version 3+)
+      // Version 3: Create outfits store
       if (!db.objectStoreNames.contains(OUTFITS_STORE)) {
+        console.log("Creating outfits store");
         const outfitsStore = db.createObjectStore(OUTFITS_STORE, {
           keyPath: "id",
         });
         outfitsStore.createIndex("createdAt", "createdAt", { unique: false });
       }
+
+      // Version 4: Create AI learning stores
+      if (!db.objectStoreNames.contains(FEEDBACK_STORE)) {
+        console.log("Creating matchFeedback store");
+        const feedbackStore = db.createObjectStore(FEEDBACK_STORE, {
+          keyPath: "id",
+        });
+        feedbackStore.createIndex("timestamp", "timestamp", { unique: false });
+        feedbackStore.createIndex("suggestedItemId", "suggestedItemId", {
+          unique: false,
+        });
+        feedbackStore.createIndex("userAction", "userAction", {
+          unique: false,
+        });
+        feedbackStore.createIndex("outfitPhotoHash", "outfitPhotoHash", {
+          unique: false,
+        });
+      }
+
+      if (!db.objectStoreNames.contains(PREFERENCES_STORE)) {
+        console.log("Creating userPreferences store");
+        db.createObjectStore(PREFERENCES_STORE, { keyPath: "id" });
+      }
+
+      console.log("Database upgrade complete");
     };
   });
 }

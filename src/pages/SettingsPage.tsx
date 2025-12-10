@@ -150,15 +150,42 @@ export function SettingsPage() {
       // Import the data
       const result = await importBackup(backupData);
 
-      setMessage({
-        type: "success",
-        text: `Successfully imported ${result.itemsImported} items and ${result.outfitsImported} outfits! Refresh the page to see your data.`,
-      });
+      // Show success/warning based on import results
+      if (result.errors.length > 0) {
+        setMessage({
+          type:
+            result.itemsImported > 0 || result.outfitsImported > 0
+              ? "info"
+              : "error",
+          text: `Imported ${result.itemsImported} items and ${
+            result.outfitsImported
+          } outfits, but ${
+            result.errors.length
+          } item(s) failed. Check console for details.${
+            result.itemsImported > 0 || result.outfitsImported > 0
+              ? " Refresh the page to see your data."
+              : ""
+          }`,
+        });
+        console.error("Import errors:", result.errors);
 
-      // Reload the page after a short delay to refresh all data
-      setTimeout(() => {
-        window.location.reload();
-      }, 2000);
+        // Still reload if we got some data
+        if (result.itemsImported > 0 || result.outfitsImported > 0) {
+          setTimeout(() => {
+            window.location.reload();
+          }, 3000);
+        }
+      } else {
+        setMessage({
+          type: "success",
+          text: `Successfully imported ${result.itemsImported} items and ${result.outfitsImported} outfits! Refresh the page to see your data.`,
+        });
+
+        // Reload the page after a short delay to refresh all data
+        setTimeout(() => {
+          window.location.reload();
+        }, 2000);
+      }
     } catch (error) {
       console.error("Import failed:", error);
       setMessage({

@@ -10,7 +10,7 @@ import {
 } from "./indexedDB";
 
 export interface BackupData {
-  version: string;
+  version: string; // Backup format version (not database version)
   exportDate: string;
   items: WardrobeItem[];
   outfits: Outfit[];
@@ -171,27 +171,53 @@ function convertDatesToObjects(data: BackupData): BackupData {
 /**
  * Import backup data into IndexedDB
  * @param data Validated backup data
- * Note: IndexedDB put() will replace existing items with same IDs
+ * Note:
+ * - IndexedDB put() will replace existing items with same IDs
+ * - Backup version is independent of database version
+ * - Data will be imported into current database schema via saveItem/saveOutfit
  */
 export async function importBackup(
   data: BackupData
-): Promise<{ itemsImported: number; outfitsImported: number }> {
+): Promise<{
+  itemsImported: number;
+  outfitsImported: number;
+  errors: string[];
+}> {
+  const errors: string[] = [];
+  let itemsImported = 0;
+  let outfitsImported = 0;
+
   // Convert date strings back to Date objects (JSON.parse converts them to strings)
   const convertedData = convertDatesToObjects(data);
 
   // Import items (will overwrite items with same IDs)
   for (const item of convertedData.items) {
-    await saveItem(item);
+    try {
+      await saveItem(item);
+      itemsImported++;
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : "Unknown error";
+      errors.push(`Failed to import item ${item.id}: ${errorMsg}`);
+      console.error("Failed to import item:", item.id, error);
+    }
   }
 
   // Import outfits (will overwrite outfits with same IDs)
   for (const outfit of convertedData.outfits) {
-    await saveOutfit(outfit);
+    try {
+      await saveOutfit(outfit);
+      outfitsImported++;
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : "Unknown error";
+      errors.push(`Failed to import outfit ${outfit.id}: ${errorMsg}`);
+      console.error("Failed to import outfit:", outfit.id, error);
+    }
   }
 
   return {
-    itemsImported: convertedData.items.length,
-    outfitsImported: convertedData.outfits.length,
+    itemsImported,
+    outfitsImported,
+    errors,
   };
 }
 

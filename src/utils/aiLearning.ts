@@ -7,6 +7,9 @@ import { differenceInDays } from "date-fns";
 import type { ItemCategory } from "../types/wardrobe";
 
 const DB_NAME = "MyWardrobeDB";
+const DB_VERSION = 4;
+const STORE_NAME = "items";
+const OUTFITS_STORE = "outfits";
 const FEEDBACK_STORE = "matchFeedback";
 const PREFERENCES_STORE = "userPreferences";
 
@@ -79,16 +82,39 @@ export function getDefaultPreferences(): UserPreferences {
  */
 function openDB(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
-    const request = indexedDB.open(DB_NAME, 4); // Bump to version 4
+    const request = indexedDB.open(DB_NAME, DB_VERSION);
 
     request.onerror = () => reject(request.error);
     request.onsuccess = () => resolve(request.result);
 
     request.onupgradeneeded = (event) => {
       const db = (event.target as IDBOpenDBRequest).result;
+      const oldVersion = event.oldVersion;
 
-      // Create feedback store if it doesn't exist
+      console.log(
+        `[AI Learning] Upgrading database from version ${oldVersion} to ${DB_VERSION}`
+      );
+
+      // Version 1: Create items store (may already exist)
+      if (!db.objectStoreNames.contains(STORE_NAME)) {
+        console.log("[AI Learning] Creating items store");
+        const objectStore = db.createObjectStore(STORE_NAME, { keyPath: "id" });
+        objectStore.createIndex("category", "category", { unique: false });
+        objectStore.createIndex("createdAt", "createdAt", { unique: false });
+      }
+
+      // Version 3: Create outfits store (may already exist)
+      if (!db.objectStoreNames.contains(OUTFITS_STORE)) {
+        console.log("[AI Learning] Creating outfits store");
+        const outfitsStore = db.createObjectStore(OUTFITS_STORE, {
+          keyPath: "id",
+        });
+        outfitsStore.createIndex("createdAt", "createdAt", { unique: false });
+      }
+
+      // Version 4: Create AI learning stores
       if (!db.objectStoreNames.contains(FEEDBACK_STORE)) {
+        console.log("[AI Learning] Creating matchFeedback store");
         const feedbackStore = db.createObjectStore(FEEDBACK_STORE, {
           keyPath: "id",
         });
@@ -104,10 +130,12 @@ function openDB(): Promise<IDBDatabase> {
         });
       }
 
-      // Create preferences store if it doesn't exist
       if (!db.objectStoreNames.contains(PREFERENCES_STORE)) {
+        console.log("[AI Learning] Creating userPreferences store");
         db.createObjectStore(PREFERENCES_STORE, { keyPath: "id" });
       }
+
+      console.log("[AI Learning] Database upgrade complete");
     };
   });
 }
