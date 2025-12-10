@@ -1,30 +1,32 @@
-import { Button, Text, Callout, Heading } from "@radix-ui/themes";
-import { CameraIcon } from "@radix-ui/react-icons";
-import { useState, useOptimistic, useRef } from "react";
-import { useNavigate } from "react-router";
-import ReactCrop, { type Crop, type PixelCrop } from "react-image-crop";
-import "react-image-crop/dist/ReactCrop.css";
-import { useWardrobe } from "../contexts/WardrobeContext";
-import { ItemSelector } from "../components/common/ItemSelector";
-import { useImageUpload } from "../hooks/useImageUpload";
-import { findMatchingItems, type ItemMatch } from "../utils/aiMatching";
-import { getCroppedImage } from "../utils/imageCrop";
-import styles from "./LogWearPage.module.css";
+import { CameraIcon } from '@radix-ui/react-icons';
+import { Button, Callout, Heading, Text } from '@radix-ui/themes';
+import { useOptimistic, useRef, useState } from 'react';
+import ReactCrop, { type Crop, type PixelCrop } from 'react-image-crop';
+import { useNavigate } from 'react-router';
+import 'react-image-crop/dist/ReactCrop.css';
+import { ItemSelector } from '../components/common/ItemSelector';
+import { useWardrobe } from '../contexts/WardrobeContext';
+import { useImageUpload } from '../hooks/useImageUpload';
+import { findMatchingItems, type ItemMatch } from '../utils/aiMatching';
+import { getCroppedImage } from '../utils/imageCrop';
+import styles from './LogWearPage.module.css';
 
 export function LogWearPage() {
   const navigate = useNavigate();
   const { items, incrementWearCount } = useWardrobe();
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
-  const [error, setError] = useState<string>("");
+  const [error, setError] = useState<string>('');
   const [isAIMode, setIsAIMode] = useState(true);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [aiMatches, setAIMatches] = useState<ItemMatch[]>([]);
+  const [acceptedItems, setAcceptedItems] = useState<Set<string>>(new Set());
+  const [rejectedItems, setRejectedItems] = useState<Set<string>>(new Set());
   const { imagePreview, handleImageUpload, clearImage } = useImageUpload();
 
   // Cropping state
   const [showCropper, setShowCropper] = useState(false);
   const [crop, setCrop] = useState<Crop>({
-    unit: "%",
+    unit: '%',
     x: 10,
     y: 10,
     width: 80,
@@ -36,10 +38,7 @@ export function LogWearPage() {
 
   // useOptimistic: Track items that are being logged optimistically
   // This lets us show instant UI feedback while the database updates happen
-  const [optimisticLoggedItems, addOptimisticLog] = useOptimistic<
-    Set<string>,
-    string[]
-  >(
+  const [optimisticLoggedItems, addOptimisticLog] = useOptimistic<Set<string>, string[]>(
     new Set(), // Initial state: no items logged yet
     (state, itemIds) => {
       // Updater function: add the items being logged to the set
@@ -48,7 +47,7 @@ export function LogWearPage() {
         newSet.add(id);
       }
       return newSet;
-    }
+    },
   );
 
   const toggleItemSelection = (itemId: string) => {
@@ -66,27 +65,67 @@ export function LogWearPage() {
     });
   };
 
+  const handleAcceptItem = (itemId: string) => {
+    // Add to accepted, remove from rejected, add to selected
+    setAcceptedItems((prev) => new Set(prev).add(itemId));
+    setRejectedItems((prev) => {
+      const newSet = new Set(prev);
+      newSet.delete(itemId);
+      return newSet;
+    });
+    setSelectedItems((prev) => new Set(prev).add(itemId));
+
+    // TODO Phase 2: Record positive feedback
+    // const feedback = {
+    //   timestamp: new Date(),
+    //   suggestedItemId: itemId,
+    //   userAction: 'accepted',
+    //   matchData: aiMatches.find(m => m.item.id === itemId)
+    // };
+    // await saveFeedback(feedback);
+  };
+
+  const handleRejectItem = (itemId: string) => {
+    // Add to rejected, remove from accepted, remove from selected
+    setRejectedItems((prev) => new Set(prev).add(itemId));
+    setAcceptedItems((prev) => {
+      const newSet = new Set(prev);
+      newSet.delete(itemId);
+      return newSet;
+    });
+    setSelectedItems((prev) => {
+      const newSet = new Set(prev);
+      newSet.delete(itemId);
+      return newSet;
+    });
+
+    // TODO Phase 2: Record negative feedback
+    // const feedback = {
+    //   timestamp: new Date(),
+    //   suggestedItemId: itemId,
+    //   userAction: 'rejected',
+    //   matchData: aiMatches.find(m => m.item.id === itemId)
+    // };
+    // await saveFeedback(feedback);
+  };
+
   const handleCropConfirm = async () => {
     if (!imagePreview || !completedCrop || !imgRef.current) return;
 
     try {
-      const cropped = await getCroppedImage(
-        imagePreview,
-        completedCrop,
-        imgRef.current
-      );
+      const cropped = await getCroppedImage(imagePreview, completedCrop, imgRef.current);
       setCroppedImage(cropped);
       setShowCropper(false);
     } catch (error) {
-      console.error("Failed to crop image:", error);
-      setError("Failed to crop image. Please try again.");
+      console.error('Failed to crop image:', error);
+      setError('Failed to crop image. Please try again.');
     }
   };
 
   const handleCropCancel = () => {
     setShowCropper(false);
     setCrop({
-      unit: "%",
+      unit: '%',
       x: 10,
       y: 10,
       width: 80,
@@ -101,7 +140,7 @@ export function LogWearPage() {
     if (!imageToAnalyze) return;
 
     setIsAnalyzing(true);
-    setError("");
+    setError('');
 
     try {
       const matches = await findMatchingItems(imageToAnalyze, items, {
@@ -110,18 +149,13 @@ export function LogWearPage() {
 
       setAIMatches(matches);
 
-      // Auto-select high and medium confidence matches
-      const autoSelected = new Set(
-        matches
-          .filter((m) => m.confidence === "high" || m.confidence === "medium")
-          .map((m) => m.item.id)
-      );
-      setSelectedItems(autoSelected);
+      // Reset accepted/rejected state for new analysis
+      setAcceptedItems(new Set());
+      setRejectedItems(new Set());
+      setSelectedItems(new Set());
     } catch (error) {
-      console.error("Failed to analyze outfit:", error);
-      setError(
-        "Failed to analyze photo. Please try again or use manual selection."
-      );
+      console.error('Failed to analyze outfit:', error);
+      setError('Failed to analyze photo. Please try again or use manual selection.');
     } finally {
       setIsAnalyzing(false);
     }
@@ -138,7 +172,7 @@ export function LogWearPage() {
 
     // Clear the selection immediately for better UX
     setSelectedItems(new Set());
-    setError("");
+    setError('');
 
     try {
       // Actually save to IndexedDB in the background
@@ -149,13 +183,13 @@ export function LogWearPage() {
 
       // Success! Navigate back to home
       // The optimistic state is no longer needed - items are truly saved
-      navigate("/");
+      navigate('/');
     } catch (err) {
-      console.error("Failed to log wear:", err);
+      console.error('Failed to log wear:', err);
 
       // If this fails, useOptimistic automatically rolls back!
       // The items will un-grey themselves and return to selectable state
-      setError("Failed to log wear. Please try again.");
+      setError('Failed to log wear. Please try again.');
 
       // Re-select the items that failed so user can retry
       setSelectedItems(new Set(itemsToLog));
@@ -182,8 +216,8 @@ export function LogWearPage() {
       {isPending && (
         <Callout.Root color="blue" size="1" className={styles.callout}>
           <Callout.Text>
-            Logging {optimisticLoggedItems.size}{" "}
-            {optimisticLoggedItems.size === 1 ? "item" : "items"}...
+            Logging {optimisticLoggedItems.size}{' '}
+            {optimisticLoggedItems.size === 1 ? 'item' : 'items'}...
           </Callout.Text>
         </Callout.Root>
       )}
@@ -191,21 +225,25 @@ export function LogWearPage() {
       {/* Mode Toggle */}
       <div className={styles.modeToggle}>
         <Button
-          variant={isAIMode ? "solid" : "outline"}
+          variant={isAIMode ? 'solid' : 'outline'}
           onClick={() => {
             setIsAIMode(true);
             setSelectedItems(new Set());
+            setAcceptedItems(new Set());
+            setRejectedItems(new Set());
           }}
           size="2"
         >
           🤖 AI Matching
         </Button>
         <Button
-          variant={!isAIMode ? "solid" : "outline"}
+          variant={!isAIMode ? 'solid' : 'outline'}
           onClick={() => {
             setIsAIMode(false);
             setAIMatches([]);
             setSelectedItems(new Set());
+            setAcceptedItems(new Set());
+            setRejectedItems(new Set());
             clearImage();
           }}
           size="2"
@@ -227,12 +265,7 @@ export function LogWearPage() {
 
           {!imagePreview ? (
             <div className={styles.uploadButtons}>
-              <Button
-                size="3"
-                onClick={() =>
-                  document.getElementById("outfit-upload")?.click()
-                }
-              >
+              <Button size="3" onClick={() => document.getElementById('outfit-upload')?.click()}>
                 <CameraIcon /> Upload Photo
               </Button>
               <input
@@ -240,7 +273,7 @@ export function LogWearPage() {
                 type="file"
                 accept="image/*"
                 onChange={handleImageUpload}
-                style={{ display: "none" }}
+                style={{ display: 'none' }}
               />
             </div>
           ) : showCropper ? (
@@ -255,7 +288,7 @@ export function LogWearPage() {
                   ref={imgRef}
                   src={imagePreview}
                   alt="Crop preview"
-                  style={{ maxWidth: "100%" }}
+                  style={{ maxWidth: '100%' }}
                 />
               </ReactCrop>
               <div className={styles.cropperActions}>
@@ -278,7 +311,7 @@ export function LogWearPage() {
                     }
                     setShowCropper(true);
                   }}
-                  title={croppedImage ? "Adjust Crop" : "Crop Photo"}
+                  title={croppedImage ? 'Adjust Crop' : 'Crop Photo'}
                 >
                   ✂️
                 </button>
@@ -295,12 +328,8 @@ export function LogWearPage() {
                 >
                   Remove Photo
                 </Button>
-                <Button
-                  size="3"
-                  onClick={handleAnalyzeOutfit}
-                  disabled={isAnalyzing}
-                >
-                  {isAnalyzing ? "Analyzing..." : "✨ Find Matching Items"}
+                <Button size="3" onClick={handleAnalyzeOutfit} disabled={isAnalyzing}>
+                  {isAnalyzing ? 'Analyzing...' : '✨ Find Matching Items'}
                 </Button>
               </div>
             </div>
@@ -311,57 +340,71 @@ export function LogWearPage() {
               <Heading size="4">AI Suggestions (Review & Confirm)</Heading>
 
               <div className={styles.matchesByConfidence}>
-                {(["high", "medium", "low"] as const).map((confidenceLevel) => {
-                  const matchesAtLevel = aiMatches.filter(
-                    (m) => m.confidence === confidenceLevel
-                  );
+                {(['high', 'medium', 'low'] as const).map((confidenceLevel) => {
+                  const matchesAtLevel = aiMatches.filter((m) => m.confidence === confidenceLevel);
                   if (matchesAtLevel.length === 0) return null;
 
                   return (
-                    <div
-                      key={confidenceLevel}
-                      className={styles.confidenceGroup}
-                    >
+                    <div key={confidenceLevel} className={styles.confidenceGroup}>
                       <Text size="2" weight="bold" color="gray">
-                        {confidenceLevel === "high" && "🟢 High Confidence"}
-                        {confidenceLevel === "medium" && "🟡 Likely Match"}
-                        {confidenceLevel === "low" && "🟠 Possible Match"}
+                        {confidenceLevel === 'high' && '🟢 High Confidence'}
+                        {confidenceLevel === 'medium' && '🟡 Likely Match'}
+                        {confidenceLevel === 'low' && '🟠 Possible Match'}
                       </Text>
 
-                      <div className={styles.matchGrid}>
-                        {matchesAtLevel.map((match) => (
-                          <button
-                            type="button"
-                            key={match.item.id}
-                            className={`${styles.matchCard} ${
-                              selectedItems.has(match.item.id)
-                                ? styles.selected
-                                : ""
-                            }`}
-                            onClick={() => {
-                              const newSet = new Set(selectedItems);
-                              if (newSet.has(match.item.id)) {
-                                newSet.delete(match.item.id);
-                              } else {
-                                newSet.add(match.item.id);
-                              }
-                              setSelectedItems(newSet);
-                            }}
-                          >
-                            <img
-                              src={match.item.imageUrl}
-                              alt={match.item.notes}
-                            />
-                            <div className={styles.matchInfo}>
-                              <Text size="1" weight="bold">
-                                {match.percentage}%
-                              </Text>
-                              <Text size="1" color="gray">
-                                {match.item.category}
-                              </Text>
+                      <div className={styles.matchList}>
+                        {matchesAtLevel.map((match) => {
+                          const isAccepted = acceptedItems.has(match.item.id);
+                          const isRejected = rejectedItems.has(match.item.id);
+
+                          return (
+                            <div
+                              key={match.item.id}
+                              className={`${styles.matchRow} ${isRejected ? styles.rejected : ''}`}
+                            >
+                              <img
+                                src={match.item.imageUrl}
+                                alt={match.item.brand || match.item.category}
+                                className={styles.matchThumbnail}
+                              />
+                              <div className={styles.matchDetails}>
+                                <Text size="2" weight="bold">
+                                  {match.item.brand || match.item.category}
+                                </Text>
+                                <div className={styles.matchMetadata}>
+                                  <Text size="1" color="gray">
+                                    {match.item.category}
+                                    {match.item.brand && ` • ${match.item.brand}`}
+                                    {` • Worn ${match.item.wearCount}×`}
+                                  </Text>
+                                </div>
+                                <Text size="1" weight="bold" color="gray">
+                                  Match: {match.percentage}%
+                                </Text>
+                              </div>
+                              <div className={styles.matchActions}>
+                                <Button
+                                  size="2"
+                                  variant={isAccepted ? 'solid' : 'soft'}
+                                  color="green"
+                                  onClick={() => handleAcceptItem(match.item.id)}
+                                  className={styles.acceptButton}
+                                >
+                                  ✓
+                                </Button>
+                                <Button
+                                  size="2"
+                                  variant={isRejected ? 'solid' : 'soft'}
+                                  color="red"
+                                  onClick={() => handleRejectItem(match.item.id)}
+                                  className={styles.rejectButton}
+                                >
+                                  ✗
+                                </Button>
+                              </div>
                             </div>
-                          </button>
-                        ))}
+                          );
+                        })}
                       </div>
                     </div>
                   );
@@ -375,10 +418,8 @@ export function LogWearPage() {
                 className={styles.submitButton}
               >
                 {isPending
-                  ? "Logging..."
-                  : `Log ${selectedItems.size} ${
-                      selectedItems.size === 1 ? "Item" : "Items"
-                    }`}
+                  ? 'Logging...'
+                  : `Log ${selectedItems.size} ${selectedItems.size === 1 ? 'Item' : 'Items'}`}
               </Button>
             </div>
           )}
@@ -411,10 +452,8 @@ export function LogWearPage() {
                   disabled={selectedItems.size === 0 || isPending}
                 >
                   {isPending
-                    ? "Logging..."
-                    : `Log ${selectedItems.size} ${
-                        selectedItems.size === 1 ? "Item" : "Items"
-                      }`}
+                    ? 'Logging...'
+                    : `Log ${selectedItems.size} ${selectedItems.size === 1 ? 'Item' : 'Items'}`}
                 </Button>
               </>
             }

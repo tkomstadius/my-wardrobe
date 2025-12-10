@@ -152,51 +152,67 @@
   gap: 0.5rem;
 }
 
-.matchGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-  gap: 0.75rem;
-}
-
-.matchCard {
-  position: relative;
-  aspect-ratio: 1;
-  border-radius: var(--radius-2);
-  overflow: hidden;
-  border: 2px solid transparent;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  background: var(--gray-2);
-  padding: 0;
-}
-
-.matchCard:hover {
-  border-color: var(--accent-8);
-}
-
-.matchCard.selected {
-  border-color: var(--accent-9);
-  box-shadow: 0 0 0 1px var(--accent-9);
-}
-
-.matchCard img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  pointer-events: none;
-}
-
-.matchInfo {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
-  padding: 0.5rem;
+.matchList {
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.matchRow {
+  display: flex;
   align-items: center;
-  pointer-events: none;
+  gap: 1rem;
+  padding: 0.75rem;
+  background: var(--gray-2);
+  border-radius: var(--radius-2);
+  border: 1px solid var(--gray-6);
+  transition: all 0.2s ease;
+}
+
+.matchRow.rejected {
+  opacity: 0.5;
+  background: var(--gray-3);
+}
+
+.matchThumbnail {
+  width: 60px;
+  height: 60px;
+  flex-shrink: 0;
+  border-radius: var(--radius-2);
+  object-fit: cover;
+  background: var(--gray-4);
+}
+
+.matchDetails {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.matchMetadata {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.matchActions {
+  display: flex;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.acceptButton,
+.rejectButton {
+  min-width: 40px;
+  border-radius: 50%;
+  font-size: 1.2rem;
+  padding: 0;
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .submitButton {
