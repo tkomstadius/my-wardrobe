@@ -6,7 +6,7 @@ import {
   useNavigation,
   useActionData,
   redirect,
-  type ClientActionFunctionArgs,
+  type ActionFunctionArgs,
 } from "react-router";
 import { useWardrobe } from "../contexts/WardrobeContext";
 import { useImageUpload } from "../hooks/useImageUpload";
@@ -27,7 +27,7 @@ type ActionData = {
   error?: string;
 };
 
-export async function clientAction({ request }: ClientActionFunctionArgs) {
+export async function clientAction({ request }: ActionFunctionArgs) {
   const formData = await request.formData();
 
   const imageUrl = formData.get("imageUrl") as string;

@@ -1,203 +1,197 @@
 import { ArrowLeftIcon, TrashIcon } from "@radix-ui/react-icons";
-import { Button, Select, Text, TextField } from "@radix-ui/themes";
-import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router";
+import { Button, Callout, Select, Text, TextField } from "@radix-ui/themes";
+import { useState } from "react";
+import {
+  Form,
+  redirect,
+  useLoaderData,
+  useNavigate,
+  useNavigation,
+  useActionData,
+  type LoaderFunctionArgs,
+  type ActionFunctionArgs,
+} from "react-router";
 import { useWardrobe } from "../contexts/WardrobeContext";
 import { useImageUpload } from "../hooks/useImageUpload";
 import { DeleteConfirmDialog } from "../components/common/DeleteConfirmDialog";
 import { CheckboxField } from "../components/common/CheckboxField";
 import { getImageEmbedding } from "../utils/aiEmbedding";
-import type {
-  ItemCategory,
-  ItemTrait,
-  EditItemFormState,
-} from "../types/wardrobe";
+import {
+  loadItemById,
+  saveItem,
+  deleteItem as deleteItemFromDB,
+} from "../utils/indexedDB";
+import type { ItemCategory, ItemTrait, WardrobeItem } from "../types/wardrobe";
 import { CATEGORIES, CATEGORY_IDS } from "../utils/categories";
 import styles from "./EditItemPage.module.css";
 
+type LoaderData = {
+  item: WardrobeItem | null;
+};
+
+type ActionData = {
+  error?: string;
+};
+
+export async function clientLoader({ params }: LoaderFunctionArgs) {
+  const { id } = params;
+  if (!id) {
+    return { item: null };
+  }
+
+  const item = await loadItemById(id);
+  return { item };
+}
+
+export async function clientAction({ request, params }: ActionFunctionArgs) {
+  const { id } = params;
+  if (!id) {
+    return { error: "Item ID is required" };
+  }
+
+  const formData = await request.formData();
+  const intent = formData.get("intent") as string;
+
+  // Handle delete action
+  if (intent === "delete") {
+    try {
+      await deleteItemFromDB(id);
+      return redirect("/");
+    } catch (err) {
+      console.error("Failed to delete item:", err);
+      return { error: "Failed to delete item. Please try again." };
+    }
+  }
+
+  // Handle update action
+  const imageUrl = formData.get("imageUrl") as string;
+  const originalImageUrl = formData.get("originalImageUrl") as string;
+  const brand = formData.get("brand") as string;
+  const category = formData.get("category") as ItemCategory;
+  const notes = formData.get("notes") as string;
+  const price = formData.get("price") as string;
+  const purchaseDate = formData.get("purchaseDate") as string;
+  const initialWearCount = formData.get("initialWearCount") as string;
+  const wearHistoryLength = formData.get("wearHistoryLength") as string;
+  const trait = formData.get("trait") as string;
+  const isSecondHand = formData.get("isSecondHand") === "on";
+  const isDogCasual = formData.get("isDogCasual") === "on";
+  const isHandmade = formData.get("isHandmade") === "on";
+
+  if (!imageUrl) {
+    return { error: "Please add an image of the item" };
+  }
+
+  if (!category || !CATEGORY_IDS.includes(category)) {
+    return { error: "Please select a valid category" };
+  }
+
+  try {
+    // Load the existing item
+    const existingItem = await loadItemById(id);
+    if (!existingItem) {
+      return { error: "Item not found" };
+    }
+
+    // Regenerate embedding if image has changed
+    let embedding = existingItem.embedding;
+    if (imageUrl !== originalImageUrl) {
+      try {
+        embedding = await getImageEmbedding(imageUrl);
+      } catch (error) {
+        console.error("Failed to generate embedding:", error);
+        // Continue without updating embedding
+      }
+    }
+
+    const newInitialWearCount = initialWearCount
+      ? Number.parseInt(initialWearCount, 10)
+      : 0;
+
+    const historyLength = wearHistoryLength
+      ? Number.parseInt(wearHistoryLength, 10)
+      : 0;
+
+    const totalWearCount = newInitialWearCount + historyLength;
+
+    const updatedItem: WardrobeItem = {
+      ...existingItem,
+      imageUrl,
+      notes: notes?.trim() || undefined,
+      brand: brand?.trim() || undefined,
+      category,
+      price: price ? Number.parseFloat(price) : undefined,
+      isSecondHand,
+      isDogCasual,
+      isHandmade,
+      trait: trait === "none" || !trait ? undefined : (trait as ItemTrait),
+      purchaseDate: purchaseDate ? new Date(purchaseDate) : undefined,
+      initialWearCount: newInitialWearCount,
+      wearCount: totalWearCount,
+      embedding,
+      updatedAt: new Date(),
+    };
+
+    await saveItem(updatedItem);
+
+    return redirect(`/item/${existingItem.id}`);
+  } catch (err) {
+    console.error("Failed to update item:", err);
+    return { error: "Failed to save changes. Please try again." };
+  }
+}
+
 export function EditItemPage() {
   const navigate = useNavigate();
-  const { id } = useParams<{ id: string }>();
-  const {
-    getItemById,
-    updateItem,
-    deleteItem,
-    getAllBrands,
-    incrementWearCount,
-  } = useWardrobe();
-
+  const navigation = useNavigation();
+  const { item } = useLoaderData<LoaderData>();
+  const actionData = useActionData<ActionData>();
+  const { getAllBrands, incrementWearCount } = useWardrobe();
   const { imagePreview, setImagePreview, handleImageUpload } = useImageUpload();
-
-  const [formData, setFormData] = useState<EditItemFormState>({
-    notes: "",
-    brand: "",
-    category: "tops" as ItemCategory,
-    price: "",
-    isSecondHand: false,
-    isDogCasual: false,
-    isHandmade: false,
-    trait: "comfort" as ItemTrait,
-    purchaseDate: "",
-    initialWearCount: "",
-  });
-  const [error, setError] = useState("");
-  const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [isGeneratingEmbedding, setIsGeneratingEmbedding] = useState(false);
-  const [itemNotFound, setItemNotFound] = useState(false);
-  const [categoryWarning, setCategoryWarning] = useState("");
-  const [originalImageData, setOriginalImageData] = useState<string>("");
 
-  // Load item data
-  useEffect(() => {
-    if (!id) {
-      setItemNotFound(true);
-      return;
-    }
+  const isSubmitting = navigation.state === "submitting";
 
-    const item = getItemById(id);
-    if (!item) {
-      setItemNotFound(true);
-      return;
-    }
-
-    // Validate category
-    let itemCategory = item.category;
-    if (!CATEGORY_IDS.includes(item.category)) {
-      console.warn(
-        `Invalid category "${item.category}" for item ${id}. Defaulting to "tops".`
-      );
-      setCategoryWarning(
-        `Warning: This item had an invalid category "${item.category}". Please select the correct category and save.`
-      );
-      itemCategory = "tops";
-    }
-
-    // Pre-fill form with existing data
-    setFormData({
-      notes: item.notes || "",
-      brand: item.brand || "",
-      category: itemCategory, // Use validated category (defaults to "tops" if invalid)
-      price: item.price !== undefined ? item.price.toString() : "",
-      isSecondHand: item.isSecondHand || false,
-      isDogCasual: item.isDogCasual || false,
-      isHandmade: item.isHandmade || false,
-      trait: item.trait,
-      purchaseDate: item.purchaseDate
-        ? new Date(item.purchaseDate).toISOString().split("T")[0] ?? ""
-        : "",
-      initialWearCount: (item.initialWearCount ?? 0).toString(),
-    });
+  // Set initial image preview from loaded item
+  if (item && !imagePreview) {
     setImagePreview(item.imageUrl);
-    setOriginalImageData(item.imageUrl);
-  }, [id, getItemById, setImagePreview]);
+  }
 
-  const handleSubmit = async (event: React.FormEvent) => {
-    event.preventDefault();
-    setError("");
-    setCategoryWarning("");
+  // Validate category and show warning if needed
+  const categoryWarning =
+    item && !CATEGORY_IDS.includes(item.category)
+      ? `Warning: This item had an invalid category "${item.category}". Please select the correct category and save.`
+      : "";
 
-    // Validate form
-    if (!imagePreview) {
-      setError("Please add an image of the item");
-      return;
-    }
+  const validCategory =
+    item && CATEGORY_IDS.includes(item.category) ? item.category : "tops";
 
-    // Validate category
-    if (!CATEGORY_IDS.includes(formData.category)) {
-      setError(
-        `Invalid category "${formData.category}". Please select a valid category.`
-      );
-      return;
-    }
-
-    setIsSaving(true);
+  const handleMarkAsWorn = async () => {
+    if (!item) return;
 
     try {
-      const item = getItemById(id!);
-      if (!item) {
-        throw new Error("Item not found");
-      }
-
-      // Regenerate embedding if image has changed
-      let embeddingUpdate: number[] | undefined;
-
-      if (imagePreview !== originalImageData) {
-        try {
-          setIsGeneratingEmbedding(true);
-          embeddingUpdate = await getImageEmbedding(imagePreview);
-        } catch (error) {
-          console.error("Failed to generate embedding:", error);
-          // Continue without embedding - user can generate later in Settings
-        } finally {
-          setIsGeneratingEmbedding(false);
-        }
-      }
-
-      const newInitialWearCount = formData.initialWearCount
-        ? Number.parseInt(formData.initialWearCount, 10)
-        : 0;
-
-      // Calculate total wear count: initial + wear history
-      const totalWearCount =
-        newInitialWearCount + (item.wearHistory?.length || 0);
-
-      await updateItem(id!, {
-        imageUrl: imagePreview,
-        notes: formData.notes?.trim() || undefined,
-        brand: formData.brand?.trim() || undefined,
-        category: formData.category,
-        price: formData.price ? Number.parseFloat(formData.price) : undefined,
-        isSecondHand: formData.isSecondHand,
-        isDogCasual: formData.isDogCasual,
-        isHandmade: formData.isHandmade,
-        trait: formData.trait,
-        purchaseDate: formData.purchaseDate
-          ? new Date(formData.purchaseDate)
-          : undefined,
-        initialWearCount: newInitialWearCount,
-        wearCount: totalWearCount,
-        ...(embeddingUpdate && { embedding: embeddingUpdate }),
-      });
-
-      // Navigate back to category page
-      navigate(`/category/${formData.category}`);
+      await incrementWearCount(item.id);
+      // Force a reload to update the wear count
+      navigate(".", { replace: true });
     } catch (err) {
-      console.error("Failed to update item:", err);
-      setError("Failed to save changes. Please try again.");
-    } finally {
-      setIsSaving(false);
+      console.error("Failed to increment wear count:", err);
     }
   };
 
   const handleDelete = async () => {
-    if (!id) return;
+    if (!item) return;
 
     setIsDeleting(true);
     try {
-      await deleteItem(id);
-      navigate("/"); // Navigate to home after delete
+      await deleteItemFromDB(item.id);
+      navigate("/");
     } catch (err) {
       console.error("Failed to delete item:", err);
-      setError("Failed to delete item. Please try again.");
       setIsDeleting(false);
     }
   };
 
-  const handleMarkAsWorn = async () => {
-    if (!id) return;
-
-    try {
-      await incrementWearCount(id);
-      // No need to update form data - initialWearCount doesn't change when marking as worn
-      // The total count display will update automatically when component re-renders
-    } catch (err) {
-      console.error("Failed to increment wear count:", err);
-      setError("Failed to update wear count. Please try again.");
-    }
-  };
-
-  if (itemNotFound) {
+  if (!item) {
     return (
       <div className={styles.container}>
         <div className={styles.header}>
@@ -226,7 +220,16 @@ export function EditItemPage() {
         <div className={styles.spacer} />
       </div>
 
-      <form onSubmit={handleSubmit} className={styles.form}>
+      <Form method="post" className={styles.form}>
+        {/* Hidden fields for tracking */}
+        <input type="hidden" name="imageUrl" value={imagePreview || ""} />
+        <input type="hidden" name="originalImageUrl" value={item.imageUrl} />
+        <input
+          type="hidden"
+          name="wearHistoryLength"
+          value={item.wearHistory?.length || 0}
+        />
+
         {/* Image Upload Section */}
         <div className={styles.imageSection}>
           {imagePreview ? (
@@ -274,23 +277,19 @@ export function EditItemPage() {
 
         {/* Category Warning */}
         {categoryWarning && (
-          <div className={styles.warningMessage}>
-            <Text color="orange" size="2">
-              {categoryWarning}
-            </Text>
-          </div>
+          <Callout.Root color="orange" size="1">
+            <Callout.Text>{categoryWarning}</Callout.Text>
+          </Callout.Root>
         )}
 
         {/* Form Fields */}
         <div className={styles.fields}>
           <div className={styles.field}>
-            <span className={styles.label}>Brand</span>
+            <span className={styles.label}>Brand (Optional)</span>
             <TextField.Root
+              name="brand"
               placeholder="e.g., Ganni, Hope"
-              value={formData.brand}
-              onChange={(e) =>
-                setFormData({ ...formData, brand: e.target.value })
-              }
+              defaultValue={item.brand || ""}
               list="brand-suggestions-edit"
               size="3"
             />
@@ -303,16 +302,7 @@ export function EditItemPage() {
 
           <div className={styles.field}>
             <span className={styles.label}>Category</span>
-            <Select.Root
-              value={formData.category}
-              onValueChange={(value) => {
-                // Ignore empty string changes (component initialization artifact)
-                if (value && CATEGORY_IDS.includes(value as ItemCategory)) {
-                  setFormData({ ...formData, category: value as ItemCategory });
-                }
-              }}
-              size="3"
-            >
+            <Select.Root name="category" defaultValue={validCategory} size="3">
               <Select.Trigger placeholder="Select category" />
               <Select.Content>
                 {CATEGORIES.map((category) => (
@@ -327,12 +317,10 @@ export function EditItemPage() {
           <div className={styles.field}>
             <span className={styles.label}>Price</span>
             <TextField.Root
+              name="price"
               type="number"
               placeholder="e.g., 49.99"
-              value={formData.price}
-              onChange={(e) =>
-                setFormData({ ...formData, price: e.target.value })
-              }
+              defaultValue={item.price?.toString() || ""}
               size="3"
             />
           </div>
@@ -340,10 +328,12 @@ export function EditItemPage() {
           <div className={styles.field}>
             <span className={styles.label}>Purchase Date</span>
             <TextField.Root
+              name="purchaseDate"
               type="date"
-              value={formData.purchaseDate}
-              onChange={(e) =>
-                setFormData({ ...formData, purchaseDate: e.target.value })
+              defaultValue={
+                item.purchaseDate
+                  ? new Date(item.purchaseDate).toISOString().split("T")[0]
+                  : ""
               }
               size="3"
             />
@@ -354,12 +344,10 @@ export function EditItemPage() {
               Initial Wear Count (before adding to app)
             </span>
             <TextField.Root
+              name="initialWearCount"
               type="number"
               placeholder="0"
-              value={formData.initialWearCount}
-              onChange={(e) =>
-                setFormData({ ...formData, initialWearCount: e.target.value })
-              }
+              defaultValue={(item.initialWearCount ?? 0).toString()}
               size="3"
             />
             <Text size="1" color="gray" className={styles.helpText}>
@@ -372,11 +360,7 @@ export function EditItemPage() {
             <div className={styles.wearCountContainer}>
               <TextField.Root
                 type="number"
-                value={
-                  id && getItemById(id)
-                    ? getItemById(id)!.wearCount.toString()
-                    : "0"
-                }
+                value={item.wearCount.toString()}
                 size="3"
                 className={styles.wearCountInput}
                 disabled
@@ -393,24 +377,17 @@ export function EditItemPage() {
               </Button>
             </div>
             <Text size="1" color="gray" className={styles.helpText}>
-              {id && getItemById(id)
-                ? `${getItemById(id)!.initialWearCount || 0} initial + ${
-                    getItemById(id)!.wearHistory?.length || 0
-                  } worn in app`
-                : ""}
+              {`${item.initialWearCount || 0} initial + ${
+                item.wearHistory?.length || 0
+              } worn in app`}
             </Text>
           </div>
 
           <div className={styles.field}>
             <span className={styles.label}>Item Trait (Optional)</span>
             <Select.Root
-              value={formData.trait || "none"}
-              onValueChange={(value) =>
-                setFormData({
-                  ...formData,
-                  trait: value === "none" ? undefined : (value as ItemTrait),
-                })
-              }
+              name="trait"
+              defaultValue={item.trait || "none"}
               size="3"
             >
               <Select.Trigger placeholder="Select a vibe..." />
@@ -433,59 +410,45 @@ export function EditItemPage() {
         <div className={styles.field}>
           <span className={styles.label}>Notes (Optional)</span>
           <TextField.Root
+            name="notes"
             placeholder="e.g., favorite jeans, scratched"
-            value={formData.notes}
-            onChange={(e) =>
-              setFormData({ ...formData, notes: e.target.value })
-            }
+            defaultValue={item.notes || ""}
             size="3"
           />
         </div>
 
         <CheckboxField
-          checked={Boolean(formData.isSecondHand)}
-          onCheckedChange={(checked) =>
-            setFormData({ ...formData, isSecondHand: checked })
-          }
+          name="isSecondHand"
+          defaultChecked={item.isSecondHand}
           label="Second Hand / Thrifted"
         />
 
         <CheckboxField
-          checked={Boolean(formData.isDogCasual)}
-          onCheckedChange={(checked) =>
-            setFormData({ ...formData, isDogCasual: checked })
-          }
+          name="isDogCasual"
+          defaultChecked={item.isDogCasual}
           label="Dog casual"
         />
 
         <CheckboxField
-          checked={Boolean(formData.isHandmade)}
-          onCheckedChange={(checked) =>
-            setFormData({ ...formData, isHandmade: checked })
-          }
+          name="isHandmade"
+          defaultChecked={item.isHandmade}
           label="Handmade"
         />
 
-        {error && (
-          <div className={styles.errorMessage}>
-            <Text color="red" size="2">
-              {error}
-            </Text>
-          </div>
+        {actionData?.error && (
+          <Callout.Root color="red" size="1">
+            <Callout.Text>{actionData.error}</Callout.Text>
+          </Callout.Root>
         )}
 
         <div className={styles.actions}>
           <Button
             type="submit"
             size="3"
-            disabled={isSaving || isGeneratingEmbedding}
+            disabled={isSubmitting}
             className={styles.saveButton}
           >
-            {isGeneratingEmbedding
-              ? "Processing image..."
-              : isSaving
-              ? "Saving..."
-              : "Save Changes"}
+            {isSubmitting ? "Saving..." : "Save Changes"}
           </Button>
 
           <DeleteConfirmDialog
@@ -501,7 +464,7 @@ export function EditItemPage() {
             }
           />
         </div>
-      </form>
+      </Form>
     </div>
   );
 }

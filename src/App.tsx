@@ -1,11 +1,15 @@
-import { createBrowserRouter, RouterProvider } from "react-router";
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { MainLayout } from "./components/layout/MainLayout";
 import {
   AddItemPage,
   clientAction as addItemAction,
 } from "./pages/AddItemPage";
 import { CategoryPage, loader as categoryLoader } from "./pages/CategoryPage";
-import { EditItemPage } from "./pages/EditItemPage";
+import {
+  EditItemPage,
+  clientLoader as editItemLoader,
+  clientAction as editItemAction,
+} from "./pages/EditItemPage";
 import {
   ItemDetailPage,
   loader as itemDetailLoader,
@@ -26,7 +30,11 @@ const router = createBrowserRouter([
     element: <MainLayout />,
     children: [
       { index: true, element: <HomePage />, loader: homeLoader },
-      { path: "add-item", element: <AddItemPage />, action: addItemAction },
+      {
+        path: "add-item",
+        element: <AddItemPage />,
+        action: addItemAction,
+      },
       { path: "items", element: <ItemsPage />, loader: itemsLoader },
       { path: "log-wear", element: <LogWearPage /> },
       {
@@ -39,7 +47,12 @@ const router = createBrowserRouter([
         element: <ItemDetailPage />,
         loader: itemDetailLoader,
       },
-      { path: "edit-item/:id", element: <EditItemPage /> },
+      {
+        path: "edit-item/:id",
+        element: <EditItemPage />,
+        loader: editItemLoader,
+        action: editItemAction,
+      },
       { path: "outfits", element: <OutfitsPage /> },
       { path: "create-outfit", element: <CreateOutfitPage /> },
       { path: "outfit/:id", element: <OutfitDetailPage /> },
