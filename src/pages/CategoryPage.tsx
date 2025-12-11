@@ -9,7 +9,7 @@ import {
 import { ItemCard } from "../components/features/ItemCard";
 import { SearchBar } from "../components/common/SearchBar";
 import { useItemSearch } from "../hooks/useItemSearch";
-import type { ItemCategory, WardrobeItem } from "../types/wardrobe";
+import type { ItemCategory } from "../types/wardrobe";
 import { CATEGORY_TITLES, CATEGORY_IDS } from "../utils/categories";
 import { loadItems } from "../utils/storage";
 import styles from "./CategoryPage.module.css";
@@ -87,7 +87,7 @@ export function CategoryPage() {
       {!hasItems && (
         <div className={styles.emptyState}>
           <Text size="2" color="gray">
-            No {title.toLowerCase()} yet. Add your first item!
+            No {title?.toLowerCase()} yet. Add your first item!
           </Text>
           <Link to="/add-item" className={styles.addItemLink}>
             <Button size="2">Add Item</Button>
