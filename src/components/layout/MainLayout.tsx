@@ -1,5 +1,6 @@
 import { Outlet, useLocation } from "react-router";
 import { BottomNav } from "./BottomNav";
+import { ScrollToTop } from "../common/ScrollToTop";
 import styles from "./MainLayout.module.css";
 
 const PAGES_WITHOUT_BOTTOM_NAV = ["/add-item"];
@@ -14,6 +15,7 @@ export function MainLayout() {
 
   return (
     <div className={styles.layout}>
+      <ScrollToTop />
       <header className={styles.header}>
         <h1 className={styles.logo}>WardrobeTracker</h1>
       </header>
