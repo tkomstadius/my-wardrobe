@@ -2,10 +2,17 @@ import { ArrowLeftIcon, Pencil1Icon, TrashIcon } from "@radix-ui/react-icons";
 import { Badge, Button, Heading, Text } from "@radix-ui/themes";
 import { set } from "date-fns";
 import { useState } from "react";
-import { Link, useNavigate, useParams } from "react-router";
+import {
+  Link,
+  useNavigate,
+  useLoaderData,
+  useRevalidator,
+  type LoaderFunctionArgs,
+} from "react-router";
 import { DeleteConfirmDialog } from "../components/common/DeleteConfirmDialog";
-import { useOutfit } from "../contexts/OutfitContext";
 import { useWardrobe } from "../contexts/WardrobeContext";
+import { loadItems } from "../utils/storage";
+import { loadOutfits } from "../utils/storage";
 import {
   formatDate,
   formatDateDisplay,
@@ -14,17 +21,29 @@ import {
 } from "../utils/dateFormatter";
 import styles from "./ItemDetailPage.module.css";
 
+export async function loader({ params }: LoaderFunctionArgs) {
+  const { id } = params;
+
+  if (!id) {
+    return { item: null, outfits: [] };
+  }
+
+  const [items, allOutfits] = await Promise.all([loadItems(), loadOutfits()]);
+
+  const item = items.find((i) => i.id === id) || null;
+  const outfitsWithItem = allOutfits.filter((outfit) =>
+    outfit.itemIds.includes(id)
+  );
+
+  return { item, outfits: outfitsWithItem };
+}
+
 export function ItemDetailPage() {
-  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const {
-    getItemById,
-    deleteItem,
-    incrementWearCount,
-    logWearOnDate,
-    removeWear,
-  } = useWardrobe();
-  const { getOutfitsByItemId } = useOutfit();
+  const revalidator = useRevalidator();
+  const { item, outfits: outfitsWithItem } = useLoaderData<typeof loader>();
+  const { deleteItem, incrementWearCount, logWearOnDate, removeWear } =
+    useWardrobe();
   const [isDeleting, setIsDeleting] = useState(false);
   const [deletingWearIndex, setDeletingWearIndex] = useState<number | null>(
     null
@@ -32,9 +51,6 @@ export function ItemDetailPage() {
   const [showAllWears, setShowAllWears] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [selectedDate, setSelectedDate] = useState("");
-
-  const item = id ? getItemById(id) : null;
-  const outfitsWithItem = id ? getOutfitsByItemId(id) : [];
 
   if (!item) {
     return (
@@ -50,11 +66,11 @@ export function ItemDetailPage() {
   }
 
   const handleDelete = async () => {
-    if (!id) return;
+    if (!item) return;
 
     setIsDeleting(true);
     try {
-      await deleteItem(id);
+      await deleteItem(item.id);
       navigate(`/category/${item.category}`);
     } catch (error) {
       console.error("Failed to delete item:", error);
@@ -64,10 +80,11 @@ export function ItemDetailPage() {
   };
 
   const handleMarkAsWorn = async () => {
-    if (!id) return;
+    if (!item) return;
 
     try {
-      await incrementWearCount(id);
+      await incrementWearCount(item.id);
+      revalidator.revalidate(); // Reload data to show updated wear count
     } catch (error) {
       console.error("Failed to mark as worn:", error);
       alert("Failed to update wear count. Please try again.");
@@ -75,7 +92,7 @@ export function ItemDetailPage() {
   };
 
   const handleLogWearOnDate = async () => {
-    if (!id || !selectedDate) return;
+    if (!item || !selectedDate) return;
 
     try {
       // Set to noon to avoid timezone issues using date-fns
@@ -85,9 +102,10 @@ export function ItemDetailPage() {
         seconds: 0,
         milliseconds: 0,
       });
-      await logWearOnDate(id, date);
+      await logWearOnDate(item.id, date);
       setShowDatePicker(false);
       setSelectedDate("");
+      revalidator.revalidate(); // Reload data to show updated wear history
     } catch (error) {
       console.error("Failed to log wear:", error);
       alert("Failed to log wear. Please try again.");
@@ -95,11 +113,12 @@ export function ItemDetailPage() {
   };
 
   const handleRemoveWear = async (wearIndex: number) => {
-    if (!id) return;
+    if (!item) return;
 
     setDeletingWearIndex(wearIndex);
     try {
-      await removeWear(id, wearIndex);
+      await removeWear(item.id, wearIndex);
+      revalidator.revalidate(); // Reload data to show updated wear history
     } catch (error) {
       console.error("Failed to remove wear:", error);
       alert("Failed to remove wear. Please try again.");

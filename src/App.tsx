@@ -1,12 +1,18 @@
 import { Route, Routes } from "react-router";
 import { MainLayout } from "./components/layout/MainLayout";
 import { ScrollToTop } from "./components/common/ScrollToTop";
-import { AddItemPage } from "./pages/AddItemPage";
-import { CategoryPage } from "./pages/CategoryPage";
+import {
+  AddItemPage,
+  clientAction as addItemAction,
+} from "./pages/AddItemPage";
+import { CategoryPage, loader as categoryLoader } from "./pages/CategoryPage";
 import { EditItemPage } from "./pages/EditItemPage";
-import { ItemDetailPage } from "./pages/ItemDetailPage";
-import { HomePage } from "./pages/HomePage";
-import { ItemsPage } from "./pages/ItemsPage";
+import {
+  ItemDetailPage,
+  loader as itemDetailLoader,
+} from "./pages/ItemDetailPage";
+import { HomePage, loader as homeLoader } from "./pages/HomePage";
+import { ItemsPage, loader as itemsLoader } from "./pages/ItemsPage";
 import { LogWearPage } from "./pages/LogWearPage";
 import { OutfitsPage } from "./pages/OutfitsPage";
 import { CreateOutfitPage } from "./pages/CreateOutfitPage";
@@ -21,12 +27,24 @@ function App() {
       <ScrollToTop />
       <Routes>
         <Route path="/" element={<MainLayout />}>
-          <Route index element={<HomePage />} />
-          <Route path="add-item" element={<AddItemPage />} />
-          <Route path="items" element={<ItemsPage />} />
+          <Route index element={<HomePage />} loader={homeLoader} />
+          <Route
+            path="add-item"
+            element={<AddItemPage />}
+            action={addItemAction}
+          />
+          <Route path="items" element={<ItemsPage />} loader={itemsLoader} />
           <Route path="log-wear" element={<LogWearPage />} />
-          <Route path="category/:category" element={<CategoryPage />} />
-          <Route path="item/:id" element={<ItemDetailPage />} />
+          <Route
+            path="category/:category"
+            element={<CategoryPage />}
+            loader={categoryLoader}
+          />
+          <Route
+            path="item/:id"
+            element={<ItemDetailPage />}
+            loader={itemDetailLoader}
+          />
           <Route path="edit-item/:id" element={<EditItemPage />} />
           <Route path="outfits" element={<OutfitsPage />} />
           <Route path="create-outfit" element={<CreateOutfitPage />} />

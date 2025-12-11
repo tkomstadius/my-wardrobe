@@ -1,25 +1,55 @@
 import { Text, IconButton } from "@radix-ui/themes";
 import { GearIcon } from "@radix-ui/react-icons";
-import { useNavigate } from "react-router";
+import { useNavigate, useLoaderData } from "react-router";
 import { ItemCard } from "../components/features/ItemCard";
-import { useWardrobe } from "../contexts/WardrobeContext";
-import { getDaysAgo } from "../utils/dateFormatter";
+import { getDaysAgo, countWearsInRange } from "../utils/dateFormatter";
 import { CATEGORIES } from "../utils/categories";
+import { loadItems } from "../utils/storage";
+import type { WardrobeItem } from "../types/wardrobe";
 import styles from "./HomePage.module.css";
+
+export async function loader() {
+  const items = await loadItems();
+  return { items };
+}
+
+function getLastWornDate(
+  items: WardrobeItem[],
+  itemId: string
+): Date | undefined {
+  const item = items.find((i) => i.id === itemId);
+  if (!item || !item.wearHistory || item.wearHistory.length === 0) {
+    return undefined;
+  }
+  return item.wearHistory.at(-1);
+}
+
+function getItemsWornInPeriod(
+  items: WardrobeItem[],
+  startDate: Date,
+  endDate: Date = new Date()
+): Array<{ item: WardrobeItem; wearCount: number }> {
+  return items
+    .map((item) => ({
+      item,
+      wearCount: countWearsInRange(item.wearHistory, startDate, endDate),
+    }))
+    .filter((entry) => entry.wearCount > 0)
+    .sort((a, b) => b.wearCount - a.wearCount);
+}
 
 export function HomePage() {
   const navigate = useNavigate();
-  const { items, getItemsWornInPeriod, getLastWornDate, isLoading } =
-    useWardrobe();
+  const { items } = useLoaderData<typeof loader>();
   const hasItems = items.length > 0;
 
   // Get items worn in the last 7 days
-  const recentlyWornItems = getItemsWornInPeriod(getDaysAgo(7));
+  const recentlyWornItems = getItemsWornInPeriod(items, getDaysAgo(7));
 
   // Sort by last worn date (most recent first)
   const itemsSortedByLastWorn = [...recentlyWornItems].sort((a, b) => {
-    const dateA = getLastWornDate(a.item.id);
-    const dateB = getLastWornDate(b.item.id);
+    const dateA = getLastWornDate(items, a.item.id);
+    const dateB = getLastWornDate(items, b.item.id);
     if (!dateA && !dateB) return 0;
     if (!dateA) return 1;
     if (!dateB) return -1;
@@ -56,15 +86,7 @@ export function HomePage() {
         </div>
       </div>
 
-      {isLoading && (
-        <div className={styles.emptyState}>
-          <Text size="2" color="gray">
-            Loading your wardrobe...
-          </Text>
-        </div>
-      )}
-
-      {!isLoading && !hasItems && (
+      {!hasItems && (
         <div className={styles.emptyState}>
           <Text size="2" color="gray">
             No items yet. Add your first wardrobe item to get started!
@@ -72,7 +94,7 @@ export function HomePage() {
         </div>
       )}
 
-      {!isLoading && hasItems && (
+      {hasItems && (
         <div className={styles.content}>
           <section className={styles.section}>
             <div className={styles.sectionHeader}>

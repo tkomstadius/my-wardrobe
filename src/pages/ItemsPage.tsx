@@ -1,12 +1,20 @@
 import { PlusIcon } from "@radix-ui/react-icons";
-import { Link, useNavigate } from "react-router";
-import { useWardrobe } from "../contexts/WardrobeContext";
+import { Link, useNavigate, useLoaderData } from "react-router";
 import { CATEGORIES } from "../utils/categories";
+import { loadItems } from "../utils/storage";
 import styles from "./ItemsPage.module.css";
+
+export async function loader() {
+  const items = await loadItems();
+  return { items };
+}
 
 export function ItemsPage() {
   const navigate = useNavigate();
-  const { getItemsByCategory } = useWardrobe();
+  const { items } = useLoaderData<typeof loader>();
+
+  const getItemsByCategory = (categoryId: string) =>
+    items.filter((item) => item.category === categoryId);
 
   return (
     <div className={styles.container}>

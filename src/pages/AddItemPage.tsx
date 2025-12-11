@@ -1,98 +1,114 @@
 import { ArrowLeftIcon, CameraIcon } from "@radix-ui/react-icons";
 import { Button, Callout, Select, TextField } from "@radix-ui/themes";
-import { useState } from "react";
-import { useNavigate } from "react-router";
+import {
+  Form,
+  useNavigate,
+  useNavigation,
+  useActionData,
+  redirect,
+  type ClientActionFunctionArgs,
+} from "react-router";
 import { useWardrobe } from "../contexts/WardrobeContext";
 import { useImageUpload } from "../hooks/useImageUpload";
 import { CheckboxField } from "../components/common/CheckboxField";
 import { getImageEmbedding } from "../utils/aiEmbedding";
+import { saveItem } from "../utils/indexedDB";
+import { generateId } from "../utils/storage";
 import type {
   ItemCategory,
-  AddItemFormState,
   ItemTrait,
+  WardrobeItem,
+  NewWardrobeItem,
 } from "../types/wardrobe";
-import { CATEGORIES, CATEGORY_IDS } from "../utils/categories";
+import { CATEGORIES } from "../utils/categories";
 import styles from "./AddItemPage.module.css";
+
+type ActionData = {
+  error?: string;
+};
+
+export async function clientAction({ request }: ClientActionFunctionArgs) {
+  const formData = await request.formData();
+
+  const imageUrl = formData.get("imageUrl") as string;
+  const brand = formData.get("brand") as string;
+  const category = formData.get("category") as ItemCategory;
+  const notes = formData.get("notes") as string;
+  const price = formData.get("price") as string;
+  const purchaseDate = formData.get("purchaseDate") as string;
+  const initialWearCount = formData.get("initialWearCount") as string;
+  const trait = formData.get("trait") as string;
+  const isSecondHand = formData.get("isSecondHand") === "on";
+  const isDogCasual = formData.get("isDogCasual") === "on";
+  const isHandmade = formData.get("isHandmade") === "on";
+
+  if (!imageUrl) {
+    return { error: "Please add an image of the item" };
+  }
+
+  if (!category) {
+    return { error: "Please select a category" };
+  }
+
+  try {
+    // Generate embedding for AI wear logging
+    let embedding: number[] | undefined;
+
+    try {
+      embedding = await getImageEmbedding(imageUrl);
+    } catch (error) {
+      console.error("Failed to generate embedding:", error);
+      // Continue without embedding - user can generate later in Settings
+    }
+
+    const now = new Date();
+    const initialCount = initialWearCount
+      ? Number.parseInt(initialWearCount, 10)
+      : 0;
+
+    const newItemData: NewWardrobeItem = {
+      imageUrl,
+      notes: notes?.trim() ?? undefined,
+      brand: brand?.trim() ?? undefined,
+      category,
+      price: price ? Number.parseFloat(price) : undefined,
+      isSecondHand,
+      isDogCasual,
+      isHandmade,
+      trait: trait === "none" || !trait ? undefined : (trait as ItemTrait),
+      purchaseDate: purchaseDate ? new Date(purchaseDate) : undefined,
+      initialWearCount: initialCount,
+      embedding,
+    };
+
+    const item: WardrobeItem = {
+      ...newItemData,
+      id: generateId(),
+      initialWearCount: initialCount,
+      wearCount: initialCount,
+      wearHistory: [],
+      createdAt: now,
+      updatedAt: now,
+    };
+
+    await saveItem(item);
+
+    return redirect(`/category/${category}`);
+  } catch (err) {
+    console.error("Failed to save item:", err);
+    return { error: "Failed to save item. Please try again." };
+  }
+}
 
 export function AddItemPage() {
   const navigate = useNavigate();
-  const { addItem, getAllBrands } = useWardrobe();
+  const navigation = useNavigation();
+  const actionData = useActionData<ActionData>();
+  const { getAllBrands } = useWardrobe();
   const { imagePreview, handleImageUpload } = useImageUpload();
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isGeneratingEmbedding, setIsGeneratingEmbedding] = useState(false);
-  const [error, setError] = useState<string>("");
-  const [formData, setFormData] = useState<AddItemFormState>({
-    notes: "",
-    brand: "",
-    category: undefined,
-    price: "",
-    isSecondHand: false,
-    isDogCasual: false,
-    isHandmade: false,
-    trait: undefined,
-    purchaseDate: "",
-    initialWearCount: "",
-  });
 
-  const handleSubmit = async (event: React.FormEvent) => {
-    event.preventDefault();
-    setError("");
-
-    // Validate form
-    if (!imagePreview) {
-      setError("Please add an image of the item");
-      return;
-    }
-
-    if (!formData.category) {
-      setError("Please select a category");
-      return;
-    }
-
-    setIsSubmitting(true);
-
-    try {
-      // Generate embedding for AI wear logging
-      let embedding: number[] | undefined;
-
-      try {
-        setIsGeneratingEmbedding(true);
-        embedding = await getImageEmbedding(imagePreview);
-      } catch (error) {
-        console.error("Failed to generate embedding:", error);
-        // Continue without embedding - user can generate later in Settings
-      } finally {
-        setIsGeneratingEmbedding(false);
-      }
-
-      // Save item to context (which persists to IndexedDB)
-      await addItem({
-        imageUrl: imagePreview,
-        notes: formData.notes?.trim() || undefined,
-        brand: formData.brand?.trim() || undefined,
-        category: formData.category,
-        price: formData.price ? Number.parseFloat(formData.price) : undefined,
-        isSecondHand: formData.isSecondHand,
-        isDogCasual: formData.isDogCasual,
-        isHandmade: formData.isHandmade,
-        trait: formData.trait,
-        purchaseDate: formData.purchaseDate
-          ? new Date(formData.purchaseDate)
-          : undefined,
-        initialWearCount: formData.initialWearCount
-          ? Number.parseInt(formData.initialWearCount, 10)
-          : undefined,
-        embedding, // Add embedding if generated
-      });
-
-      // Navigate to category page
-      navigate(`/category/${formData.category}`);
-    } catch (err) {
-      console.error("Failed to save item:", err);
-      setError("Failed to save item. Please try again.");
-      setIsSubmitting(false);
-    }
-  };
+  const isSubmitting = navigation.state === "submitting";
+  const isLoading = navigation.state === "loading";
 
   return (
     <div className={styles.container}>
@@ -104,12 +120,15 @@ export function AddItemPage() {
         <div className={styles.spacer} />
       </div>
 
-      <form className={styles.form} onSubmit={handleSubmit}>
-        {error && (
+      <Form method="post" className={styles.form}>
+        {actionData?.error && (
           <Callout.Root color="red" size="1">
-            <Callout.Text>{error}</Callout.Text>
+            <Callout.Text>{actionData.error}</Callout.Text>
           </Callout.Root>
         )}
+
+        {/* Hidden field to store image data */}
+        <input type="hidden" name="imageUrl" value={imagePreview || ""} />
 
         <div className={styles.imageSection}>
           <div className={styles.imageContainer}>
@@ -142,11 +161,8 @@ export function AddItemPage() {
           <div className={styles.field}>
             <span className={styles.label}>Brand (Optional)</span>
             <TextField.Root
+              name="brand"
               placeholder="e.g., Ganni, Hope"
-              value={formData.brand}
-              onChange={(e) =>
-                setFormData({ ...formData, brand: e.target.value })
-              }
               list="brand-suggestions"
               size="3"
             />
@@ -159,15 +175,7 @@ export function AddItemPage() {
 
           <div className={styles.field}>
             <span className={styles.label}>Category</span>
-            <Select.Root
-              value={formData.category}
-              onValueChange={(value) => {
-                if (CATEGORY_IDS.includes(value as ItemCategory)) {
-                  setFormData({ ...formData, category: value as ItemCategory });
-                }
-              }}
-              size="3"
-            >
+            <Select.Root name="category" size="3">
               <Select.Trigger placeholder="Select category" />
               <Select.Content>
                 {CATEGORIES.map((category) => (
@@ -182,53 +190,31 @@ export function AddItemPage() {
           <div className={styles.field}>
             <span className={styles.label}>Price</span>
             <TextField.Root
+              name="price"
               type="number"
               placeholder="e.g., 49.99"
-              value={formData.price}
-              onChange={(e) =>
-                setFormData({ ...formData, price: e.target.value })
-              }
               size="3"
             />
           </div>
 
           <div className={styles.field}>
             <span className={styles.label}>Purchase Date</span>
-            <TextField.Root
-              type="date"
-              value={formData.purchaseDate}
-              onChange={(e) =>
-                setFormData({ ...formData, purchaseDate: e.target.value })
-              }
-              size="3"
-            />
+            <TextField.Root name="purchaseDate" type="date" size="3" />
           </div>
 
           <div className={styles.field}>
             <span className={styles.label}>Initial Wear Count</span>
             <TextField.Root
+              name="initialWearCount"
               type="number"
               placeholder="0"
-              value={formData.initialWearCount}
-              onChange={(e) =>
-                setFormData({ ...formData, initialWearCount: e.target.value })
-              }
               size="3"
             />
           </div>
 
           <div className={styles.field}>
             <span className={styles.label}>Item Trait (Optional)</span>
-            <Select.Root
-              value={formData.trait || "none"}
-              onValueChange={(value) =>
-                setFormData({
-                  ...formData,
-                  trait: value === "none" ? undefined : (value as ItemTrait),
-                })
-              }
-              size="3"
-            >
+            <Select.Root name="trait" defaultValue="none" size="3">
               <Select.Trigger placeholder="Select a vibe..." />
               <Select.Content>
                 <Select.Item value="none">None</Select.Item>
@@ -249,52 +235,27 @@ export function AddItemPage() {
         <div className={styles.field}>
           <span className={styles.label}>Notes (Optional)</span>
           <TextField.Root
+            name="notes"
             placeholder="e.g., T-shirt, favorite jeans, scratched"
-            value={formData.notes}
-            onChange={(e) =>
-              setFormData({ ...formData, notes: e.target.value })
-            }
             size="3"
           />
         </div>
 
-        <CheckboxField
-          checked={Boolean(formData.isSecondHand)}
-          onCheckedChange={(checked) =>
-            setFormData({ ...formData, isSecondHand: checked })
-          }
-          label="Second Hand / Thrifted"
-        />
+        <CheckboxField name="isSecondHand" label="Second Hand / Thrifted" />
 
-        <CheckboxField
-          checked={Boolean(formData.isDogCasual)}
-          onCheckedChange={(checked) =>
-            setFormData({ ...formData, isDogCasual: checked })
-          }
-          label="Dog casual"
-        />
+        <CheckboxField name="isDogCasual" label="Dog casual" />
 
-        <CheckboxField
-          checked={Boolean(formData.isHandmade)}
-          onCheckedChange={(checked) =>
-            setFormData({ ...formData, isHandmade: checked })
-          }
-          label="Handmade"
-        />
+        <CheckboxField name="isHandmade" label="Handmade" />
 
         <Button
           type="submit"
           size="3"
           className={styles.saveButton}
-          disabled={isSubmitting || isGeneratingEmbedding}
+          disabled={isSubmitting || isLoading}
         >
-          {isGeneratingEmbedding
-            ? "Processing image..."
-            : isSubmitting
-            ? "Saving..."
-            : "Save Item"}
+          {isSubmitting ? "Saving..." : "Save Item"}
         </Button>
-      </form>
+      </Form>
     </div>
   );
 }

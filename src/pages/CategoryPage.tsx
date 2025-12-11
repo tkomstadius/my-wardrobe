@@ -1,25 +1,57 @@
 import { ArrowLeftIcon, PlusIcon } from "@radix-ui/react-icons";
 import { Button, Text } from "@radix-ui/themes";
-import { Link, useNavigate, useParams } from "react-router";
+import {
+  Link,
+  useNavigate,
+  useLoaderData,
+  type LoaderFunctionArgs,
+} from "react-router";
 import { ItemCard } from "../components/features/ItemCard";
 import { SearchBar } from "../components/common/SearchBar";
-import { useWardrobe } from "../contexts/WardrobeContext";
 import { useItemSearch } from "../hooks/useItemSearch";
-import type { ItemCategory } from "../types/wardrobe";
+import type { ItemCategory, WardrobeItem } from "../types/wardrobe";
 import { CATEGORY_TITLES, CATEGORY_IDS } from "../utils/categories";
+import { loadItems } from "../utils/storage";
 import styles from "./CategoryPage.module.css";
+
+// Loader to fetch items for this category
+export async function loader({ params }: LoaderFunctionArgs) {
+  const { category } = params;
+
+  // Validate category
+  const isValidCategory =
+    category && CATEGORY_IDS.includes(category as ItemCategory);
+
+  if (!isValidCategory) {
+    return { items: [], category: null, title: null, isValid: false };
+  }
+
+  const allItems = await loadItems();
+  const categoryItems = allItems.filter((item) => item.category === category);
+
+  return {
+    items: categoryItems,
+    category: category as ItemCategory,
+    title: CATEGORY_TITLES[category as ItemCategory],
+    isValid: true,
+  };
+}
 
 export function CategoryPage() {
   const navigate = useNavigate();
-  const { category } = useParams<{ category: string }>();
-  const { getItemsByCategory, isLoading } = useWardrobe();
+  const {
+    items: categoryItems,
+    title,
+    isValid,
+  } = useLoaderData<typeof loader>();
 
-  // Validate category
-  const isValidCategory = (cat: string | undefined): cat is ItemCategory => {
-    return cat !== undefined && CATEGORY_IDS.includes(cat as ItemCategory);
-  };
+  const { searchQuery, setSearchQuery, clearSearch, filteredItems } =
+    useItemSearch(categoryItems);
 
-  if (!isValidCategory(category)) {
+  const hasItems = categoryItems.length > 0;
+  const hasFilteredItems = filteredItems.length > 0;
+
+  if (!isValid) {
     return (
       <div className={styles.container}>
         <div className={styles.header}>
@@ -39,16 +71,6 @@ export function CategoryPage() {
     );
   }
 
-  const categoryItems = getItemsByCategory(category);
-  const title = CATEGORY_TITLES[category];
-
-  // Use search hook
-  const { searchQuery, setSearchQuery, clearSearch, filteredItems } =
-    useItemSearch(categoryItems);
-
-  const hasItems = categoryItems.length > 0;
-  const hasFilteredItems = filteredItems.length > 0;
-
   return (
     <div className={styles.container}>
       <div className={styles.header}>
@@ -62,15 +84,7 @@ export function CategoryPage() {
         <div className={styles.spacer} />
       </div>
 
-      {isLoading && (
-        <div className={styles.emptyState}>
-          <Text size="2" color="gray">
-            Loading...
-          </Text>
-        </div>
-      )}
-
-      {!isLoading && !hasItems && (
+      {!hasItems && (
         <div className={styles.emptyState}>
           <Text size="2" color="gray">
             No {title.toLowerCase()} yet. Add your first item!
@@ -81,7 +95,7 @@ export function CategoryPage() {
         </div>
       )}
 
-      {!isLoading && hasItems && (
+      {hasItems && (
         <>
           {/* Search Bar */}
           <SearchBar
