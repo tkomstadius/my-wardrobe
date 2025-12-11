@@ -191,24 +191,6 @@ export function EditItemPage() {
     }
   };
 
-  if (!item) {
-    return (
-      <div className={styles.container}>
-        <div className={styles.header}>
-          <Button variant="ghost" onClick={() => navigate("/")}>
-            <ArrowLeftIcon />
-            Back
-          </Button>
-        </div>
-        <div className={styles.errorState}>
-          <Text size="2" color="gray">
-            Item not found
-          </Text>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className={styles.container}>
       <div className={styles.header}>
@@ -219,252 +201,267 @@ export function EditItemPage() {
         <h2 className={styles.title}>Edit Item</h2>
         <div className={styles.spacer} />
       </div>
+      {!item ? (
+        <div className={styles.errorState}>
+          <Text size="2" color="gray">
+            Item not found
+          </Text>
+        </div>
+      ) : (
+        <Form method="post" className={styles.form}>
+          {/* Hidden fields for tracking */}
+          <input type="hidden" name="imageUrl" value={imagePreview || ""} />
+          <input type="hidden" name="originalImageUrl" value={item.imageUrl} />
+          <input
+            type="hidden"
+            name="wearHistoryLength"
+            value={item.wearHistory?.length || 0}
+          />
 
-      <Form method="post" className={styles.form}>
-        {/* Hidden fields for tracking */}
-        <input type="hidden" name="imageUrl" value={imagePreview || ""} />
-        <input type="hidden" name="originalImageUrl" value={item.imageUrl} />
-        <input
-          type="hidden"
-          name="wearHistoryLength"
-          value={item.wearHistory?.length || 0}
-        />
+          {/* Image Upload Section */}
+          <div className={styles.imageSection}>
+            {imagePreview ? (
+              <div className={styles.imagePreviewContainer}>
+                <img
+                  src={imagePreview}
+                  alt="Item preview"
+                  className={styles.imagePreview}
+                />
+                <Button
+                  type="button"
+                  size="2"
+                  className={styles.changeImageButton}
+                  onClick={() =>
+                    document.getElementById("image-upload")?.click()
+                  }
+                >
+                  Change Image
+                </Button>
+                <input
+                  id="image-upload"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  className={styles.fileInput}
+                />
+              </div>
+            ) : (
+              <div className={styles.uploadPlaceholder}>
+                <Button
+                  type="button"
+                  size="3"
+                  onClick={() =>
+                    document.getElementById("image-upload")?.click()
+                  }
+                >
+                  Upload New Image
+                </Button>
+                <input
+                  id="image-upload"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  className={styles.fileInput}
+                />
+              </div>
+            )}
+          </div>
 
-        {/* Image Upload Section */}
-        <div className={styles.imageSection}>
-          {imagePreview ? (
-            <div className={styles.imagePreviewContainer}>
-              <img
-                src={imagePreview}
-                alt="Item preview"
-                className={styles.imagePreview}
-              />
-              <Button
-                type="button"
-                size="2"
-                className={styles.changeImageButton}
-                onClick={() => document.getElementById("image-upload")?.click()}
-              >
-                Change Image
-              </Button>
-              <input
-                id="image-upload"
-                type="file"
-                accept="image/*"
-                onChange={handleImageUpload}
-                className={styles.fileInput}
-              />
-            </div>
-          ) : (
-            <div className={styles.uploadPlaceholder}>
-              <Button
-                type="button"
-                size="3"
-                onClick={() => document.getElementById("image-upload")?.click()}
-              >
-                Upload New Image
-              </Button>
-              <input
-                id="image-upload"
-                type="file"
-                accept="image/*"
-                onChange={handleImageUpload}
-                className={styles.fileInput}
-              />
-            </div>
+          {/* Category Warning */}
+          {categoryWarning && (
+            <Callout.Root color="orange" size="1">
+              <Callout.Text>{categoryWarning}</Callout.Text>
+            </Callout.Root>
           )}
-        </div>
 
-        {/* Category Warning */}
-        {categoryWarning && (
-          <Callout.Root color="orange" size="1">
-            <Callout.Text>{categoryWarning}</Callout.Text>
-          </Callout.Root>
-        )}
-
-        {/* Form Fields */}
-        <div className={styles.fields}>
-          <div className={styles.field}>
-            <span className={styles.label}>Brand (Optional)</span>
-            <TextField.Root
-              name="brand"
-              placeholder="e.g., Ganni, Hope"
-              defaultValue={item.brand || ""}
-              list="brand-suggestions-edit"
-              size="3"
-            />
-            <datalist id="brand-suggestions-edit">
-              {getAllBrands().map((brand) => (
-                <option key={brand} value={brand} />
-              ))}
-            </datalist>
-          </div>
-
-          <div className={styles.field}>
-            <span className={styles.label}>Category</span>
-            <Select.Root name="category" defaultValue={validCategory} size="3">
-              <Select.Trigger placeholder="Select category" />
-              <Select.Content>
-                {CATEGORIES.map((category) => (
-                  <Select.Item key={category.id} value={category.id}>
-                    {category.title}
-                  </Select.Item>
-                ))}
-              </Select.Content>
-            </Select.Root>
-          </div>
-
-          <div className={styles.field}>
-            <span className={styles.label}>Price</span>
-            <TextField.Root
-              name="price"
-              type="number"
-              placeholder="e.g., 49.99"
-              defaultValue={item.price?.toString() || ""}
-              size="3"
-            />
-          </div>
-
-          <div className={styles.field}>
-            <span className={styles.label}>Purchase Date</span>
-            <TextField.Root
-              name="purchaseDate"
-              type="date"
-              defaultValue={
-                item.purchaseDate
-                  ? new Date(item.purchaseDate).toISOString().split("T")[0]
-                  : ""
-              }
-              size="3"
-            />
-          </div>
-
-          <div className={styles.field}>
-            <span className={styles.label}>
-              Initial Wear Count (before adding to app)
-            </span>
-            <TextField.Root
-              name="initialWearCount"
-              type="number"
-              placeholder="0"
-              defaultValue={(item.initialWearCount ?? 0).toString()}
-              size="3"
-            />
-            <Text size="1" color="gray" className={styles.helpText}>
-              Use this for items you already owned. Leave at 0 for new items.
-            </Text>
-          </div>
-
-          <div className={styles.field}>
-            <span className={styles.label}>Total Wear Count</span>
-            <div className={styles.wearCountContainer}>
+          {/* Form Fields */}
+          <div className={styles.fields}>
+            <div className={styles.field}>
+              <span className={styles.label}>Brand (Optional)</span>
               <TextField.Root
-                type="number"
-                value={item.wearCount.toString()}
+                name="brand"
+                placeholder="e.g., Ganni, Hope"
+                defaultValue={item.brand || ""}
+                list="brand-suggestions-edit"
                 size="3"
-                className={styles.wearCountInput}
-                disabled
-                readOnly
               />
-              <Button
-                type="button"
-                variant="soft"
-                size="3"
-                onClick={handleMarkAsWorn}
-                className={styles.markWornButton}
-              >
-                Mark as Worn
-              </Button>
+              <datalist id="brand-suggestions-edit">
+                {getAllBrands().map((brand) => (
+                  <option key={brand} value={brand} />
+                ))}
+              </datalist>
             </div>
-            <Text size="1" color="gray" className={styles.helpText}>
-              {`${item.initialWearCount || 0} initial + ${
-                item.wearHistory?.length || 0
-              } worn in app`}
-            </Text>
+
+            <div className={styles.field}>
+              <span className={styles.label}>Category</span>
+              <Select.Root
+                name="category"
+                defaultValue={validCategory}
+                size="3"
+              >
+                <Select.Trigger placeholder="Select category" />
+                <Select.Content>
+                  {CATEGORIES.map((category) => (
+                    <Select.Item key={category.id} value={category.id}>
+                      {category.title}
+                    </Select.Item>
+                  ))}
+                </Select.Content>
+              </Select.Root>
+            </div>
+
+            <div className={styles.field}>
+              <span className={styles.label}>Price</span>
+              <TextField.Root
+                name="price"
+                type="number"
+                placeholder="e.g., 49.99"
+                defaultValue={item.price?.toString() || ""}
+                size="3"
+              />
+            </div>
+
+            <div className={styles.field}>
+              <span className={styles.label}>Purchase Date</span>
+              <TextField.Root
+                name="purchaseDate"
+                type="date"
+                defaultValue={
+                  item.purchaseDate
+                    ? new Date(item.purchaseDate).toISOString().split("T")[0]
+                    : ""
+                }
+                size="3"
+              />
+            </div>
+
+            <div className={styles.field}>
+              <span className={styles.label}>
+                Initial Wear Count (before adding to app)
+              </span>
+              <TextField.Root
+                name="initialWearCount"
+                type="number"
+                placeholder="0"
+                defaultValue={(item.initialWearCount ?? 0).toString()}
+                size="3"
+              />
+              <Text size="1" color="gray" className={styles.helpText}>
+                Use this for items you already owned. Leave at 0 for new items.
+              </Text>
+            </div>
+
+            <div className={styles.field}>
+              <span className={styles.label}>Total Wear Count</span>
+              <div className={styles.wearCountContainer}>
+                <TextField.Root
+                  type="number"
+                  value={item.wearCount.toString()}
+                  size="3"
+                  className={styles.wearCountInput}
+                  disabled
+                  readOnly
+                />
+                <Button
+                  type="button"
+                  variant="soft"
+                  size="3"
+                  onClick={handleMarkAsWorn}
+                  className={styles.markWornButton}
+                >
+                  Mark as Worn
+                </Button>
+              </div>
+              <Text size="1" color="gray" className={styles.helpText}>
+                {`${item.initialWearCount || 0} initial + ${
+                  item.wearHistory?.length || 0
+                } worn in app`}
+              </Text>
+            </div>
+
+            <div className={styles.field}>
+              <span className={styles.label}>Item Trait (Optional)</span>
+              <Select.Root
+                name="trait"
+                defaultValue={item.trait || "none"}
+                size="3"
+              >
+                <Select.Trigger placeholder="Select a vibe..." />
+                <Select.Content>
+                  <Select.Item value="none">None</Select.Item>
+                  <Select.Item value="comfort">
+                    Comfort (cozy, relaxed)
+                  </Select.Item>
+                  <Select.Item value="confidence">
+                    Confidence (powerful, bold)
+                  </Select.Item>
+                  <Select.Item value="creative">
+                    Creative (expressive, artistic)
+                  </Select.Item>
+                </Select.Content>
+              </Select.Root>
+            </div>
           </div>
 
           <div className={styles.field}>
-            <span className={styles.label}>Item Trait (Optional)</span>
-            <Select.Root
-              name="trait"
-              defaultValue={item.trait || "none"}
+            <span className={styles.label}>Notes (Optional)</span>
+            <TextField.Root
+              name="notes"
+              placeholder="e.g., favorite jeans, scratched"
+              defaultValue={item.notes || ""}
               size="3"
-            >
-              <Select.Trigger placeholder="Select a vibe..." />
-              <Select.Content>
-                <Select.Item value="none">None</Select.Item>
-                <Select.Item value="comfort">
-                  Comfort (cozy, relaxed)
-                </Select.Item>
-                <Select.Item value="confidence">
-                  Confidence (powerful, bold)
-                </Select.Item>
-                <Select.Item value="creative">
-                  Creative (expressive, artistic)
-                </Select.Item>
-              </Select.Content>
-            </Select.Root>
+            />
           </div>
-        </div>
 
-        <div className={styles.field}>
-          <span className={styles.label}>Notes (Optional)</span>
-          <TextField.Root
-            name="notes"
-            placeholder="e.g., favorite jeans, scratched"
-            defaultValue={item.notes || ""}
-            size="3"
+          <CheckboxField
+            name="isSecondHand"
+            defaultChecked={item.isSecondHand}
+            label="Second Hand / Thrifted"
           />
-        </div>
 
-        <CheckboxField
-          name="isSecondHand"
-          defaultChecked={item.isSecondHand}
-          label="Second Hand / Thrifted"
-        />
-
-        <CheckboxField
-          name="isDogCasual"
-          defaultChecked={item.isDogCasual}
-          label="Dog casual"
-        />
-
-        <CheckboxField
-          name="isHandmade"
-          defaultChecked={item.isHandmade}
-          label="Handmade"
-        />
-
-        {actionData?.error && (
-          <Callout.Root color="red" size="1">
-            <Callout.Text>{actionData.error}</Callout.Text>
-          </Callout.Root>
-        )}
-
-        <div className={styles.actions}>
-          <Button
-            type="submit"
-            size="3"
-            disabled={isSubmitting}
-            className={styles.saveButton}
-          >
-            {isSubmitting ? "Saving..." : "Save Changes"}
-          </Button>
-
-          <DeleteConfirmDialog
-            title="Delete Item"
-            description="Are you sure you want to delete this item? This action cannot be undone."
-            onConfirm={handleDelete}
-            isDeleting={isDeleting}
-            triggerButton={
-              <Button type="button" color="red" variant="soft" size="3">
-                <TrashIcon />
-                Delete
-              </Button>
-            }
+          <CheckboxField
+            name="isDogCasual"
+            defaultChecked={item.isDogCasual}
+            label="Dog casual"
           />
-        </div>
-      </Form>
+
+          <CheckboxField
+            name="isHandmade"
+            defaultChecked={item.isHandmade}
+            label="Handmade"
+          />
+
+          {actionData?.error && (
+            <Callout.Root color="red" size="1">
+              <Callout.Text>{actionData.error}</Callout.Text>
+            </Callout.Root>
+          )}
+
+          <div className={styles.actions}>
+            <Button
+              type="submit"
+              size="3"
+              disabled={isSubmitting}
+              className={styles.saveButton}
+            >
+              {isSubmitting ? "Saving..." : "Save Changes"}
+            </Button>
+
+            <DeleteConfirmDialog
+              title="Delete Item"
+              description="Are you sure you want to delete this item? This action cannot be undone."
+              onConfirm={handleDelete}
+              isDeleting={isDeleting}
+              triggerButton={
+                <Button type="button" color="red" variant="soft" size="3">
+                  <TrashIcon />
+                  Delete
+                </Button>
+              }
+            />
+          </div>
+        </Form>
+      )}
     </div>
   );
 }
