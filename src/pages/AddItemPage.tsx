@@ -184,7 +184,7 @@ export function AddItemPage() {
             <span className={styles.label}>Price</span>
             <TextField.Root
               name="price"
-              type="number"
+              type="text"
               placeholder="e.g., 49.99"
               size="3"
             />
