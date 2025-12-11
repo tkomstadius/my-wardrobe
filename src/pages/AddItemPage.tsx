@@ -121,15 +121,6 @@ export function AddItemPage() {
       </div>
 
       <Form method="post" className={styles.form}>
-        {actionData?.error && (
-          <Callout.Root color="red" size="1">
-            <Callout.Text>{actionData.error}</Callout.Text>
-          </Callout.Root>
-        )}
-
-        {/* Hidden field to store image data */}
-        <input type="hidden" name="imageUrl" value={imagePreview || ""} />
-
         <div className={styles.imageSection}>
           <div className={styles.imageContainer}>
             {imagePreview ? (
@@ -154,6 +145,8 @@ export function AddItemPage() {
               onChange={handleImageUpload}
               className={styles.fileInput}
             />
+            {/* Hidden field to store image data */}
+            <input type="hidden" name="imageUrl" value={imagePreview || ""} />
           </div>
         </div>
 
@@ -246,6 +239,12 @@ export function AddItemPage() {
         <CheckboxField name="isDogCasual" label="Dog casual" />
 
         <CheckboxField name="isHandmade" label="Handmade" />
+
+        {actionData?.error && (
+          <Callout.Root color="red" size="1">
+            <Callout.Text>{actionData.error}</Callout.Text>
+          </Callout.Root>
+        )}
 
         <Button
           type="submit"
