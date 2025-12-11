@@ -10,7 +10,7 @@ export type ItemCategory =
 
 export type ItemTrait = "comfort" | "confidence" | "creative";
 
-export interface WardrobeItem {
+export type WardrobeItem = {
   id: string;
   imageUrl: string;
   notes?: string;
@@ -28,20 +28,29 @@ export interface WardrobeItem {
   createdAt: Date;
   updatedAt: Date;
   embedding?: number[]; // CLIP embedding vector (512 dimensions) for AI matching
-}
+};
 
-export interface NewWardrobeItem {
-  imageUrl: string;
-  notes?: string;
-  brand?: string;
-  category: ItemCategory;
-  wearCount?: number;
-  initialWearCount?: number;
-  price?: number;
-  isSecondHand?: boolean;
-  isDogCasual?: boolean;
-  isHandmade?: boolean;
-  trait?: ItemTrait;
-  purchaseDate?: Date;
-  embedding?: number[]; // CLIP embedding vector (512 dimensions) for AI matching
-}
+export type NewWardrobeItem = Omit<
+  WardrobeItem,
+  "id" | "createdAt" | "updatedAt" | "wearCount" | "wearHistory"
+>;
+
+export type AddItemFormState = Partial<
+  Omit<
+    NewWardrobeItem,
+    "imageUrl" | "embedding" | "price" | "purchaseDate" | "initialWearCount"
+  > & {
+    price?: string;
+    purchaseDate?: string;
+    initialWearCount?: string;
+  }
+>;
+
+export type EditItemFormState = Omit<
+  NewWardrobeItem,
+  "imageUrl" | "embedding" | "price" | "purchaseDate" | "initialWearCount"
+> & {
+  price?: string;
+  purchaseDate?: string;
+  initialWearCount?: string;
+};

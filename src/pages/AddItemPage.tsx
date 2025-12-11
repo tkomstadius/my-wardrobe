@@ -6,7 +6,11 @@ import { useWardrobe } from "../contexts/WardrobeContext";
 import { useImageUpload } from "../hooks/useImageUpload";
 import { CheckboxField } from "../components/common/CheckboxField";
 import { getImageEmbedding } from "../utils/aiEmbedding";
-import type { ItemCategory, ItemTrait } from "../types/wardrobe";
+import type {
+  ItemCategory,
+  AddItemFormState,
+  ItemTrait,
+} from "../types/wardrobe";
 import { CATEGORIES, CATEGORY_IDS } from "../utils/categories";
 import styles from "./AddItemPage.module.css";
 
@@ -17,18 +21,7 @@ export function AddItemPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isGeneratingEmbedding, setIsGeneratingEmbedding] = useState(false);
   const [error, setError] = useState<string>("");
-  const [formData, setFormData] = useState<{
-    notes: string;
-    brand: string;
-    category: ItemCategory | undefined;
-    price: string;
-    isSecondHand: boolean;
-    isDogCasual: boolean;
-    isHandmade: boolean;
-    trait: ItemTrait | undefined;
-    purchaseDate: string;
-    initialWearCount: string;
-  }>({
+  const [formData, setFormData] = useState<AddItemFormState>({
     notes: "",
     brand: "",
     category: undefined,
@@ -75,8 +68,8 @@ export function AddItemPage() {
       // Save item to context (which persists to IndexedDB)
       await addItem({
         imageUrl: imagePreview,
-        notes: formData.notes.trim() || undefined,
-        brand: formData.brand.trim() || undefined,
+        notes: formData.notes?.trim() || undefined,
+        brand: formData.brand?.trim() || undefined,
         category: formData.category,
         price: formData.price ? Number.parseFloat(formData.price) : undefined,
         isSecondHand: formData.isSecondHand,
@@ -266,7 +259,7 @@ export function AddItemPage() {
         </div>
 
         <CheckboxField
-          checked={formData.isSecondHand}
+          checked={Boolean(formData.isSecondHand)}
           onCheckedChange={(checked) =>
             setFormData({ ...formData, isSecondHand: checked })
           }
@@ -274,7 +267,7 @@ export function AddItemPage() {
         />
 
         <CheckboxField
-          checked={formData.isDogCasual}
+          checked={Boolean(formData.isDogCasual)}
           onCheckedChange={(checked) =>
             setFormData({ ...formData, isDogCasual: checked })
           }
@@ -282,7 +275,7 @@ export function AddItemPage() {
         />
 
         <CheckboxField
-          checked={formData.isHandmade}
+          checked={Boolean(formData.isHandmade)}
           onCheckedChange={(checked) =>
             setFormData({ ...formData, isHandmade: checked })
           }

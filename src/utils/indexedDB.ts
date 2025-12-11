@@ -1,7 +1,7 @@
 // IndexedDB wrapper for wardrobe storage
 // More capacity than localStorage, stores images as Blobs for efficiency
 
-import type { ItemCategory, ItemTrait } from "../types/wardrobe";
+import type { ItemCategory, ItemTrait, WardrobeItem } from "../types/wardrobe";
 import type { Outfit } from "../types/outfit";
 
 const DB_NAME = "MyWardrobeDB";
@@ -123,25 +123,7 @@ export function blobToDataURL(blob: Blob): Promise<string> {
 }
 
 // Save an item to IndexedDB
-export async function saveItem(item: {
-  id: string;
-  imageUrl: string;
-  notes?: string;
-  brand?: string;
-  category: ItemCategory;
-  wearCount: number;
-  initialWearCount?: number;
-  wearHistory: Date[];
-  price?: number;
-  isSecondHand?: boolean;
-  isDogCasual?: boolean;
-  isHandmade?: boolean;
-  trait?: ItemTrait;
-  purchaseDate?: Date;
-  createdAt: Date;
-  updatedAt: Date;
-  embedding?: number[];
-}): Promise<void> {
+export async function saveItem(item: WardrobeItem): Promise<void> {
   const db = await openDB();
 
   return new Promise((resolve, reject) => {
@@ -181,27 +163,7 @@ export async function saveItem(item: {
 }
 
 // Load all items from IndexedDB
-export async function loadAllItems(): Promise<
-  Array<{
-    id: string;
-    imageUrl: string;
-    notes?: string;
-    brand?: string;
-    category: ItemCategory;
-    wearCount: number;
-    initialWearCount?: number;
-    wearHistory: Date[];
-    price?: number;
-    isSecondHand?: boolean;
-    isDogCasual?: boolean;
-    isHandmade?: boolean;
-    trait?: ItemTrait;
-    purchaseDate?: Date;
-    createdAt: Date;
-    updatedAt: Date;
-    embedding?: number[];
-  }>
-> {
+export async function loadAllItems(): Promise<Array<WardrobeItem>> {
   const db = await openDB();
 
   return new Promise((resolve, reject) => {
