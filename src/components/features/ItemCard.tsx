@@ -22,9 +22,31 @@ export function ItemCard({ item, onClick, compact = false }: ItemCardProps) {
       ? item.price / item.wearCount
       : null;
 
+  // Check if item was worn today
+  const isWornToday = () => {
+    if (!item.wearHistory || item.wearHistory.length === 0) {
+      return false;
+    }
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    return item.wearHistory.some((wearDate) => {
+      const wear = new Date(wearDate);
+      wear.setHours(0, 0, 0, 0);
+      return wear.getTime() === today.getTime();
+    });
+  };
+
+  const wornToday = isWornToday();
+
   const handleQuickWear = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+
+    if (wornToday) {
+      return; // Already worn today, do nothing
+    }
+
     try {
       await incrementWearCount(item.id);
     } catch (err) {
@@ -59,9 +81,12 @@ export function ItemCard({ item, onClick, compact = false }: ItemCardProps) {
           <IconButton
             size="2"
             variant="solid"
-            className={styles.quickWearButton}
+            className={`${styles.quickWearButton} ${
+              wornToday ? styles.disabled : ""
+            }`}
             onClick={handleQuickWear}
-            title="Mark as worn"
+            disabled={wornToday}
+            title={wornToday ? "Already worn today" : "Mark as worn"}
           >
             <PlusIcon />
           </IconButton>

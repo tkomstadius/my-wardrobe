@@ -44,7 +44,7 @@
   top: 8px;
   right: 8px;
   opacity: 1;
-  transition: transform 0.2s ease;
+  transition: transform 0.2s ease, opacity 0.2s ease;
   background: var(--accent-9);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
   z-index: 10;
@@ -52,6 +52,16 @@
 
 .quickWearButton:active {
   transform: scale(0.95);
+}
+
+.quickWearButton.disabled {
+  cursor: not-allowed;
+  background: var(--gray-8);
+}
+
+.quickWearButton.disabled:hover {
+  transform: none;
+  background: var(--gray-8);
 }
 
 /* On desktop, hide button until hover */
@@ -68,6 +78,11 @@
   .quickWearButton:hover {
     transform: scale(1.1);
     background: var(--accent-10);
+  }
+
+  .quickWearButton.disabled:hover {
+    transform: none;
+    background: var(--gray-8);
   }
 }
 
