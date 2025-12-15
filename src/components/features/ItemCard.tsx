@@ -5,6 +5,8 @@ import { useWardrobe } from "../../contexts/WardrobeContext";
 import type { WardrobeItem } from "../../types/wardrobe";
 import { formatItemAge } from "../../utils/dateFormatter";
 import { getTraitEmoji } from "../../utils/traits";
+import { isWornToday } from "../../utils/wardrobeFilters";
+import { CURRENCY } from "../../utils/config";
 import styles from "./ItemCard.module.css";
 
 interface ItemCardProps {
@@ -23,21 +25,7 @@ export function ItemCard({ item, onClick, compact = false }: ItemCardProps) {
       : null;
 
   // Check if item was worn today
-  const isWornToday = () => {
-    if (!item.wearHistory || item.wearHistory.length === 0) {
-      return false;
-    }
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    return item.wearHistory.some((wearDate) => {
-      const wear = new Date(wearDate);
-      wear.setHours(0, 0, 0, 0);
-      return wear.getTime() === today.getTime();
-    });
-  };
-
-  const wornToday = isWornToday();
+  const wornToday = isWornToday(item);
 
   const handleQuickWear = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -114,7 +102,7 @@ export function ItemCard({ item, onClick, compact = false }: ItemCardProps) {
             <span className={styles.wearCount}>Worn {item.wearCount}×</span>
             {costPerWear !== null && (
               <span className={styles.costPerWear}>
-                {costPerWear.toFixed(2)} kr/wear
+                {costPerWear.toFixed(2)} {CURRENCY}/wear
               </span>
             )}
           </div>

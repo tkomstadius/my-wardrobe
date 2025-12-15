@@ -31,6 +31,21 @@ export function getMonthsAgo(months: number): Date {
   return subMonths(new Date(), months);
 }
 
+// Normalize a date to the start of the day (00:00:00.000)
+export function normalizeToStartOfDay(date: Date): Date {
+  const normalized = new Date(date);
+  normalized.setHours(0, 0, 0, 0);
+  return normalized;
+}
+
+// Check if two dates are on the same day
+export function isSameDay(date1: Date, date2: Date): boolean {
+  return (
+    normalizeToStartOfDay(date1).getTime() ===
+    normalizeToStartOfDay(date2).getTime()
+  );
+}
+
 // Count how many times an item was worn in a date range
 export function countWearsInRange(
   wearHistory: Date[],

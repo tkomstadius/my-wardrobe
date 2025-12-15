@@ -1,4 +1,4 @@
-import { compareAsc, isBefore, subDays } from "date-fns";
+import { compareAsc } from "date-fns";
 import {
   createContext,
   type ReactNode,
@@ -7,9 +7,12 @@ import {
   useState,
 } from "react";
 import type { NewWardrobeItem, WardrobeItem } from "../types/wardrobe";
-import { countWearsInRange } from "../utils/dateFormatter";
 import { saveItem } from "../utils/indexedDB";
 import { generateId, loadItems, removeItem } from "../utils/storage";
+import {
+  getItemsWornInPeriod as getItemsWornInPeriodUtil,
+  getUnwornItemsSince,
+} from "../utils/wardrobeFilters";
 
 interface WardrobeContextValue {
   items: WardrobeItem[];
@@ -260,13 +263,7 @@ export function WardrobeProvider({ children }: WardrobeProviderProps) {
     startDate: Date,
     endDate: Date = new Date()
   ): Array<{ item: WardrobeItem; wearCount: number }> => {
-    return items
-      .map((item) => ({
-        item,
-        wearCount: countWearsInRange(item.wearHistory, startDate, endDate),
-      }))
-      .filter((entry) => entry.wearCount > 0)
-      .sort((a, b) => b.wearCount - a.wearCount);
+    return getItemsWornInPeriodUtil(items, startDate, endDate);
   };
 
   // Get the most worn items (optionally within a time period)
@@ -295,18 +292,14 @@ export function WardrobeProvider({ children }: WardrobeProviderProps) {
 
   // Get items that haven't been worn in X days (or never worn)
   const getUnwornItems = (daysSince = 365): WardrobeItem[] => {
-    const cutoffDate = subDays(new Date(), daysSince);
+    if (daysSince === 365) {
+      // Return items that have never been worn
+      return items.filter(
+        (item) => !item.wearHistory || item.wearHistory.length === 0
+      );
+    }
 
-    return items.filter((item) => {
-      if (!item.wearHistory || item.wearHistory.length === 0) {
-        return true; // Never worn
-      }
-
-      const lastWorn = item.wearHistory.at(-1);
-      if (!lastWorn) return true; // Safety check
-
-      return isBefore(new Date(lastWorn), cutoffDate);
-    });
+    return getUnwornItemsSince(items, daysSince);
   };
 
   const value: WardrobeContextValue = {

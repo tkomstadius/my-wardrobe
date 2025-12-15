@@ -1,14 +1,18 @@
 import { PlusIcon, MixIcon } from "@radix-ui/react-icons";
-import { Button, Heading, Text } from "@radix-ui/themes";
+import { Button, Heading, Text, Select } from "@radix-ui/themes";
+import { useState } from "react";
 import { useNavigate } from "react-router";
 import { useOutfit } from "../contexts/OutfitContext";
 import { useWardrobe } from "../contexts/WardrobeContext";
 import styles from "./OutfitsPage.module.css";
 
+type SortOption = "date" | "score";
+
 export function OutfitsPage() {
   const navigate = useNavigate();
   const { outfits, isLoading } = useOutfit();
   const { getItemById } = useWardrobe();
+  const [sortBy, setSortBy] = useState<SortOption>("date");
 
   if (isLoading) {
     return (
@@ -20,14 +24,44 @@ export function OutfitsPage() {
     );
   }
 
-  const sortedOutfits = [...outfits].sort(
-    (a, b) => b.createdAt.getTime() - a.createdAt.getTime()
-  );
+  const sortedOutfits = [...outfits].sort((a, b) => {
+    if (sortBy === "score") {
+      // Sort by rating (highest first), then by date if no rating
+      const ratingA = a.rating ?? 0;
+      const ratingB = b.rating ?? 0;
+      if (ratingB !== ratingA) {
+        return ratingB - ratingA;
+      }
+      // If ratings are equal (or both 0), sort by date
+      return b.createdAt.getTime() - a.createdAt.getTime();
+    } else {
+      // Sort by date (newest first)
+      return b.createdAt.getTime() - a.createdAt.getTime();
+    }
+  });
 
   return (
     <div className={styles.container}>
       <header className={styles.header}>
         <Heading size="6">My Outfits</Heading>
+        {sortedOutfits.length > 0 && (
+          <div className={styles.sortControl}>
+            <Text size="2" color="gray">
+              Sort by:
+            </Text>
+            <Select.Root
+              value={sortBy}
+              onValueChange={(value) => setSortBy(value as SortOption)}
+              size="2"
+            >
+              <Select.Trigger className={styles.sortTrigger} />
+              <Select.Content>
+                <Select.Item value="date">Date (Newest)</Select.Item>
+                <Select.Item value="score">Score (Highest)</Select.Item>
+              </Select.Content>
+            </Select.Root>
+          </div>
+        )}
       </header>
 
       {sortedOutfits.length === 0 ? (

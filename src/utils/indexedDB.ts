@@ -97,8 +97,29 @@ export function blobToDataURL(blob: Blob): Promise<string> {
   });
 }
 
+// Type for items as stored in IndexedDB (with Blob instead of data URL)
+interface DBItem {
+  id: string;
+  imageBlob: Blob;
+  notes?: string;
+  brand?: string;
+  category: string;
+  wearCount: number;
+  initialWearCount: number;
+  wearHistory?: string[]; // Stored as ISO strings
+  price?: number;
+  isSecondHand: boolean;
+  isDogCasual: boolean;
+  isHandmade: boolean;
+  trait?: string;
+  purchaseDate?: string; // ISO string
+  createdAt: string; // ISO string
+  updatedAt: string; // ISO string
+  embedding?: number[];
+}
+
 // Helper function to convert database item format to WardrobeItem
-async function dbItemToWardrobeItem(dbItem: any): Promise<WardrobeItem> {
+async function dbItemToWardrobeItem(dbItem: DBItem): Promise<WardrobeItem> {
   return {
     id: dbItem.id,
     imageUrl: await blobToDataURL(dbItem.imageBlob),

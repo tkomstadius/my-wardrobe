@@ -1,9 +1,10 @@
 import { Text, Heading, Card } from "@radix-ui/themes";
+import { useMemo } from "react";
 import { useLoaderData } from "react-router";
 import { loadItems } from "../utils/storage";
-import { CATEGORIES } from "../utils/categories";
 import { getTraitEmoji, getTraitLabel } from "../utils/traits";
-import type { WardrobeItem, ItemTrait } from "../types/wardrobe";
+import { calculateFullStats } from "../utils/statsCalculations";
+import type { ItemTrait } from "../types/wardrobe";
 import styles from "./StatsPage.module.css";
 
 export async function loader() {
@@ -11,106 +12,9 @@ export async function loader() {
   return { items };
 }
 
-function calculateStats(items: WardrobeItem[]) {
-  const totalItems = items.length;
-  const totalWears = items.reduce((sum, item) => sum + item.wearCount, 0);
-  const averageWears = totalItems > 0 ? totalWears / totalItems : 0;
-
-  // Category distribution
-  const categoryWears = CATEGORIES.map((cat) => {
-    const categoryItems = items.filter((item) => item.category === cat.id);
-    const wears = categoryItems.reduce((sum, item) => sum + item.wearCount, 0);
-    return {
-      category: cat.title,
-      count: categoryItems.length,
-      wears,
-    };
-  }).sort((a, b) => b.wears - a.wears);
-
-  // Trait distribution
-  const traitWears: Record<string, { count: number; wears: number }> = {
-    comfort: { count: 0, wears: 0 },
-    confidence: { count: 0, wears: 0 },
-    creative: { count: 0, wears: 0 },
-  };
-
-  items.forEach((item) => {
-    if (item.trait) {
-      const traitData = traitWears[item.trait];
-      if (traitData) {
-        traitData.count += 1;
-        traitData.wears += item.wearCount;
-      }
-    }
-  });
-
-  // Most worn items
-  const mostWorn = [...items]
-    .filter((item) => item.wearCount > 0)
-    .sort((a, b) => b.wearCount - a.wearCount)
-    .slice(0, 10);
-
-  // Least worn items (excluding never worn)
-  const leastWorn = [...items]
-    .filter((item) => item.wearCount > 0)
-    .sort((a, b) => a.wearCount - b.wearCount)
-    .slice(0, 10);
-
-  // Never worn items
-  const neverWorn = items.filter((item) => item.wearCount === 0);
-
-  // Financial stats
-  const itemsWithPrice = items.filter(
-    (item) => item.price !== undefined && item.price > 0
-  );
-  const totalValue = itemsWithPrice.reduce(
-    (sum, item) => sum + (item.price || 0),
-    0
-  );
-
-  const itemsWithCostPerWear = itemsWithPrice.filter(
-    (item) => item.wearCount > 0
-  );
-  const avgCostPerWear =
-    itemsWithCostPerWear.length > 0
-      ? itemsWithCostPerWear.reduce(
-          (sum, item) => sum + (item.price || 0) / item.wearCount,
-          0
-        ) / itemsWithCostPerWear.length
-      : 0;
-
-  const bestValue = [...itemsWithCostPerWear]
-    .map((item) => ({
-      item,
-      costPerWear: (item.price || 0) / item.wearCount,
-    }))
-    .sort((a, b) => a.costPerWear - b.costPerWear)
-    .slice(0, 5);
-
-  const secondHandCount = items.filter((item) => item.isSecondHand).length;
-  const secondHandPercentage =
-    totalItems > 0 ? (secondHandCount / totalItems) * 100 : 0;
-
-  return {
-    totalItems,
-    totalWears,
-    averageWears,
-    categoryWears,
-    traitWears,
-    mostWorn,
-    leastWorn,
-    neverWorn,
-    totalValue,
-    avgCostPerWear,
-    bestValue,
-    secondHandCount,
-    secondHandPercentage,
-  };
-}
-
 export function StatsPage() {
   const { items } = useLoaderData<typeof loader>();
-  const stats = calculateStats(items);
+  const stats = useMemo(() => calculateFullStats(items), [items]);
 
   if (items.length === 0) {
     return (
@@ -360,7 +264,9 @@ export function StatsPage() {
                 Avg Cost/Wear
               </Text>
               <Text size="7" weight="bold" className={styles.statValue}>
-                {stats.avgCostPerWear.toFixed(2)} kr
+                {stats.avgCostPerWear !== null
+                  ? `${stats.avgCostPerWear.toFixed(2)} kr`
+                  : "N/A"}
               </Text>
             </Card>
             <Card className={styles.statCard}>

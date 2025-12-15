@@ -1,82 +1,27 @@
 import { Text, IconButton, Tabs, Button, Card } from "@radix-ui/themes";
 import { GearIcon, BarChartIcon } from "@radix-ui/react-icons";
 import { useNavigate, useLoaderData } from "react-router";
+import { useMemo } from "react";
 import { ItemCard } from "../components/features/ItemCard";
-import { getDaysAgo, countWearsInRange } from "../utils/dateFormatter";
+import { getDaysAgo } from "../utils/dateFormatter";
 import { CATEGORIES } from "../utils/categories";
 import { loadItems } from "../utils/storage";
+import {
+  getItemsWornToday,
+  getItemsWornInPeriod,
+  getNeglectedItems,
+} from "../utils/wardrobeFilters";
+import { calculateQuickStats } from "../utils/statsCalculations";
+import {
+  THIS_WEEK_DAYS,
+  NEGLECTED_ITEMS_THRESHOLD_DAYS,
+} from "../utils/config";
 import type { WardrobeItem } from "../types/wardrobe";
 import styles from "./HomePage.module.css";
 
 export async function loader() {
   const items = await loadItems();
   return { items };
-}
-
-function getItemsWornInPeriod(
-  items: WardrobeItem[],
-  startDate: Date,
-  endDate: Date = new Date()
-): Array<{ item: WardrobeItem; wearCount: number }> {
-  return items
-    .map((item) => ({
-      item,
-      wearCount: countWearsInRange(item.wearHistory, startDate, endDate),
-    }))
-    .filter((entry) => entry.wearCount > 0)
-    .sort((a, b) => b.wearCount - a.wearCount);
-}
-
-function getItemsWornToday(items: WardrobeItem[]): WardrobeItem[] {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-
-  return items.filter((item) => {
-    if (!item.wearHistory || item.wearHistory.length === 0) {
-      return false;
-    }
-    return item.wearHistory.some((wearDate) => {
-      const wear = new Date(wearDate);
-      wear.setHours(0, 0, 0, 0);
-      return wear.getTime() === today.getTime();
-    });
-  });
-}
-
-function getNeglectedItems(
-  items: WardrobeItem[],
-  daysThreshold = 30
-): WardrobeItem[] {
-  const thresholdDate = getDaysAgo(daysThreshold);
-
-  return items
-    .filter((item) => {
-      // Never worn items are considered neglected
-      if (!item.wearHistory || item.wearHistory.length === 0) {
-        return true;
-      }
-
-      // Get the last worn date
-      const lastWorn = item.wearHistory.at(-1);
-      if (!lastWorn) {
-        return true;
-      }
-
-      // Check if last worn date is before threshold
-      return new Date(lastWorn) < thresholdDate;
-    })
-    .sort((a, b) => {
-      // Sort by last worn date (oldest first)
-      const dateA = a.wearHistory?.at(-1);
-      const dateB = b.wearHistory?.at(-1);
-
-      // Never worn items go last
-      if (!dateA && !dateB) return 0;
-      if (!dateA) return 1;
-      if (!dateB) return -1;
-
-      return new Date(dateA).getTime() - new Date(dateB).getTime();
-    });
 }
 
 function CategoryItemGrid({
@@ -127,26 +72,19 @@ export function HomePage() {
   const { items } = useLoaderData<typeof loader>();
   const hasItems = items.length > 0;
 
-  // Get data for each tab
-  const todayItems = getItemsWornToday(items);
-  const weekItems = getItemsWornInPeriod(items, getDaysAgo(7));
-  const neglectedItems = getNeglectedItems(items);
-
-  // Quick stats calculations
-  const totalWears = items.reduce((sum, item) => sum + item.wearCount, 0);
-  const avgWears = hasItems ? (totalWears / items.length).toFixed(1) : 0;
-  const itemsWithPrice = items.filter(
-    (item) => item.price !== undefined && item.price > 0 && item.wearCount > 0
+  // Memoize expensive calculations
+  const todayItems = useMemo(() => getItemsWornToday(items), [items]);
+  const weekItems = useMemo(
+    () => getItemsWornInPeriod(items, getDaysAgo(THIS_WEEK_DAYS)),
+    [items]
   );
-  const avgCostPerWear =
-    itemsWithPrice.length > 0
-      ? (
-          itemsWithPrice.reduce(
-            (sum, item) => sum + (item.price || 0) / item.wearCount,
-            0
-          ) / itemsWithPrice.length
-        ).toFixed(2)
-      : null;
+  const neglectedItems = useMemo(
+    () => getNeglectedItems(items, NEGLECTED_ITEMS_THRESHOLD_DAYS),
+    [items]
+  );
+
+  // Quick stats calculations (memoized)
+  const quickStats = useMemo(() => calculateQuickStats(items), [items]);
 
   return (
     <div className={styles.container}>
@@ -199,7 +137,7 @@ export function HomePage() {
                   Total Wears
                 </Text>
                 <Text size="5" weight="bold">
-                  {totalWears}
+                  {quickStats.totalWears}
                 </Text>
               </Card>
               <Card className={styles.quickStatCard}>
@@ -207,16 +145,16 @@ export function HomePage() {
                   Avg per Item
                 </Text>
                 <Text size="5" weight="bold">
-                  {avgWears}×
+                  {quickStats.averageWears.toFixed(1)}×
                 </Text>
               </Card>
-              {avgCostPerWear && (
+              {quickStats.avgCostPerWear !== null && (
                 <Card className={styles.quickStatCard}>
                   <Text size="1" color="gray">
                     Avg Cost/Wear
                   </Text>
                   <Text size="5" weight="bold">
-                    {avgCostPerWear}
+                    {quickStats.avgCostPerWear.toFixed(2)}
                   </Text>
                 </Card>
               )}
@@ -246,7 +184,17 @@ export function HomePage() {
                   </Text>
                 </div>
               ) : (
-                <CategoryItemGrid items={todayItems} navigate={navigate} />
+                <div className={styles.compactGrid}>
+                  {todayItems.map((item) => (
+                    <div key={item.id} className={styles.compactItemWrapper}>
+                      <ItemCard
+                        item={item}
+                        onClick={() => navigate(`/item/${item.id}`)}
+                        compact
+                      />
+                    </div>
+                  ))}
+                </div>
               )}
             </Tabs.Content>
 
