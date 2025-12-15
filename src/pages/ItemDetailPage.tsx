@@ -19,6 +19,7 @@ import {
   formatItemAge,
   formatLastWorn,
 } from "../utils/dateFormatter";
+import { getTraitEmoji, getTraitLabel } from "../utils/traits";
 import styles from "./ItemDetailPage.module.css";
 
 export async function loader({ params }: LoaderFunctionArgs) {
@@ -219,19 +220,9 @@ export function ItemDetailPage() {
                 Handmade
               </Badge>
             )}
-            {item.trait === "comfort" && (
+            {item.trait && (
               <Badge color="purple" size="2">
-                Comfort
-              </Badge>
-            )}
-            {item.trait === "confidence" && (
-              <Badge color="orange" size="2">
-                Confidence
-              </Badge>
-            )}
-            {item.trait === "creative" && (
-              <Badge color="pink" size="2">
-                Creative
+                {getTraitEmoji(item.trait)} {getTraitLabel(item.trait)}
               </Badge>
             )}
           </div>

@@ -4,6 +4,7 @@ import { Link } from "react-router";
 import { useWardrobe } from "../../contexts/WardrobeContext";
 import type { WardrobeItem } from "../../types/wardrobe";
 import { formatItemAge } from "../../utils/dateFormatter";
+import { getTraitEmoji } from "../../utils/traits";
 import styles from "./ItemCard.module.css";
 
 interface ItemCardProps {
@@ -37,6 +38,8 @@ export function ItemCard({ item, onClick, compact = false }: ItemCardProps) {
       onClick();
     }
   };
+
+  const traitEmoji = getTraitEmoji(item.trait);
 
   const content = (
     <div
@@ -73,11 +76,11 @@ export function ItemCard({ item, onClick, compact = false }: ItemCardProps) {
             {item.isSecondHand && <Badge color="amber">Thrifted</Badge>}
             {item.isDogCasual && <Badge color="cyan">Casual</Badge>}
             {item.isHandmade && <Badge color="green">Handmade</Badge>}
-            {item.trait === "comfort" && <Badge color="purple">Comfort</Badge>}
-            {item.trait === "confidence" && (
-              <Badge color="orange">Confidence</Badge>
+            {traitEmoji && (
+              <span className={styles.traitEmoji} title={item.trait}>
+                {traitEmoji}
+              </span>
             )}
-            {item.trait === "creative" && <Badge color="pink">Creative</Badge>}
             {item.purchaseDate && (
               <span className={styles.itemAge}>
                 {formatItemAge(item.purchaseDate)}

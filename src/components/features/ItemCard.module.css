@@ -173,6 +173,13 @@
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
 }
 
+.metadata .traitEmoji {
+  font-size: 16px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .content {

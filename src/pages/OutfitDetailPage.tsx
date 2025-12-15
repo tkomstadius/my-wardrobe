@@ -6,6 +6,7 @@ import { useOutfit } from "../contexts/OutfitContext";
 import { useWardrobe } from "../contexts/WardrobeContext";
 import { DeleteConfirmDialog } from "../components/common/DeleteConfirmDialog";
 import { formatDate } from "../utils/dateFormatter";
+import { getTraitEmoji, getTraitLabel } from "../utils/traits";
 import styles from "./OutfitDetailPage.module.css";
 
 export function OutfitDetailPage() {
@@ -130,7 +131,7 @@ export function OutfitDetailPage() {
                 {traitCounts.comfort > 0 && (
                   <div className={styles.traitItem}>
                     <Text size="2" color="purple" weight="bold">
-                      🟣 Comfort
+                      {getTraitEmoji("comfort")} {getTraitLabel("comfort")}
                     </Text>
                     <Text size="2" color="gray">
                       {traitCounts.comfort}/{totalItems} items
@@ -140,7 +141,7 @@ export function OutfitDetailPage() {
                 {traitCounts.confidence > 0 && (
                   <div className={styles.traitItem}>
                     <Text size="2" color="orange" weight="bold">
-                      🟠 Confidence
+                      {getTraitEmoji("confidence")} {getTraitLabel("confidence")}
                     </Text>
                     <Text size="2" color="gray">
                       {traitCounts.confidence}/{totalItems} items
@@ -150,7 +151,7 @@ export function OutfitDetailPage() {
                 {traitCounts.creative > 0 && (
                   <div className={styles.traitItem}>
                     <Text size="2" color="pink" weight="bold">
-                      🩷 Creative
+                      {getTraitEmoji("creative")} {getTraitLabel("creative")}
                     </Text>
                     <Text size="2" color="gray">
                       {traitCounts.creative}/{totalItems} items
