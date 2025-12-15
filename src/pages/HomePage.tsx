@@ -1,5 +1,5 @@
-import { Text, IconButton, Tabs } from "@radix-ui/themes";
-import { GearIcon } from "@radix-ui/react-icons";
+import { Text, IconButton, Tabs, Button, Card } from "@radix-ui/themes";
+import { GearIcon, BarChartIcon } from "@radix-ui/react-icons";
 import { useNavigate, useLoaderData } from "react-router";
 import { ItemCard } from "../components/features/ItemCard";
 import { getDaysAgo, countWearsInRange } from "../utils/dateFormatter";
@@ -132,6 +132,22 @@ export function HomePage() {
   const weekItems = getItemsWornInPeriod(items, getDaysAgo(7));
   const neglectedItems = getNeglectedItems(items);
 
+  // Quick stats calculations
+  const totalWears = items.reduce((sum, item) => sum + item.wearCount, 0);
+  const avgWears = hasItems ? (totalWears / items.length).toFixed(1) : 0;
+  const itemsWithPrice = items.filter(
+    (item) => item.price !== undefined && item.price > 0 && item.wearCount > 0
+  );
+  const avgCostPerWear =
+    itemsWithPrice.length > 0
+      ? (
+          itemsWithPrice.reduce(
+            (sum, item) => sum + (item.price || 0) / item.wearCount,
+            0
+          ) / itemsWithPrice.length
+        ).toFixed(2)
+      : null;
+
   return (
     <div className={styles.container}>
       <div className={styles.header}>
@@ -163,6 +179,50 @@ export function HomePage() {
 
       {hasItems && (
         <div className={styles.content}>
+          {/* Quick Stats */}
+          <section className={styles.quickStats}>
+            <div className={styles.quickStatsHeader}>
+              <Text size="3" weight="medium">
+                Quick Stats
+              </Text>
+              <Button
+                variant="ghost"
+                size="1"
+                onClick={() => navigate("/stats")}
+              >
+                <BarChartIcon /> View All
+              </Button>
+            </div>
+            <div className={styles.quickStatsGrid}>
+              <Card className={styles.quickStatCard}>
+                <Text size="1" color="gray">
+                  Total Wears
+                </Text>
+                <Text size="5" weight="bold">
+                  {totalWears}
+                </Text>
+              </Card>
+              <Card className={styles.quickStatCard}>
+                <Text size="1" color="gray">
+                  Avg per Item
+                </Text>
+                <Text size="5" weight="bold">
+                  {avgWears}×
+                </Text>
+              </Card>
+              {avgCostPerWear && (
+                <Card className={styles.quickStatCard}>
+                  <Text size="1" color="gray">
+                    Avg Cost/Wear
+                  </Text>
+                  <Text size="5" weight="bold">
+                    {avgCostPerWear}
+                  </Text>
+                </Card>
+              )}
+            </div>
+          </section>
+
           <Tabs.Root defaultValue="today" className={styles.tabs}>
             <Tabs.List className={styles.tabsList}>
               <Tabs.Trigger value="today" className={styles.tabTrigger}>

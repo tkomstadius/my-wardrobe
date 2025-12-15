@@ -22,6 +22,7 @@ import { CreateOutfitPage } from "./pages/CreateOutfitPage";
 import { OutfitDetailPage } from "./pages/OutfitDetailPage";
 import { EditOutfitPage } from "./pages/EditOutfitPage";
 import { SettingsPage } from "./pages/SettingsPage";
+import { StatsPage, loader as statsLoader } from "./pages/StatsPage";
 
 // Create router with data router support (required for loaders/actions)
 const router = createBrowserRouter([
@@ -57,6 +58,7 @@ const router = createBrowserRouter([
       { path: "create-outfit", element: <CreateOutfitPage /> },
       { path: "outfit/:id", element: <OutfitDetailPage /> },
       { path: "edit-outfit/:id", element: <EditOutfitPage /> },
+      { path: "stats", element: <StatsPage />, loader: statsLoader },
       { path: "settings", element: <SettingsPage /> },
     ],
   },
