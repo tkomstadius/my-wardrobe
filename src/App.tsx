@@ -24,7 +24,6 @@ import { EditOutfitPage } from "./pages/EditOutfitPage";
 import { SettingsPage } from "./pages/SettingsPage";
 import { StatsPage, loader as statsLoader } from "./pages/StatsPage";
 
-// Create router with data router support (required for loaders/actions)
 const router = createBrowserRouter([
   {
     path: "/",

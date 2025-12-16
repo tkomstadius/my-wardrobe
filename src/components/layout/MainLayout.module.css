@@ -2,7 +2,7 @@
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background-color: var(--gray-1);
+  background-color: #161616;
 }
 
 @supports (min-height: 100dvh) {
@@ -15,16 +15,14 @@
   position: sticky;
   top: 0;
   z-index: 100;
-  background-color: var(--gray-2);
-  border-bottom: 1px solid var(--gray-6);
+  background-color: #34495e;
   padding: 1rem;
+  color: #fff;
 }
 
 .logo {
   font-size: 1.25rem;
   font-weight: 600;
-  color: var(--gray-12);
-  text-align: center;
 }
 
 .main {
