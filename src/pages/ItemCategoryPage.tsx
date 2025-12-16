@@ -12,20 +12,19 @@ import { useItemSearch } from "../hooks/useItemSearch";
 import type { ItemCategory } from "../types/wardrobe";
 import { CATEGORY_TITLES, CATEGORY_IDS } from "../utils/categories";
 import { loadItems } from "../utils/storage";
-import styles from "./CategoryPage.module.css";
+import styles from "./ItemCategoryPage.module.css";
 
-// Loader to fetch items for this category
 export async function loader({ params }: LoaderFunctionArgs) {
   const { category } = params;
 
-  // Validate category
-  const isValidCategory =
+  const isValidItemCategory =
     category && CATEGORY_IDS.includes(category as ItemCategory);
 
-  if (!isValidCategory) {
+  if (!isValidItemCategory) {
     return { items: [], category: null, title: null, isValid: false };
   }
 
+  // TODO: add loading items by category
   const allItems = await loadItems();
   const categoryItems = allItems.filter((item) => item.category === category);
 
@@ -37,7 +36,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
   };
 }
 
-export function CategoryPage() {
+export function ItemCategoryPage() {
   const navigate = useNavigate();
   const {
     items: categoryItems,
@@ -55,7 +54,7 @@ export function CategoryPage() {
     return (
       <div className={styles.container}>
         <div className={styles.header}>
-          <Link to="/">
+          <Link to="/items">
             <Button variant="ghost" size="3">
               <ArrowLeftIcon />
               Back
@@ -74,7 +73,7 @@ export function CategoryPage() {
   return (
     <div className={styles.container}>
       <div className={styles.header}>
-        <Link to="/">
+        <Link to="/items">
           <Button variant="ghost" size="3">
             <ArrowLeftIcon />
             Back

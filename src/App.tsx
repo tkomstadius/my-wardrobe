@@ -4,7 +4,10 @@ import {
   AddItemPage,
   clientAction as addItemAction,
 } from "./pages/AddItemPage";
-import { CategoryPage, loader as categoryLoader } from "./pages/CategoryPage";
+import {
+  ItemCategoryPage,
+  loader as itemCategoryLoader,
+} from "./pages/ItemCategoryPage";
 import {
   EditItemPage,
   clientLoader as editItemLoader,
@@ -38,9 +41,9 @@ const router = createBrowserRouter([
       { path: "items", element: <ItemsPage />, loader: itemsLoader },
       { path: "log-wear", element: <LogWearPage /> },
       {
-        path: "category/:category",
-        element: <CategoryPage />,
-        loader: categoryLoader,
+        path: "items/:category",
+        element: <ItemCategoryPage />,
+        loader: itemCategoryLoader,
       },
       {
         path: "item/:id",

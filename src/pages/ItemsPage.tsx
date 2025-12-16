@@ -26,7 +26,7 @@ export function ItemsPage() {
           return (
             <Link
               key={category.id}
-              to={`/category/${category.id}`}
+              to={`/items/${category.id}`}
               className={styles.categoryCard}
             >
               <h2 className={styles.categoryTitle}>{category.title}</h2>

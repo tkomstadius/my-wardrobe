@@ -11,7 +11,7 @@ export function BottomNav() {
   const location = useLocation();
   const currentPath = location.pathname;
   const isOnItemsOrCategoryPage =
-    currentPath === "/items" || currentPath.startsWith("/category/");
+    currentPath === "/items" || currentPath.startsWith("/items/");
 
   return (
     <nav className={styles.bottomNav}>

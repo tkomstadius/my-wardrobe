@@ -72,7 +72,7 @@ export function ItemDetailPage() {
     setIsDeleting(true);
     try {
       await deleteItem(item.id);
-      navigate(`/category/${item.category}`);
+      navigate(`/items/${item.category}`);
     } catch (error) {
       console.error("Failed to delete item:", error);
       alert("Failed to delete item. Please try again.");

@@ -93,7 +93,7 @@ export async function clientAction({ request }: ActionFunctionArgs) {
 
     await saveItem(item);
 
-    return redirect(`/category/${category}`);
+    return redirect(`/items/${category}`);
   } catch (err) {
     console.error("Failed to save item:", err);
     return { error: "Failed to save item. Please try again." };
