@@ -178,10 +178,14 @@ export async function saveItem(item: WardrobeItem): Promise<void> {
 
     const request = store.put(dbItem);
 
-    request.onsuccess = () => resolve();
     request.onerror = () => reject(request.error);
 
-    transaction.oncomplete = () => db.close();
+    // Wait for transaction to complete (fully committed) before resolving
+    transaction.oncomplete = () => {
+      db.close();
+      resolve();
+    };
+    transaction.onerror = () => reject(transaction.error);
   });
 }
 
@@ -248,10 +252,14 @@ export async function deleteItem(id: string): Promise<void> {
     const store = transaction.objectStore(STORE_NAME);
     const request = store.delete(id);
 
-    request.onsuccess = () => resolve();
     request.onerror = () => reject(request.error);
 
-    transaction.oncomplete = () => db.close();
+    // Wait for transaction to complete (fully committed) before resolving
+    transaction.oncomplete = () => {
+      db.close();
+      resolve();
+    };
+    transaction.onerror = () => reject(transaction.error);
   });
 }
 
@@ -264,10 +272,14 @@ export async function clearAllItems(): Promise<void> {
     const store = transaction.objectStore(STORE_NAME);
     const request = store.clear();
 
-    request.onsuccess = () => resolve();
     request.onerror = () => reject(request.error);
 
-    transaction.oncomplete = () => db.close();
+    // Wait for transaction to complete (fully committed) before resolving
+    transaction.oncomplete = () => {
+      db.close();
+      resolve();
+    };
+    transaction.onerror = () => reject(transaction.error);
   });
 }
 
@@ -329,10 +341,14 @@ export async function saveOutfit(outfit: Outfit): Promise<void> {
 
     const request = store.put(dbOutfit);
 
-    request.onsuccess = () => resolve();
     request.onerror = () => reject(request.error);
 
-    transaction.oncomplete = () => db.close();
+    // Wait for transaction to complete (fully committed) before resolving
+    transaction.oncomplete = () => {
+      db.close();
+      resolve();
+    };
+    transaction.onerror = () => reject(transaction.error);
   });
 }
 
@@ -399,10 +415,14 @@ export async function deleteOutfit(id: string): Promise<void> {
     const store = transaction.objectStore(OUTFITS_STORE);
     const request = store.delete(id);
 
-    request.onsuccess = () => resolve();
     request.onerror = () => reject(request.error);
 
-    transaction.oncomplete = () => db.close();
+    // Wait for transaction to complete (fully committed) before resolving
+    transaction.oncomplete = () => {
+      db.close();
+      resolve();
+    };
+    transaction.onerror = () => reject(transaction.error);
   });
 }
 
