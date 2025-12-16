@@ -108,11 +108,6 @@ export function ItemCard({ item, onClick, compact = false }: ItemCardProps) {
           </div>
         </div>
       )}
-      {compact && (
-        <div className={styles.compactContent}>
-          <span className={styles.compactWearCount}>{item.wearCount}×</span>
-        </div>
-      )}
     </div>
   );
 
