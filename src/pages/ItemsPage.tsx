@@ -17,12 +17,10 @@ export function ItemsPage() {
     items.filter((item) => item.category === categoryId);
 
   return (
-    <div className={styles.container}>
-      <h1 className={styles.title}>Categories</h1>
-      <div className={styles.categoriesGrid}>
+    <>
+      <div className={styles.container}>
         {CATEGORIES.map((category) => {
           const categoryItems = getItemsByCategory(category.id);
-          const itemCount = categoryItems.length;
           const previewItems = categoryItems.slice(0, 4);
 
           return (
@@ -31,6 +29,8 @@ export function ItemsPage() {
               to={`/category/${category.id}`}
               className={styles.categoryCard}
             >
+              <h2 className={styles.categoryTitle}>{category.title}</h2>
+
               <div className={styles.categoryPreview}>
                 {previewItems.length > 0 ? (
                   <div className={styles.previewGrid}>
@@ -50,12 +50,6 @@ export function ItemsPage() {
                   </div>
                 )}
               </div>
-              <div className={styles.categoryInfo}>
-                <h2 className={styles.categoryTitle}>{category.title}</h2>
-                <p className={styles.itemCount}>
-                  {itemCount} {itemCount === 1 ? "item" : "items"}
-                </p>
-              </div>
             </Link>
           );
         })}
@@ -69,6 +63,6 @@ export function ItemsPage() {
       >
         <PlusIcon className={styles.fabIcon} />
       </button>
-    </div>
+    </>
   );
 }

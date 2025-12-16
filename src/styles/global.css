@@ -13,6 +13,12 @@
 
   /* Mobile-first viewport setup */
   color-scheme: dark;
+  --accent-color: #34495e;
+  --accent-action-color: #243342;
+  --background-color: #161616;
+  --text-color: #fff;
+  --text-color-light: #aad3f1;
+  --border-radius: 16px;
 }
 
 body {

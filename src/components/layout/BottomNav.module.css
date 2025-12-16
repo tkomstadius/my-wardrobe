@@ -7,7 +7,7 @@
   display: flex;
   justify-content: space-around;
   align-items: center;
-  background-color: #34495e;
+  background-color: var(--accent-color);
   padding: 0.75rem 1rem;
   padding-bottom: calc(0.75rem + env(safe-area-inset-bottom));
 }
@@ -19,18 +19,18 @@
   gap: 0.25rem;
   padding: 0.5rem 0.75rem;
   text-decoration: none;
-  color: #fff;
+  color: var(--text-color);
   transition: color 0.2s ease;
   cursor: pointer;
   min-width: 70px;
 }
 
 .navItem:hover {
-  color: var(--gray-12);
+  color: var(--text-color-light);
 }
 
 .navItem.active {
-  color: var(--accent-11);
+  color: var(--text-color-light);
 }
 
 .icon {
