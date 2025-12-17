@@ -71,10 +71,10 @@ export function ItemCategoryPage() {
   }
 
   return (
-    <div className={styles.container}>
+    <>
       <div className={styles.header}>
         <Link to="/items">
-          <Button variant="ghost" size="3">
+          <Button variant="ghost" size="3" color="gray">
             <ArrowLeftIcon />
             Back
           </Button>
@@ -96,7 +96,6 @@ export function ItemCategoryPage() {
 
       {hasItems && (
         <>
-          {/* Search Bar */}
           <SearchBar
             value={searchQuery}
             onChange={setSearchQuery}
@@ -136,6 +135,6 @@ export function ItemCategoryPage() {
       >
         <PlusIcon className={styles.fabIcon} />
       </button>
-    </div>
+    </>
   );
 }

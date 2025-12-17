@@ -1,12 +1,9 @@
 import { PlusIcon } from "@radix-ui/react-icons";
-import { IconButton, Badge } from "@radix-ui/themes";
 import { Link } from "react-router";
 import { useWardrobe } from "../../contexts/WardrobeContext";
 import type { WardrobeItem } from "../../types/wardrobe";
 import { formatItemAge } from "../../utils/dateFormatter";
-import { getTraitEmoji } from "../../utils/traits";
 import { isWornToday } from "../../utils/wardrobeFilters";
-import { CURRENCY } from "../../utils/config";
 import styles from "./ItemCard.module.css";
 
 interface ItemCardProps {
@@ -18,13 +15,6 @@ interface ItemCardProps {
 export function ItemCard({ item, onClick, compact = false }: ItemCardProps) {
   const { incrementWearCount } = useWardrobe();
 
-  // Calculate cost per wear if price exists and wear count > 0
-  const costPerWear =
-    item.price !== undefined && item.wearCount > 0
-      ? item.price / item.wearCount
-      : null;
-
-  // Check if item was worn today
   const wornToday = isWornToday(item);
 
   const handleQuickWear = async (e: React.MouseEvent) => {
@@ -32,7 +22,7 @@ export function ItemCard({ item, onClick, compact = false }: ItemCardProps) {
     e.stopPropagation();
 
     if (wornToday) {
-      return; // Already worn today, do nothing
+      return;
     }
 
     try {
@@ -49,8 +39,6 @@ export function ItemCard({ item, onClick, compact = false }: ItemCardProps) {
     }
   };
 
-  const traitEmoji = getTraitEmoji(item.trait);
-
   const content = (
     <div
       className={`${styles.card} ${compact ? styles.compact : ""}`}
@@ -65,10 +53,24 @@ export function ItemCard({ item, onClick, compact = false }: ItemCardProps) {
           alt={item.brand || "Wardrobe item"}
           className={styles.image}
         />
-        {!compact && (
-          <IconButton
-            size="2"
-            variant="solid"
+      </div>
+      {!compact && (
+        <>
+          <div className={styles.content}>
+            {item.brand && <p className={styles.brand}>{item.brand}</p>}
+            <p className={styles.wearCount}>Worn {item.wearCount}×</p>
+            <div className={styles.metadata}>
+              {item.isSecondHand && <p>Thrifted</p>}
+              {item.isDogCasual && <p>Casual</p>}
+              {item.isHandmade && <p>Handmade</p>}
+            </div>
+            {item.purchaseDate && (
+              <p className={styles.itemAge}>
+                {formatItemAge(item.purchaseDate)}
+              </p>
+            )}
+          </div>
+          <button
             className={`${styles.quickWearButton} ${
               wornToday ? styles.disabled : ""
             }`}
@@ -77,36 +79,8 @@ export function ItemCard({ item, onClick, compact = false }: ItemCardProps) {
             title={wornToday ? "Already worn today" : "Mark as worn"}
           >
             <PlusIcon />
-          </IconButton>
-        )}
-      </div>
-      {!compact && (
-        <div className={styles.content}>
-          <p className={styles.details}>
-            {item.brand && <span className={styles.brand}>{item.brand}</span>}
-          </p>
-          <div className={styles.metadata}>
-            {item.isSecondHand && <Badge color="amber">Thrifted</Badge>}
-            {item.isDogCasual && <Badge color="cyan">Casual</Badge>}
-            {item.isHandmade && <Badge color="green">Handmade</Badge>}
-            {traitEmoji && (
-              <span className={styles.traitEmoji} title={item.trait}>
-                {traitEmoji}
-              </span>
-            )}
-            {item.purchaseDate && (
-              <span className={styles.itemAge}>
-                {formatItemAge(item.purchaseDate)}
-              </span>
-            )}
-            <span className={styles.wearCount}>Worn {item.wearCount}×</span>
-            {costPerWear !== null && (
-              <span className={styles.costPerWear}>
-                {costPerWear.toFixed(2)} {CURRENCY}/wear
-              </span>
-            )}
-          </div>
-        </div>
+          </button>
+        </>
       )}
     </div>
   );

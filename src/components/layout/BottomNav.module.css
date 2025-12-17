@@ -25,12 +25,9 @@
   min-width: 70px;
 }
 
-.navItem:hover {
-  color: var(--text-color-light);
-}
-
+.navItem:hover,
 .navItem.active {
-  color: var(--text-color-light);
+  color: var(--complimentary-color);
 }
 
 .icon {

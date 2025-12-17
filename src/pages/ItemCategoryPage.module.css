@@ -1,15 +1,10 @@
-.container {
-  padding: 20px;
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
 .header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   margin-bottom: 24px;
   gap: 16px;
+  color: var(--text-color);
 }
 
 .title {
@@ -26,9 +21,9 @@
 }
 
 .grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 .noResultsState {
@@ -75,7 +70,8 @@
   width: 56px;
   height: 56px;
   border-radius: 50%;
-  background: var(--accent-9);
+  background-color: var(--text-color);
+  color: var(--accent-color);
   border: none;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
   cursor: pointer;
@@ -87,9 +83,8 @@
 }
 
 .fab:hover {
-  background: var(--accent-10);
+  background-color: var(--accent-action-color);
   transform: scale(1.1);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
 }
 
 .fab:active {
@@ -99,15 +94,11 @@
 .fabIcon {
   width: 28px;
   height: 28px;
-  color: white;
+  color: var(--accent-color);
 }
 
 /* Mobile adjustments */
 @media (max-width: 768px) {
-  .container {
-    padding: 16px;
-  }
-
   .header {
     margin-bottom: 20px;
   }
