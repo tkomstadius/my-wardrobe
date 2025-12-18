@@ -13,12 +13,17 @@
 
   /* Mobile-first viewport setup */
   color-scheme: dark;
-  --accent-color: #34495e;
   --accent-action-color: #243342;
   --background-color: #161616;
   --text-color: #fff;
   --complimentary-color: #aad3f1;
   --border-radius: 16px;
+}
+
+.radix-themes {
+  --accent-9: #34495e;
+  --accent-a11: #aad3f1;
+  --accent-indicator: #aad3f1;
 }
 
 body {

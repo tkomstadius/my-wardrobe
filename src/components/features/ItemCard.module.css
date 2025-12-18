@@ -5,7 +5,7 @@
 }
 
 .card {
-  background-color: var(--accent-color);
+  background-color: var(--accent-9);
   border-radius: var(--border-radius);
   overflow: hidden;
   cursor: pointer;
@@ -21,9 +21,13 @@
   background-color: var(--accent-action-color);
 }
 
+.compact {
+  justify-content: center;
+}
+
 .imageContainer {
   overflow: hidden;
-  background: var(--accent-color);
+  background: var(--accent-9);
   position: relative;
 }
 

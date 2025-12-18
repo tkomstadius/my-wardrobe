@@ -1,7 +1,5 @@
 .layout {
   min-height: 100vh;
-  display: flex;
-  flex-direction: column;
   background-color: #161616;
 }
 
@@ -15,14 +13,22 @@
   position: sticky;
   top: 0;
   z-index: 100;
-  background-color: #34495e;
+  background-color: var(--accent-9);
   padding: 1rem;
-  color: #fff;
+  color: var(--text-color);
 }
 
-.logo {
+.name {
   font-size: 1.25rem;
   font-weight: 600;
+}
+
+.iconButton {
+  color: var(--text-color);
+}
+
+.iconButton:hover {
+  background-color: var(--accent-action-color);
 }
 
 .main {

@@ -13,7 +13,7 @@ createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <WardrobeProvider>
       <OutfitProvider>
-        <Theme appearance="dark" accentColor="violet" radius="medium">
+        <Theme appearance="dark" accentColor="indigo" radius="medium">
           <App />
         </Theme>
       </OutfitProvider>

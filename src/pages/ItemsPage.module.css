@@ -10,7 +10,7 @@
   align-items: center;
   gap: 12px;
   padding: 12px;
-  background: var(--accent-color);
+  background: var(--accent-9);
   border-radius: var(--border-radius);
   text-decoration: none;
   color: inherit;
@@ -109,7 +109,7 @@
 .fabIcon {
   width: 28px;
   height: 28px;
-  color: var(--accent-color);
+  color: var(--accent-9);
 }
 
 @media (min-width: 640px) {

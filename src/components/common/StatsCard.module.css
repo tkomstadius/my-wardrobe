@@ -1,0 +1,17 @@
+.container {
+  padding: 12px;
+  background: var(--accent-9);
+  border-radius: var(--border-radius);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  text-align: center;
+}
+
+.title {
+  color: var(--complimentary-color);
+}
+
+.value {
+  color: var(--text-color);
+}

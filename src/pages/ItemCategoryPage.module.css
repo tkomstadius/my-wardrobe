@@ -71,7 +71,7 @@
   height: 56px;
   border-radius: 50%;
   background-color: var(--text-color);
-  color: var(--accent-color);
+  color: var(--accent-9);
   border: none;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
   cursor: pointer;
@@ -94,7 +94,7 @@
 .fabIcon {
   width: 28px;
   height: 28px;
-  color: var(--accent-color);
+  color: var(--accent-9);
 }
 
 /* Mobile adjustments */
