@@ -21,11 +21,6 @@
   background-color: var(--accent-action-color);
 }
 
-.compact {
-  justify-content: center;
-  padding: 8px;
-}
-
 .imageContainer {
   overflow: hidden;
   background: var(--accent-9);
@@ -38,6 +33,16 @@
   object-fit: cover;
   display: block;
   border-radius: 50%;
+}
+
+.compact {
+  justify-content: center;
+  padding: 8px;
+
+  & .image {
+    border-radius: 16px;
+    aspect-ratio: 1;
+  }
 }
 
 .quickWearButton {
