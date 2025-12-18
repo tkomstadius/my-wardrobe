@@ -23,6 +23,7 @@
 
 .compact {
   justify-content: center;
+  padding: 8px;
 }
 
 .imageContainer {
@@ -121,16 +122,6 @@
 .itemAge {
   font-weight: 500;
   font-size: 11px;
-}
-
-/* Compact variant for smaller thumbnails */
-.compact {
-  border-radius: 8px;
-}
-
-.compact .imageContainer {
-  aspect-ratio: 1;
-  position: relative;
 }
 
 .compactContent {

@@ -6,6 +6,7 @@ import { getTraitEmoji, getTraitLabel } from "../utils/traits";
 import { calculateFullStats } from "../utils/statsCalculations";
 import type { ItemTrait } from "../types/wardrobe";
 import styles from "./StatsPage.module.css";
+import { StatsCard } from "../components/common/StatsCard";
 
 export async function loader() {
   const items = await loadItems();
@@ -41,41 +42,15 @@ export function StatsPage() {
       </div>
 
       <div className={styles.content}>
-        {/* Overview Cards */}
         <section className={styles.section}>
           <div className={styles.statsGrid}>
-            <Card className={styles.statCard}>
-              <Text size="2" color="gray">
-                Total Items
-              </Text>
-              <Text size="8" weight="bold" className={styles.statValue}>
-                {stats.totalItems}
-              </Text>
-            </Card>
-            <Card className={styles.statCard}>
-              <Text size="2" color="gray">
-                Total Wears
-              </Text>
-              <Text size="8" weight="bold" className={styles.statValue}>
-                {stats.totalWears}
-              </Text>
-            </Card>
-            <Card className={styles.statCard}>
-              <Text size="2" color="gray">
-                Avg Wears/Item
-              </Text>
-              <Text size="8" weight="bold" className={styles.statValue}>
-                {stats.averageWears.toFixed(1)}
-              </Text>
-            </Card>
-            <Card className={styles.statCard}>
-              <Text size="2" color="gray">
-                Never Worn
-              </Text>
-              <Text size="8" weight="bold" className={styles.statValue}>
-                {stats.neverWorn.length}
-              </Text>
-            </Card>
+            <StatsCard title="Total Items" value={stats.totalItems} />
+            <StatsCard title="Total Wears" value={stats.totalWears} />
+            <StatsCard
+              title="Avg Wears/Item"
+              value={stats.averageWears.toFixed(1)}
+            />
+            <StatsCard title="Never Worn" value={stats.neverWorn.length} />
           </div>
         </section>
 
@@ -251,35 +226,26 @@ export function StatsPage() {
           </Heading>
 
           <div className={styles.statsGrid}>
-            <Card className={styles.statCard}>
-              <Text size="2" color="gray">
-                Total Value
-              </Text>
-              <Text size="7" weight="bold" className={styles.statValue}>
-                {stats.totalValue.toFixed(0)} kr
-              </Text>
-            </Card>
-            <Card className={styles.statCard}>
-              <Text size="2" color="gray">
-                Avg Cost/Wear
-              </Text>
-              <Text size="7" weight="bold" className={styles.statValue}>
-                {stats.avgCostPerWear !== null
+            <StatsCard
+              title="Total Value"
+              value={stats.totalValue.toFixed(0)}
+            />
+            <StatsCard
+              title="Avg Cost/Wear"
+              value={
+                stats.avgCostPerWear !== null
                   ? `${stats.avgCostPerWear.toFixed(2)} kr`
-                  : "N/A"}
-              </Text>
-            </Card>
-            <Card className={styles.statCard}>
-              <Text size="2" color="gray">
-                Second-Hand
-              </Text>
-              <Text size="7" weight="bold" className={styles.statValue}>
-                {stats.secondHandPercentage.toFixed(0)}%
-              </Text>
-              <Text size="1" color="gray">
-                {stats.secondHandCount} items
-              </Text>
-            </Card>
+                  : "N/A"
+              }
+            />
+            <StatsCard
+              title="Second-Hand"
+              value={stats.secondHandPercentage.toFixed(0)}
+            />
+            <StatsCard
+              title="Second-Hand"
+              value={stats.secondHandPercentage.toFixed(0)}
+            />
           </div>
 
           {stats.bestValue.length > 0 && (
