@@ -129,6 +129,12 @@
   font-size: 11px;
 }
 
+.costPerWear {
+  flex: 1;
+  font-size: 12px;
+  color: var(--complimentary-color);
+}
+
 .compactContent {
   position: absolute;
   bottom: 0;

@@ -16,6 +16,7 @@ export type WardrobeItem = {
   notes?: string;
   brand?: string;
   category: ItemCategory;
+  subCategory?: string;
   wearCount: number; // Total wear count (initialWearCount + wearHistory.length)
   initialWearCount?: number; // Wear count before adding to app (for items already owned)
   wearHistory: Date[]; // Array of dates when item was worn in the app

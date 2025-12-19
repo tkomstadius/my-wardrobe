@@ -33,6 +33,7 @@ export async function clientAction({ request }: ActionFunctionArgs) {
   const imageUrl = formData.get("imageUrl") as string;
   const brand = formData.get("brand") as string;
   const category = formData.get("category") as ItemCategory;
+  const subCategory = formData.get("subCategory") as string;
   const notes = formData.get("notes") as string;
   const price = formData.get("price") as string;
   const purchaseDate = formData.get("purchaseDate") as string;
@@ -71,6 +72,7 @@ export async function clientAction({ request }: ActionFunctionArgs) {
       notes: notes?.trim() ?? undefined,
       brand: brand?.trim() ?? undefined,
       category,
+      subCategory: subCategory?.trim() ?? undefined,
       price: price ? Number.parseFloat(price) : undefined,
       isSecondHand,
       isDogCasual,
@@ -104,7 +106,7 @@ export function AddItemPage() {
   const navigate = useNavigate();
   const navigation = useNavigation();
   const actionData = useActionData<ActionData>();
-  const { getAllBrands } = useWardrobe();
+  const { getAllBrands, getAllSubCategories } = useWardrobe();
   const { imagePreview, handleImageUpload } = useImageUpload();
 
   const isSubmitting = navigation.state === "submitting";
@@ -178,6 +180,21 @@ export function AddItemPage() {
                 ))}
               </Select.Content>
             </Select.Root>
+          </div>
+
+          <div className={styles.field}>
+            <span className={styles.label}>Sub category</span>
+            <TextField.Root
+              name="subCategory"
+              type="text"
+              placeholder="jeans, t-shirt, etc."
+              size="3"
+            />
+            <datalist id="brand-suggestions">
+              {getAllSubCategories().map((subCategory) => (
+                <option key={subCategory} value={subCategory} />
+              ))}
+            </datalist>
           </div>
 
           <div className={styles.field}>

@@ -142,12 +142,10 @@ export function ItemDetailPage() {
       </header>
 
       <div className={styles.content}>
-        {/* Item Image */}
         <div className={styles.imageSection}>
           <img src={item.imageUrl} alt={item.notes || item.brand || "Item"} />
         </div>
 
-        {/* Item Info */}
         <section className={styles.infoSection}>
           <div className={styles.topInfo}>
             {item.brand && (
@@ -176,7 +174,6 @@ export function ItemDetailPage() {
             )}
           </div>
 
-          {/* Cost Per Wear Card */}
           {costPerWear !== null && (
             <div className={styles.costPerWearCard}>
               <Text size="1" color="gray">

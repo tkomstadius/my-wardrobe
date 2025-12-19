@@ -26,6 +26,7 @@ interface WardrobeContextValue {
   getItemById: (id: string) => WardrobeItem | undefined;
   getItemsByCategory: (category: string) => WardrobeItem[];
   getAllBrands: () => string[];
+  getAllSubCategories: () => string[];
   getLastWornDate: (id: string) => Date | undefined;
   getItemsWornInPeriod: (
     startDate: Date,
@@ -249,6 +250,16 @@ export function WardrobeProvider({ children }: WardrobeProviderProps) {
     return Array.from(brands).sort();
   };
 
+  const getAllSubCategories = (): string[] => {
+    const subCategories = new Set<string>();
+    for (const item of items) {
+      if (item.subCategory?.trim()) {
+        subCategories.add(item.subCategory.trim());
+      }
+    }
+    return Array.from(subCategories).sort();
+  };
+
   const getLastWornDate = (id: string): Date | undefined => {
     const item = items.find((item) => item.id === id);
     if (!item || !item.wearHistory || item.wearHistory.length === 0) {
@@ -314,6 +325,7 @@ export function WardrobeProvider({ children }: WardrobeProviderProps) {
     getItemById,
     getItemsByCategory,
     getAllBrands,
+    getAllSubCategories,
     getLastWornDate,
     getItemsWornInPeriod,
     getMostWornItems,

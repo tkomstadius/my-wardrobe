@@ -1,5 +1,5 @@
 import { Text, Tabs, Flex, ChevronDownIcon } from "@radix-ui/themes";
-import { useNavigate, useLoaderData } from "react-router";
+import { useLoaderData } from "react-router";
 import { useMemo } from "react";
 import { ItemCard } from "../components/features/ItemCard";
 import { getDaysAgo } from "../utils/dateFormatter";
@@ -25,13 +25,7 @@ export async function loader() {
   return { items };
 }
 
-function CategoryItemGrid({
-  items,
-  navigate,
-}: {
-  items: WardrobeItem[];
-  navigate: ReturnType<typeof useNavigate>;
-}) {
+function CategoryItemGrid({ items }: { items: WardrobeItem[] }) {
   const itemsByCategory = CATEGORIES.map((category) => ({
     category: category.id,
     title: category.title,
@@ -56,12 +50,7 @@ function CategoryItemGrid({
             className={`${styles.compactGrid} ${styles.accordionContent}`}
           >
             {categoryItems.map((item) => (
-              <ItemCard
-                key={item.id}
-                item={item}
-                onClick={() => navigate(`/item/${item.id}`)}
-                compact
-              />
+              <ItemCard key={item.id} item={item} compact />
             ))}
           </Accordion.Content>
         </Accordion.Item>
@@ -71,7 +60,6 @@ function CategoryItemGrid({
 }
 
 export function HomePage() {
-  const navigate = useNavigate();
   const { items } = useLoaderData<typeof loader>();
   const hasItems = items.length > 0;
 
@@ -144,11 +132,7 @@ export function HomePage() {
                 ) : (
                   <div className={styles.compactGrid}>
                     {todayItems.map((item) => (
-                      <ItemCard
-                        item={item}
-                        onClick={() => navigate(`/item/${item.id}`)}
-                        compact
-                      />
+                      <ItemCard item={item} compact />
                     ))}
                   </div>
                 )}
@@ -167,7 +151,6 @@ export function HomePage() {
                 ) : (
                   <CategoryItemGrid
                     items={weekItems.map((entry) => entry.item)}
-                    navigate={navigate}
                   />
                 )}
               </Tabs.Content>
@@ -186,10 +169,7 @@ export function HomePage() {
                         Items not worn in 30+ days
                       </Text>
                     </div>
-                    <CategoryItemGrid
-                      items={neglectedItems}
-                      navigate={navigate}
-                    />
+                    <CategoryItemGrid items={neglectedItems} />
                   </>
                 )}
               </Tabs.Content>

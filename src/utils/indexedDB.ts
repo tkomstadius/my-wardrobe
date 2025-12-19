@@ -104,6 +104,7 @@ interface DBItem {
   notes?: string;
   brand?: string;
   category: string;
+  subCategory: string;
   wearCount: number;
   initialWearCount: number;
   wearHistory?: string[]; // Stored as ISO strings
@@ -126,6 +127,7 @@ async function dbItemToWardrobeItem(dbItem: DBItem): Promise<WardrobeItem> {
     notes: dbItem.notes,
     brand: dbItem.brand,
     category: dbItem.category as ItemCategory,
+    subCategory: dbItem.subCategory,
     wearCount: dbItem.wearCount,
     initialWearCount: dbItem.initialWearCount,
     wearHistory: dbItem.wearHistory
@@ -162,6 +164,7 @@ export async function saveItem(item: WardrobeItem): Promise<void> {
       notes: item.notes,
       brand: item.brand,
       category: item.category,
+      subCategory: item.subCategory,
       wearCount: item.wearCount,
       initialWearCount: item.initialWearCount,
       wearHistory: item.wearHistory.map((date) => date.toISOString()),

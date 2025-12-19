@@ -68,6 +68,7 @@ export async function clientAction({ request, params }: ActionFunctionArgs) {
   const originalImageUrl = formData.get("originalImageUrl") as string;
   const brand = formData.get("brand") as string;
   const category = formData.get("category") as ItemCategory;
+  const subCategory = formData.get("subCategory") as string;
   const notes = formData.get("notes") as string;
   const price = formData.get("price") as string;
   const purchaseDate = formData.get("purchaseDate") as string;
@@ -120,6 +121,7 @@ export async function clientAction({ request, params }: ActionFunctionArgs) {
       notes: notes?.trim() || undefined,
       brand: brand?.trim() || undefined,
       category,
+      subCategory: subCategory?.trim() || undefined,
       price: price ? Number.parseFloat(price) : undefined,
       isSecondHand,
       isDogCasual,
@@ -146,7 +148,8 @@ export function EditItemPage() {
   const navigation = useNavigation();
   const { item } = useLoaderData<LoaderData>();
   const actionData = useActionData<ActionData>();
-  const { getAllBrands, incrementWearCount } = useWardrobe();
+  const { getAllBrands, incrementWearCount, getAllSubCategories } =
+    useWardrobe();
   const { imagePreview, setImagePreview, handleImageUpload } = useImageUpload();
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -308,6 +311,22 @@ export function EditItemPage() {
                   ))}
                 </Select.Content>
               </Select.Root>
+            </div>
+
+            <div className={styles.field}>
+              <span className={styles.label}>Sub category</span>
+              <TextField.Root
+                name="subCategory"
+                type="text"
+                defaultValue={item.subCategory || ""}
+                placeholder="jeans, t-shirt, etc."
+                size="3"
+              />
+              <datalist id="brand-suggestions">
+                {getAllSubCategories().map((subCategory) => (
+                  <option key={subCategory} value={subCategory} />
+                ))}
+              </datalist>
             </div>
 
             <div className={styles.field}>
