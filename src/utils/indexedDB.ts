@@ -1,5 +1,6 @@
 // IndexedDB wrapper for wardrobe storage
 
+import { openDB, type IDBPDatabase } from "idb";
 import type { ItemCategory, ItemTrait, WardrobeItem } from "../types/wardrobe";
 import type { Outfit } from "../types/outfit";
 
@@ -10,18 +11,38 @@ const OUTFITS_STORE = "outfits";
 const FEEDBACK_STORE = "matchFeedback"; // Version 4+
 const PREFERENCES_STORE = "userPreferences"; // Version 4+
 
+// Database schema type
+interface DBSchema {
+  items: {
+    key: string;
+    value: DBItem;
+    indexes: { category: string; createdAt: string };
+  };
+  outfits: {
+    key: string;
+    value: DBOutfit;
+    indexes: { createdAt: string };
+  };
+  matchFeedback: {
+    key: string;
+    value: any;
+    indexes: {
+      timestamp: string;
+      suggestedItemId: string;
+      userAction: string;
+      outfitPhotoHash: string;
+    };
+  };
+  userPreferences: {
+    key: string;
+    value: any;
+  };
+}
+
 // Open or create the database
-function openDB(): Promise<IDBDatabase> {
-  return new Promise((resolve, reject) => {
-    const request = indexedDB.open(DB_NAME, DB_VERSION);
-
-    request.onerror = () => reject(request.error);
-    request.onsuccess = () => resolve(request.result);
-
-    request.onupgradeneeded = (event) => {
-      const db = (event.target as IDBOpenDBRequest).result;
-      const oldVersion = event.oldVersion;
-
+function getDB(): Promise<IDBPDatabase<DBSchema>> {
+  return openDB<DBSchema>(DB_NAME, DB_VERSION, {
+    upgrade(db, oldVersion) {
       console.log(
         `Upgrading database from version ${oldVersion} to ${DB_VERSION}`
       );
@@ -67,7 +88,7 @@ function openDB(): Promise<IDBDatabase> {
       }
 
       console.log("Database upgrade complete");
-    };
+    },
   });
 }
 
@@ -104,19 +125,30 @@ interface DBItem {
   notes?: string;
   brand?: string;
   category: string;
-  subCategory: string;
+  subCategory?: string;
   wearCount: number;
-  initialWearCount: number;
+  initialWearCount?: number;
   wearHistory?: string[]; // Stored as ISO strings
   price?: number;
-  isSecondHand: boolean;
-  isDogCasual: boolean;
-  isHandmade: boolean;
+  isSecondHand?: boolean;
+  isDogCasual?: boolean;
+  isHandmade?: boolean;
   trait?: string;
   purchaseDate?: string; // ISO string
   createdAt: string; // ISO string
   updatedAt: string; // ISO string
   embedding?: number[];
+}
+
+// Type for outfits as stored in IndexedDB (with Blob instead of data URL)
+interface DBOutfit {
+  id: string;
+  photoBlob?: Blob;
+  itemIds: string[];
+  notes?: string;
+  rating?: number;
+  createdAt: string; // ISO string
+  updatedAt: string; // ISO string
 }
 
 // Helper function to convert database item format to WardrobeItem
@@ -149,141 +181,83 @@ async function dbItemToWardrobeItem(dbItem: DBItem): Promise<WardrobeItem> {
 
 // Save an item to IndexedDB
 export async function saveItem(item: WardrobeItem): Promise<void> {
-  const db = await openDB();
+  const db = await getDB();
 
-  return new Promise((resolve, reject) => {
-    const transaction = db.transaction([STORE_NAME], "readwrite");
-    const store = transaction.objectStore(STORE_NAME);
+  // Convert image data URL to Blob for efficient storage
+  const imageBlob = dataURLtoBlob(item.imageUrl);
 
-    // Convert image data URL to Blob for efficient storage
-    const imageBlob = dataURLtoBlob(item.imageUrl);
+  const dbItem: DBItem = {
+    id: item.id,
+    imageBlob,
+    notes: item.notes,
+    brand: item.brand,
+    category: item.category,
+    subCategory: item.subCategory,
+    wearCount: item.wearCount,
+    initialWearCount: item.initialWearCount,
+    wearHistory: item.wearHistory.map((date) => date.toISOString()),
+    price: item.price,
+    isSecondHand: item.isSecondHand,
+    isDogCasual: item.isDogCasual,
+    isHandmade: item.isHandmade,
+    trait: item.trait,
+    purchaseDate: item.purchaseDate?.toISOString(),
+    createdAt: item.createdAt.toISOString(),
+    updatedAt: item.updatedAt.toISOString(),
+    embedding: item.embedding,
+  };
 
-    const dbItem = {
-      id: item.id,
-      imageBlob,
-      notes: item.notes,
-      brand: item.brand,
-      category: item.category,
-      subCategory: item.subCategory,
-      wearCount: item.wearCount,
-      initialWearCount: item.initialWearCount,
-      wearHistory: item.wearHistory.map((date) => date.toISOString()),
-      price: item.price,
-      isSecondHand: item.isSecondHand,
-      isDogCasual: item.isDogCasual,
-      isHandmade: item.isHandmade,
-      trait: item.trait,
-      purchaseDate: item.purchaseDate?.toISOString(),
-      createdAt: item.createdAt.toISOString(),
-      updatedAt: item.updatedAt.toISOString(),
-      embedding: item.embedding,
-    };
-
-    const request = store.put(dbItem);
-
-    request.onerror = () => reject(request.error);
-
-    // Wait for transaction to complete (fully committed) before resolving
-    transaction.oncomplete = () => {
-      db.close();
-      resolve();
-    };
-    transaction.onerror = () => reject(transaction.error);
-  });
+  const tx = db.transaction(STORE_NAME, "readwrite");
+  await tx.store.put(dbItem);
+  await tx.done;
 }
 
 // Load all items from IndexedDB
 export async function loadAllItems(): Promise<Array<WardrobeItem>> {
-  const db = await openDB();
+  const db = await getDB();
 
-  return new Promise((resolve, reject) => {
-    const transaction = db.transaction([STORE_NAME], "readonly");
-    const store = transaction.objectStore(STORE_NAME);
-    const request = store.getAll();
+  const tx = db.transaction(STORE_NAME, "readonly");
+  const dbItems = await tx.store.getAll();
 
-    request.onsuccess = async () => {
-      const dbItems = request.result;
+  // Convert database items to WardrobeItem format
+  const items = await Promise.all(
+    dbItems.map((dbItem) => dbItemToWardrobeItem(dbItem))
+  );
 
-      // Convert database items to WardrobeItem format
-      const items = await Promise.all(
-        dbItems.map((dbItem) => dbItemToWardrobeItem(dbItem))
-      );
-
-      resolve(items);
-    };
-
-    request.onerror = () => reject(request.error);
-
-    transaction.oncomplete = () => db.close();
-  });
+  return items;
 }
 
 // Load a single item by ID from IndexedDB
 export async function loadItemById(id: string): Promise<WardrobeItem | null> {
-  const db = await openDB();
+  const db = await getDB();
 
-  return new Promise((resolve, reject) => {
-    const transaction = db.transaction([STORE_NAME], "readonly");
-    const store = transaction.objectStore(STORE_NAME);
-    const request = store.get(id);
+  const tx = db.transaction(STORE_NAME, "readonly");
+  const dbItem = await tx.store.get(id);
 
-    request.onsuccess = async () => {
-      const dbItem = request.result;
+  if (!dbItem) {
+    return null;
+  }
 
-      if (!dbItem) {
-        resolve(null);
-        return;
-      }
-
-      // Convert database item to WardrobeItem format
-      const item = await dbItemToWardrobeItem(dbItem);
-      resolve(item);
-    };
-
-    request.onerror = () => reject(request.error);
-
-    transaction.oncomplete = () => db.close();
-  });
+  // Convert database item to WardrobeItem format
+  return await dbItemToWardrobeItem(dbItem);
 }
 
 // Delete an item from IndexedDB
 export async function deleteItem(id: string): Promise<void> {
-  const db = await openDB();
+  const db = await getDB();
 
-  return new Promise((resolve, reject) => {
-    const transaction = db.transaction([STORE_NAME], "readwrite");
-    const store = transaction.objectStore(STORE_NAME);
-    const request = store.delete(id);
-
-    request.onerror = () => reject(request.error);
-
-    // Wait for transaction to complete (fully committed) before resolving
-    transaction.oncomplete = () => {
-      db.close();
-      resolve();
-    };
-    transaction.onerror = () => reject(transaction.error);
-  });
+  const tx = db.transaction(STORE_NAME, "readwrite");
+  await tx.store.delete(id);
+  await tx.done;
 }
 
 // Clear all items (for testing/reset)
 export async function clearAllItems(): Promise<void> {
-  const db = await openDB();
+  const db = await getDB();
 
-  return new Promise((resolve, reject) => {
-    const transaction = db.transaction([STORE_NAME], "readwrite");
-    const store = transaction.objectStore(STORE_NAME);
-    const request = store.clear();
-
-    request.onerror = () => reject(request.error);
-
-    // Wait for transaction to complete (fully committed) before resolving
-    transaction.oncomplete = () => {
-      db.close();
-      resolve();
-    };
-    transaction.onerror = () => reject(transaction.error);
-  });
+  const tx = db.transaction(STORE_NAME, "readwrite");
+  await tx.store.clear();
+  await tx.done;
 }
 
 // Get storage usage estimate (if supported)
@@ -309,7 +283,7 @@ export async function getStorageEstimate(): Promise<{
 // ========== Outfit Storage Functions ==========
 
 // Helper function to convert database outfit format to Outfit
-async function dbOutfitToOutfit(dbOutfit: any): Promise<Outfit> {
+async function dbOutfitToOutfit(dbOutfit: DBOutfit): Promise<Outfit> {
   return {
     id: dbOutfit.id,
     photo: dbOutfit.photoBlob
@@ -325,108 +299,61 @@ async function dbOutfitToOutfit(dbOutfit: any): Promise<Outfit> {
 
 // Save an outfit to IndexedDB
 export async function saveOutfit(outfit: Outfit): Promise<void> {
-  const db = await openDB();
+  const db = await getDB();
 
-  return new Promise((resolve, reject) => {
-    const transaction = db.transaction([OUTFITS_STORE], "readwrite");
-    const store = transaction.objectStore(OUTFITS_STORE);
+  // Convert photo data URL to Blob if it exists
+  const dbOutfit: DBOutfit = {
+    id: outfit.id,
+    photoBlob: outfit.photo ? dataURLtoBlob(outfit.photo) : undefined,
+    itemIds: outfit.itemIds,
+    notes: outfit.notes,
+    rating: outfit.rating,
+    createdAt: outfit.createdAt.toISOString(),
+    updatedAt: outfit.updatedAt.toISOString(),
+  };
 
-    // Convert photo data URL to Blob if it exists
-    const dbOutfit = {
-      id: outfit.id,
-      photoBlob: outfit.photo ? dataURLtoBlob(outfit.photo) : undefined,
-      itemIds: outfit.itemIds,
-      notes: outfit.notes,
-      rating: outfit.rating,
-      createdAt: outfit.createdAt.toISOString(),
-      updatedAt: outfit.updatedAt.toISOString(),
-    };
-
-    const request = store.put(dbOutfit);
-
-    request.onerror = () => reject(request.error);
-
-    // Wait for transaction to complete (fully committed) before resolving
-    transaction.oncomplete = () => {
-      db.close();
-      resolve();
-    };
-    transaction.onerror = () => reject(transaction.error);
-  });
+  const tx = db.transaction(OUTFITS_STORE, "readwrite");
+  await tx.store.put(dbOutfit);
+  await tx.done;
 }
 
 // Load all outfits from IndexedDB
 export async function loadAllOutfits(): Promise<Outfit[]> {
-  const db = await openDB();
+  const db = await getDB();
 
-  return new Promise((resolve, reject) => {
-    const transaction = db.transaction([OUTFITS_STORE], "readonly");
-    const store = transaction.objectStore(OUTFITS_STORE);
-    const request = store.getAll();
+  const tx = db.transaction(OUTFITS_STORE, "readonly");
+  const dbOutfits = await tx.store.getAll();
 
-    request.onsuccess = async () => {
-      const dbOutfits = request.result;
+  // Convert database outfits to Outfit format
+  const outfits = await Promise.all(
+    dbOutfits.map((dbOutfit) => dbOutfitToOutfit(dbOutfit))
+  );
 
-      // Convert database outfits to Outfit format
-      const outfits = await Promise.all(
-        dbOutfits.map((dbOutfit) => dbOutfitToOutfit(dbOutfit))
-      );
-
-      resolve(outfits);
-    };
-
-    request.onerror = () => reject(request.error);
-
-    transaction.oncomplete = () => db.close();
-  });
+  return outfits;
 }
 
 // Load a single outfit by ID from IndexedDB
 export async function loadOutfitById(id: string): Promise<Outfit | null> {
-  const db = await openDB();
+  const db = await getDB();
 
-  return new Promise((resolve, reject) => {
-    const transaction = db.transaction([OUTFITS_STORE], "readonly");
-    const store = transaction.objectStore(OUTFITS_STORE);
-    const request = store.get(id);
+  const tx = db.transaction(OUTFITS_STORE, "readonly");
+  const dbOutfit = await tx.store.get(id);
 
-    request.onsuccess = async () => {
-      const dbOutfit = request.result;
+  if (!dbOutfit) {
+    return null;
+  }
 
-      if (!dbOutfit) {
-        resolve(null);
-        return;
-      }
-
-      // Convert database outfit to Outfit format
-      const outfit = await dbOutfitToOutfit(dbOutfit);
-      resolve(outfit);
-    };
-
-    request.onerror = () => reject(request.error);
-
-    transaction.oncomplete = () => db.close();
-  });
+  // Convert database outfit to Outfit format
+  return await dbOutfitToOutfit(dbOutfit);
 }
 
 // Delete an outfit from IndexedDB
 export async function deleteOutfit(id: string): Promise<void> {
-  const db = await openDB();
+  const db = await getDB();
 
-  return new Promise((resolve, reject) => {
-    const transaction = db.transaction([OUTFITS_STORE], "readwrite");
-    const store = transaction.objectStore(OUTFITS_STORE);
-    const request = store.delete(id);
-
-    request.onerror = () => reject(request.error);
-
-    // Wait for transaction to complete (fully committed) before resolving
-    transaction.oncomplete = () => {
-      db.close();
-      resolve();
-    };
-    transaction.onerror = () => reject(transaction.error);
-  });
+  const tx = db.transaction(OUTFITS_STORE, "readwrite");
+  await tx.store.delete(id);
+  await tx.done;
 }
 
 // Delete entire database (useful for development/debugging)

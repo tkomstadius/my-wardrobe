@@ -4,6 +4,7 @@
  */
 
 import { differenceInDays } from "date-fns";
+import { openDB, type IDBPDatabase } from "idb";
 import type { ItemCategory } from "../types/wardrobe";
 
 const DB_NAME = "MyWardrobeDB";
@@ -12,6 +13,67 @@ const STORE_NAME = "items";
 const OUTFITS_STORE = "outfits";
 const FEEDBACK_STORE = "matchFeedback";
 const PREFERENCES_STORE = "userPreferences";
+
+// Database schema type (matches indexedDB.ts)
+interface DBSchema {
+  items: {
+    key: string;
+    value: any;
+    indexes: { category: string; createdAt: string };
+  };
+  outfits: {
+    key: string;
+    value: any;
+    indexes: { createdAt: string };
+  };
+  matchFeedback: {
+    key: string;
+    value: DBFeedback;
+    indexes: {
+      timestamp: string;
+      suggestedItemId: string;
+      userAction: string;
+      outfitPhotoHash: string;
+    };
+  };
+  userPreferences: {
+    key: string;
+    value: DBPreferences;
+  };
+}
+
+// Database format for feedback (with ISO string timestamp)
+interface DBFeedback {
+  id: string;
+  timestamp: string; // ISO string
+  outfitPhotoHash: string;
+  suggestedItemId: string;
+  baseSimilarity: number;
+  boostedSimilarity: number;
+  confidence: "high" | "medium" | "low";
+  userAction: "accepted" | "rejected";
+  metadata: {
+    category: ItemCategory;
+    brand?: string;
+    wearCount: number;
+    itemAge: number;
+    daysSinceWorn?: number;
+  };
+}
+
+// Database format for preferences (with ISO string lastUpdated)
+interface DBPreferences {
+  id: string;
+  categoryMatchWeight: number;
+  brandMatchWeight: number;
+  recencyWeight: number;
+  wearFrequencyWeight: number;
+  highConfidenceThreshold: number;
+  mediumConfidenceThreshold: number;
+  totalFeedbackCount: number;
+  lastUpdated: string; // ISO string
+  version: number;
+}
 
 /**
  * Feedback record for each AI suggestion
@@ -80,17 +142,9 @@ export function getDefaultPreferences(): UserPreferences {
 /**
  * Open database with feedback stores
  */
-function openDB(): Promise<IDBDatabase> {
-  return new Promise((resolve, reject) => {
-    const request = indexedDB.open(DB_NAME, DB_VERSION);
-
-    request.onerror = () => reject(request.error);
-    request.onsuccess = () => resolve(request.result);
-
-    request.onupgradeneeded = (event) => {
-      const db = (event.target as IDBOpenDBRequest).result;
-      const oldVersion = event.oldVersion;
-
+function getDB(): Promise<IDBPDatabase<DBSchema>> {
+  return openDB<DBSchema>(DB_NAME, DB_VERSION, {
+    upgrade(db, oldVersion) {
       console.log(
         `[AI Learning] Upgrading database from version ${oldVersion} to ${DB_VERSION}`
       );
@@ -136,7 +190,7 @@ function openDB(): Promise<IDBDatabase> {
       }
 
       console.log("[AI Learning] Database upgrade complete");
-    };
+    },
   });
 }
 
@@ -144,50 +198,33 @@ function openDB(): Promise<IDBDatabase> {
  * Save feedback for an AI suggestion
  */
 export async function saveFeedback(feedback: MatchFeedback): Promise<void> {
-  const db = await openDB();
+  const db = await getDB();
 
-  return new Promise((resolve, reject) => {
-    const transaction = db.transaction([FEEDBACK_STORE], "readwrite");
-    const store = transaction.objectStore(FEEDBACK_STORE);
+  const dbFeedback: DBFeedback = {
+    ...feedback,
+    timestamp: feedback.timestamp.toISOString(),
+  };
 
-    const dbFeedback = {
-      ...feedback,
-      timestamp: feedback.timestamp.toISOString(),
-    };
-
-    const request = store.put(dbFeedback);
-
-    request.onsuccess = () => resolve();
-    request.onerror = () => reject(request.error);
-
-    transaction.oncomplete = () => db.close();
-  });
+  const tx = db.transaction(FEEDBACK_STORE, "readwrite");
+  await tx.store.put(dbFeedback);
+  await tx.done;
 }
 
 /**
  * Load all feedback records
  */
 export async function loadAllFeedback(): Promise<MatchFeedback[]> {
-  const db = await openDB();
+  const db = await getDB();
 
-  return new Promise((resolve, reject) => {
-    const transaction = db.transaction([FEEDBACK_STORE], "readonly");
-    const store = transaction.objectStore(FEEDBACK_STORE);
-    const request = store.getAll();
+  const tx = db.transaction(FEEDBACK_STORE, "readonly");
+  const dbFeedback = await tx.store.getAll();
 
-    request.onsuccess = () => {
-      const dbFeedback = request.result;
-      const feedback = dbFeedback.map((fb) => ({
-        ...fb,
-        timestamp: new Date(fb.timestamp),
-      }));
-      resolve(feedback);
-    };
+  const feedback = dbFeedback.map((fb) => ({
+    ...fb,
+    timestamp: new Date(fb.timestamp),
+  }));
 
-    request.onerror = () => reject(request.error);
-
-    transaction.oncomplete = () => db.close();
-  });
+  return feedback;
 }
 
 /**
@@ -196,27 +233,18 @@ export async function loadAllFeedback(): Promise<MatchFeedback[]> {
 export async function loadFeedbackForItem(
   itemId: string
 ): Promise<MatchFeedback[]> {
-  const db = await openDB();
+  const db = await getDB();
 
-  return new Promise((resolve, reject) => {
-    const transaction = db.transaction([FEEDBACK_STORE], "readonly");
-    const store = transaction.objectStore(FEEDBACK_STORE);
-    const index = store.index("suggestedItemId");
-    const request = index.getAll(itemId);
+  const tx = db.transaction(FEEDBACK_STORE, "readonly");
+  const index = tx.store.index("suggestedItemId");
+  const dbFeedback = await index.getAll(itemId);
 
-    request.onsuccess = () => {
-      const dbFeedback = request.result;
-      const feedback = dbFeedback.map((fb) => ({
-        ...fb,
-        timestamp: new Date(fb.timestamp),
-      }));
-      resolve(feedback);
-    };
+  const feedback = dbFeedback.map((fb) => ({
+    ...fb,
+    timestamp: new Date(fb.timestamp),
+  }));
 
-    request.onerror = () => reject(request.error);
-
-    transaction.oncomplete = () => db.close();
-  });
+  return feedback;
 }
 
 /**
@@ -225,72 +253,47 @@ export async function loadFeedbackForItem(
 export async function saveUserPreferences(
   preferences: UserPreferences
 ): Promise<void> {
-  const db = await openDB();
+  const db = await getDB();
 
-  return new Promise((resolve, reject) => {
-    const transaction = db.transaction([PREFERENCES_STORE], "readwrite");
-    const store = transaction.objectStore(PREFERENCES_STORE);
+  const dbPreferences: DBPreferences = {
+    id: "default", // Single preferences record
+    ...preferences,
+    lastUpdated: preferences.lastUpdated.toISOString(),
+  };
 
-    const dbPreferences = {
-      id: "default", // Single preferences record
-      ...preferences,
-      lastUpdated: preferences.lastUpdated.toISOString(),
-    };
-
-    const request = store.put(dbPreferences);
-
-    request.onsuccess = () => resolve();
-    request.onerror = () => reject(request.error);
-
-    transaction.oncomplete = () => db.close();
-  });
+  const tx = db.transaction(PREFERENCES_STORE, "readwrite");
+  await tx.store.put(dbPreferences);
+  await tx.done;
 }
 
 /**
  * Load user preferences
  */
 export async function loadUserPreferences(): Promise<UserPreferences | null> {
-  const db = await openDB();
+  const db = await getDB();
 
-  return new Promise((resolve, reject) => {
-    const transaction = db.transaction([PREFERENCES_STORE], "readonly");
-    const store = transaction.objectStore(PREFERENCES_STORE);
-    const request = store.get("default");
+  const tx = db.transaction(PREFERENCES_STORE, "readonly");
+  const dbPreferences = await tx.store.get("default");
 
-    request.onsuccess = () => {
-      const dbPreferences = request.result;
-      if (!dbPreferences) {
-        resolve(null);
-      } else {
-        resolve({
-          ...dbPreferences,
-          lastUpdated: new Date(dbPreferences.lastUpdated),
-        });
-      }
-    };
+  if (!dbPreferences) {
+    return null;
+  }
 
-    request.onerror = () => reject(request.error);
-
-    transaction.oncomplete = () => db.close();
-  });
+  return {
+    ...dbPreferences,
+    lastUpdated: new Date(dbPreferences.lastUpdated),
+  };
 }
 
 /**
  * Clear all feedback (for reset)
  */
 export async function clearAllFeedback(): Promise<void> {
-  const db = await openDB();
+  const db = await getDB();
 
-  return new Promise((resolve, reject) => {
-    const transaction = db.transaction([FEEDBACK_STORE], "readwrite");
-    const store = transaction.objectStore(FEEDBACK_STORE);
-    const request = store.clear();
-
-    request.onsuccess = () => resolve();
-    request.onerror = () => reject(request.error);
-
-    transaction.oncomplete = () => db.close();
-  });
+  const tx = db.transaction(FEEDBACK_STORE, "readwrite");
+  await tx.store.clear();
+  await tx.done;
 }
 
 /**
