@@ -6,13 +6,18 @@ import {
   useEffect,
   useState,
 } from "react";
-import type { NewWardrobeItem, WardrobeItem } from "../types/wardrobe";
+import type {
+  ItemCategory,
+  NewWardrobeItem,
+  WardrobeItem,
+} from "../types/wardrobe";
 import { saveItem } from "../utils/indexedDB";
 import { generateId, loadItems, removeItem } from "../utils/storage";
 import {
   getItemsWornInPeriod as getItemsWornInPeriodUtil,
   getUnwornItemsSince,
 } from "../utils/wardrobeFilters";
+import { getSubCategoriesForCategory as getSubCategoriesForCategoryUtil } from "../utils/categories";
 
 interface WardrobeContextValue {
   items: WardrobeItem[];
@@ -20,13 +25,17 @@ interface WardrobeContextValue {
   updateItem: (id: string, updates: Partial<WardrobeItem>) => Promise<void>;
   updateItemEmbedding: (id: string, embedding: number[]) => Promise<void>;
   deleteItem: (id: string) => Promise<void>;
-  incrementWearCount: (id: string) => Promise<void>;
+  incrementWearCount: (id: string) => Promise<number>;
   logWearOnDate: (id: string, date: Date) => Promise<void>;
   removeWear: (id: string, wearIndex: number) => Promise<void>;
   getItemById: (id: string) => WardrobeItem | undefined;
-  getItemsByCategory: (category: string) => WardrobeItem[];
+  getItemsByCategory: (
+    category: string,
+    subCategory?: string
+  ) => WardrobeItem[];
   getAllBrands: () => string[];
   getAllSubCategories: () => string[];
+  getSubCategoriesForCategory: (category: ItemCategory) => readonly string[];
   getLastWornDate: (id: string) => Date | undefined;
   getItemsWornInPeriod: (
     startDate: Date,
@@ -146,7 +155,7 @@ export function WardrobeProvider({ children }: WardrobeProviderProps) {
     setItems((prev) => prev.filter((item) => item.id !== id));
   };
 
-  const incrementWearCount = async (id: string): Promise<void> => {
+  const incrementWearCount = async (id: string): Promise<number> => {
     const itemToUpdate = items.find((item) => item.id === id);
     if (!itemToUpdate) {
       throw new Error("Item not found");
@@ -170,6 +179,8 @@ export function WardrobeProvider({ children }: WardrobeProviderProps) {
     setItems((prev) =>
       prev.map((item) => (item.id === id ? updatedItem : item))
     );
+
+    return updatedItem.wearCount;
   };
 
   const logWearOnDate = async (id: string, date: Date): Promise<void> => {
@@ -236,8 +247,17 @@ export function WardrobeProvider({ children }: WardrobeProviderProps) {
     return items.find((item) => item.id === id);
   };
 
-  const getItemsByCategory = (category: string): WardrobeItem[] => {
-    return items.filter((item) => item.category === category);
+  const getItemsByCategory = (
+    category: string,
+    subCategory?: string
+  ): WardrobeItem[] => {
+    return items.filter((item) => {
+      if (item.category !== category) return false;
+      if (subCategory !== undefined) {
+        return item.subCategory === subCategory;
+      }
+      return true;
+    });
   };
 
   const getAllBrands = (): string[] => {
@@ -258,6 +278,12 @@ export function WardrobeProvider({ children }: WardrobeProviderProps) {
       }
     }
     return Array.from(subCategories).sort();
+  };
+
+  const getSubCategoriesForCategory = (
+    category: ItemCategory
+  ): readonly string[] => {
+    return getSubCategoriesForCategoryUtil(category);
   };
 
   const getLastWornDate = (id: string): Date | undefined => {
@@ -326,6 +352,7 @@ export function WardrobeProvider({ children }: WardrobeProviderProps) {
     getItemsByCategory,
     getAllBrands,
     getAllSubCategories,
+    getSubCategoriesForCategory,
     getLastWornDate,
     getItemsWornInPeriod,
     getMostWornItems,

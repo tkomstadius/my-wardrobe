@@ -1,6 +1,6 @@
 import { ArrowLeftIcon, TrashIcon } from "@radix-ui/react-icons";
 import { Button, Callout, Select, Text, TextField } from "@radix-ui/themes";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Form,
   redirect,
@@ -22,7 +22,7 @@ import {
   deleteItem as deleteItemFromDB,
 } from "../utils/indexedDB";
 import type { ItemCategory, ItemTrait, WardrobeItem } from "../types/wardrobe";
-import { CATEGORIES, CATEGORY_IDS } from "../utils/categories";
+import { CATEGORIES, CATEGORY_IDS, getSubCategoriesForCategory } from "../utils/categories";
 import styles from "./EditItemPage.module.css";
 
 type LoaderData = {
@@ -148,12 +148,23 @@ export function EditItemPage() {
   const navigation = useNavigation();
   const { item } = useLoaderData<LoaderData>();
   const actionData = useActionData<ActionData>();
-  const { getAllBrands, incrementWearCount, getAllSubCategories } =
-    useWardrobe();
+  const { getAllBrands, incrementWearCount } = useWardrobe();
   const { imagePreview, setImagePreview, handleImageUpload } = useImageUpload();
   const [isDeleting, setIsDeleting] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<ItemCategory>(
+    item?.category || "tops"
+  );
 
   const isSubmitting = navigation.state === "submitting";
+
+  // Update selected category when item changes
+  useEffect(() => {
+    if (item?.category) {
+      setSelectedCategory(item.category);
+    }
+  }, [item]);
+
+  const availableSubCategories = getSubCategoriesForCategory(selectedCategory);
 
   // Set initial image preview from loaded item
   if (item && !imagePreview) {
@@ -301,6 +312,7 @@ export function EditItemPage() {
                 name="category"
                 defaultValue={validCategory}
                 size="3"
+                onValueChange={(value) => setSelectedCategory(value as ItemCategory)}
               >
                 <Select.Trigger placeholder="Select category" />
                 <Select.Content>
@@ -314,19 +326,22 @@ export function EditItemPage() {
             </div>
 
             <div className={styles.field}>
-              <span className={styles.label}>Sub category</span>
-              <TextField.Root
+              <span className={styles.label}>Sub category (Optional)</span>
+              <Select.Root
                 name="subCategory"
-                type="text"
                 defaultValue={item.subCategory || ""}
-                placeholder="jeans, t-shirt, etc."
                 size="3"
-              />
-              <datalist id="brand-suggestions">
-                {getAllSubCategories().map((subCategory) => (
-                  <option key={subCategory} value={subCategory} />
-                ))}
-              </datalist>
+              >
+                <Select.Trigger placeholder="Select subcategory" />
+                <Select.Content>
+                  <Select.Item value="">None</Select.Item>
+                  {availableSubCategories.map((subCategory) => (
+                    <Select.Item key={subCategory} value={subCategory}>
+                      {subCategory}
+                    </Select.Item>
+                  ))}
+                </Select.Content>
+              </Select.Root>
             </div>
 
             <div className={styles.field}>

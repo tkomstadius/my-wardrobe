@@ -8,6 +8,7 @@ import {
   redirect,
   type ActionFunctionArgs,
 } from "react-router";
+import { useState } from "react";
 import { useWardrobe } from "../contexts/WardrobeContext";
 import { useImageUpload } from "../hooks/useImageUpload";
 import { CheckboxField } from "../components/common/CheckboxField";
@@ -20,7 +21,7 @@ import type {
   WardrobeItem,
   NewWardrobeItem,
 } from "../types/wardrobe";
-import { CATEGORIES } from "../utils/categories";
+import { CATEGORIES, getSubCategoriesForCategory } from "../utils/categories";
 import styles from "./AddItemPage.module.css";
 
 type ActionData = {
@@ -106,11 +107,16 @@ export function AddItemPage() {
   const navigate = useNavigate();
   const navigation = useNavigation();
   const actionData = useActionData<ActionData>();
-  const { getAllBrands, getAllSubCategories } = useWardrobe();
+  const { getAllBrands } = useWardrobe();
   const { imagePreview, handleImageUpload } = useImageUpload();
+  const [selectedCategory, setSelectedCategory] = useState<ItemCategory | "">("");
 
   const isSubmitting = navigation.state === "submitting";
   const isLoading = navigation.state === "loading";
+
+  const availableSubCategories = selectedCategory
+    ? getSubCategoriesForCategory(selectedCategory)
+    : [];
 
   return (
     <div className={styles.container}>
@@ -170,7 +176,11 @@ export function AddItemPage() {
 
           <div className={styles.field}>
             <span className={styles.label}>Category</span>
-            <Select.Root name="category" size="3">
+            <Select.Root
+              name="category"
+              size="3"
+              onValueChange={(value) => setSelectedCategory(value as ItemCategory)}
+            >
               <Select.Trigger placeholder="Select category" />
               <Select.Content>
                 {CATEGORIES.map((category) => (
@@ -183,18 +193,24 @@ export function AddItemPage() {
           </div>
 
           <div className={styles.field}>
-            <span className={styles.label}>Sub category</span>
-            <TextField.Root
-              name="subCategory"
-              type="text"
-              placeholder="jeans, t-shirt, etc."
-              size="3"
-            />
-            <datalist id="brand-suggestions">
-              {getAllSubCategories().map((subCategory) => (
-                <option key={subCategory} value={subCategory} />
-              ))}
-            </datalist>
+            <span className={styles.label}>Sub category (Optional)</span>
+            {selectedCategory ? (
+              <Select.Root name="subCategory" size="3">
+                <Select.Trigger placeholder="Select subcategory" />
+                <Select.Content>
+                  <Select.Item value="">None</Select.Item>
+                  {availableSubCategories.map((subCategory) => (
+                    <Select.Item key={subCategory} value={subCategory}>
+                      {subCategory}
+                    </Select.Item>
+                  ))}
+                </Select.Content>
+              </Select.Root>
+            ) : (
+              <Select.Root name="subCategory" size="3" disabled>
+                <Select.Trigger placeholder="Select category first" />
+              </Select.Root>
+            )}
           </div>
 
           <div className={styles.field}>
