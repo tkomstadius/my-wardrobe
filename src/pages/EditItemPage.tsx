@@ -22,7 +22,11 @@ import {
   deleteItem as deleteItemFromDB,
 } from "../utils/indexedDB";
 import type { ItemCategory, ItemTrait, WardrobeItem } from "../types/wardrobe";
-import { CATEGORIES, CATEGORY_IDS, getSubCategoriesForCategory } from "../utils/categories";
+import {
+  CATEGORIES,
+  CATEGORY_IDS,
+  getSubCategoriesForCategory,
+} from "../utils/categories";
 import styles from "./EditItemPage.module.css";
 
 type LoaderData = {
@@ -312,7 +316,9 @@ export function EditItemPage() {
                 name="category"
                 defaultValue={validCategory}
                 size="3"
-                onValueChange={(value) => setSelectedCategory(value as ItemCategory)}
+                onValueChange={(value) =>
+                  setSelectedCategory(value as ItemCategory)
+                }
               >
                 <Select.Trigger placeholder="Select category" />
                 <Select.Content>
@@ -329,12 +335,11 @@ export function EditItemPage() {
               <span className={styles.label}>Sub category (Optional)</span>
               <Select.Root
                 name="subCategory"
-                defaultValue={item.subCategory || ""}
+                defaultValue={item.subCategory || undefined}
                 size="3"
               >
                 <Select.Trigger placeholder="Select subcategory" />
                 <Select.Content>
-                  <Select.Item value="">None</Select.Item>
                   {availableSubCategories.map((subCategory) => (
                     <Select.Item key={subCategory} value={subCategory}>
                       {subCategory}

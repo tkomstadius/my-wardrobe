@@ -109,7 +109,9 @@ export function AddItemPage() {
   const actionData = useActionData<ActionData>();
   const { getAllBrands } = useWardrobe();
   const { imagePreview, handleImageUpload } = useImageUpload();
-  const [selectedCategory, setSelectedCategory] = useState<ItemCategory | "">("");
+  const [selectedCategory, setSelectedCategory] = useState<ItemCategory | "">(
+    ""
+  );
 
   const isSubmitting = navigation.state === "submitting";
   const isLoading = navigation.state === "loading";
@@ -179,7 +181,9 @@ export function AddItemPage() {
             <Select.Root
               name="category"
               size="3"
-              onValueChange={(value) => setSelectedCategory(value as ItemCategory)}
+              onValueChange={(value) =>
+                setSelectedCategory(value as ItemCategory)
+              }
             >
               <Select.Trigger placeholder="Select category" />
               <Select.Content>
@@ -198,7 +202,6 @@ export function AddItemPage() {
               <Select.Root name="subCategory" size="3">
                 <Select.Trigger placeholder="Select subcategory" />
                 <Select.Content>
-                  <Select.Item value="">None</Select.Item>
                   {availableSubCategories.map((subCategory) => (
                     <Select.Item key={subCategory} value={subCategory}>
                       {subCategory}

@@ -1,5 +1,6 @@
 import { ArrowLeftIcon, PlusIcon } from "@radix-ui/react-icons";
 import { Button, Text } from "@radix-ui/themes";
+import { useState, useMemo } from "react";
 import {
   Link,
   useNavigate,
@@ -8,9 +9,17 @@ import {
 } from "react-router";
 import { ItemCard } from "../components/features/ItemCard";
 import { SearchBar } from "../components/common/SearchBar";
+import {
+  FastFilters,
+  type BooleanFilter,
+} from "../components/common/FastFilters";
 import { useItemSearch } from "../hooks/useItemSearch";
 import type { ItemCategory } from "../types/wardrobe";
-import { CATEGORY_TITLES, CATEGORY_IDS } from "../utils/categories";
+import {
+  CATEGORY_TITLES,
+  CATEGORY_IDS,
+  getSubCategoriesForCategory,
+} from "../utils/categories";
 import { loadItems } from "../utils/storage";
 import styles from "./ItemCategoryPage.module.css";
 
@@ -40,12 +49,84 @@ export function ItemCategoryPage() {
   const navigate = useNavigate();
   const {
     items: categoryItems,
+    category,
     title,
     isValid,
   } = useLoaderData<typeof loader>();
 
+  const [selectedBooleanFilters, setSelectedBooleanFilters] = useState<
+    Set<BooleanFilter>
+  >(new Set());
+  const [selectedSubCategory, setSelectedSubCategory] = useState<string | null>(
+    null
+  );
+
+  // Apply fast filters first
+  const fastFilteredItems = useMemo(() => {
+    return categoryItems.filter((item) => {
+      // Boolean filters
+      if (selectedBooleanFilters.size > 0) {
+        const matchesBooleanFilter =
+          (selectedBooleanFilters.has("secondhand") && item.isSecondHand) ||
+          (selectedBooleanFilters.has("dogCasual") && item.isDogCasual) ||
+          (selectedBooleanFilters.has("handmade") && item.isHandmade);
+
+        if (!matchesBooleanFilter) {
+          return false;
+        }
+      }
+
+      // Subcategory filter
+      if (selectedSubCategory !== null) {
+        if (item.subCategory !== selectedSubCategory) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+  }, [categoryItems, selectedBooleanFilters, selectedSubCategory]);
+
+  // Then apply search
   const { searchQuery, setSearchQuery, clearSearch, filteredItems } =
-    useItemSearch(categoryItems);
+    useItemSearch(fastFilteredItems);
+
+  // Calculate filter counts
+  const filterCounts = useMemo(() => {
+    const counts = {
+      secondhand: categoryItems.filter((item) => item.isSecondHand).length,
+      dogCasual: categoryItems.filter((item) => item.isDogCasual).length,
+      handmade: categoryItems.filter((item) => item.isHandmade).length,
+      subCategories: {} as Record<string, number>,
+    };
+
+    if (category) {
+      const subCategories = getSubCategoriesForCategory(category);
+      subCategories.forEach((subCategory) => {
+        counts.subCategories[subCategory] = categoryItems.filter(
+          (item) => item.subCategory === subCategory
+        ).length;
+      });
+    }
+
+    return counts;
+  }, [categoryItems, category]);
+
+  const handleBooleanFilterToggle = (filter: BooleanFilter) => {
+    setSelectedBooleanFilters((prev) => {
+      const next = new Set(prev);
+      if (next.has(filter)) {
+        next.delete(filter);
+      } else {
+        next.add(filter);
+      }
+      return next;
+    });
+  };
+
+  const handleSubCategoryFilterChange = (subCategory: string | null) => {
+    setSelectedSubCategory(subCategory);
+  };
 
   const hasItems = categoryItems.length > 0;
   const hasFilteredItems = filteredItems.length > 0;
@@ -103,6 +184,17 @@ export function ItemCategoryPage() {
             placeholder="Search in this category..."
             resultCount={filteredItems.length}
           />
+
+          {category && (
+            <FastFilters
+              category={category}
+              selectedBooleanFilters={selectedBooleanFilters}
+              selectedSubCategory={selectedSubCategory}
+              onBooleanFilterToggle={handleBooleanFilterToggle}
+              onSubCategoryFilterChange={handleSubCategoryFilterChange}
+              itemCounts={filterCounts}
+            />
+          )}
 
           {hasFilteredItems ? (
             <div className={styles.grid}>
