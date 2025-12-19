@@ -193,6 +193,11 @@ export function ItemDetailPage() {
             <Text size="2" color="gray" className={styles.category}>
               {item.category.charAt(0).toUpperCase() + item.category.slice(1)}
             </Text>
+            {item.subCategory && (
+              <Text size="1" color="gray" className={styles.category}>
+                {item.subCategory}
+              </Text>
+            )}
             {item.notes && (
               <Text size="3" color="gray" className={styles.description}>
                 {item.notes}

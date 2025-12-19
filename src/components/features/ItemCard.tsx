@@ -5,6 +5,7 @@ import type { WardrobeItem } from "../../types/wardrobe";
 import { formatItemAge } from "../../utils/dateFormatter";
 import { isWornToday } from "../../utils/wardrobeFilters";
 import styles from "./ItemCard.module.css";
+import { useState } from "react";
 
 interface ItemCardProps {
   item: WardrobeItem;
@@ -13,6 +14,7 @@ interface ItemCardProps {
 
 export function ItemCard({ item, compact = false }: ItemCardProps) {
   const { incrementWearCount } = useWardrobe();
+  const [isIncremented, setIsIncremented] = useState(false);
 
   const wornToday = isWornToday(item);
 
@@ -20,12 +22,9 @@ export function ItemCard({ item, compact = false }: ItemCardProps) {
     e.preventDefault();
     e.stopPropagation();
 
-    if (wornToday) {
-      return;
-    }
-
     try {
       await incrementWearCount(item.id);
+      setIsIncremented(true);
     } catch (err) {
       console.error("Failed to increment wear count:", err);
     }
@@ -54,7 +53,9 @@ export function ItemCard({ item, compact = false }: ItemCardProps) {
           <>
             <div className={styles.content}>
               {item.brand && <p className={styles.brand}>{item.brand}</p>}
-              <p className={styles.wearCount}>Worn {item.wearCount}×</p>
+              <p className={styles.wearCount}>
+                Worn {item.wearCount + (isIncremented ? 1 : 0)}×
+              </p>
               <div className={styles.metadata}>
                 {item.isSecondHand && <p>Thrifted</p>}
                 {item.isDogCasual && <p>Casual</p>}
@@ -76,7 +77,7 @@ export function ItemCard({ item, compact = false }: ItemCardProps) {
                 wornToday ? styles.disabled : ""
               }`}
               onClick={handleQuickWear}
-              disabled={wornToday}
+              disabled={isIncremented}
               title={wornToday ? "Already worn today" : "Mark as worn"}
             >
               <PlusIcon />

@@ -132,7 +132,7 @@ export function HomePage() {
                 ) : (
                   <div className={styles.compactGrid}>
                     {todayItems.map((item) => (
-                      <ItemCard item={item} compact />
+                      <ItemCard item={item} compact key={item.id} />
                     ))}
                   </div>
                 )}
