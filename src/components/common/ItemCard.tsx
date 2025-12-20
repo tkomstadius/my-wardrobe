@@ -18,6 +18,12 @@ export function ItemCard({ item }: ItemCardProps) {
 
   const wornToday = isWornToday(item);
 
+  const handleQuickEdit = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    navigate(`/edit-item/${item.id}`);
+  };
+
   const handleQuickWear = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -67,7 +73,7 @@ export function ItemCard({ item }: ItemCardProps) {
         )}
         <button
           className={styles.quickEditButton}
-          onClick={() => navigate(`/edit-item/${item.id}`)}
+          onClick={handleQuickEdit}
           title={"Edit item"}
         >
           <Pencil1Icon />

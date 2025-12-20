@@ -5,6 +5,7 @@ import { useNavigate } from "react-router";
 import { useOutfit } from "../contexts/OutfitContext";
 import { useWardrobe } from "../contexts/WardrobeContext";
 import styles from "./OutfitsPage.module.css";
+import { Fab } from "../components/common/Fab";
 
 type SortOption = "date" | "score";
 
@@ -129,14 +130,7 @@ export function OutfitsPage() {
         </div>
       )}
 
-      <button
-        type="button"
-        className={styles.fab}
-        onClick={() => navigate("/create-outfit")}
-        aria-label="Create outfit"
-      >
-        <PlusIcon className={styles.fabIcon} />
-      </button>
+      <Fab path="/create-outfit" />
     </div>
   );
 }

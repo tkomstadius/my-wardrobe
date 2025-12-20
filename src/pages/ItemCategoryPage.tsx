@@ -1,12 +1,7 @@
-import { ArrowLeftIcon, PlusIcon } from "@radix-ui/react-icons";
+import { ArrowLeftIcon } from "@radix-ui/react-icons";
 import { Button, Text } from "@radix-ui/themes";
 import { useState, useMemo } from "react";
-import {
-  Link,
-  useNavigate,
-  useLoaderData,
-  type LoaderFunctionArgs,
-} from "react-router";
+import { Link, useLoaderData, type LoaderFunctionArgs } from "react-router";
 import { ItemCard } from "../components/common/ItemCard";
 import { SearchBar } from "../components/common/SearchBar";
 import {
@@ -22,6 +17,7 @@ import {
 } from "../utils/categories";
 import { loadItems } from "../utils/storage";
 import styles from "./ItemCategoryPage.module.css";
+import { Fab } from "../components/common/Fab";
 
 export async function loader({ params }: LoaderFunctionArgs) {
   const { category } = params;
@@ -46,7 +42,6 @@ export async function loader({ params }: LoaderFunctionArgs) {
 }
 
 export function ItemCategoryPage() {
-  const navigate = useNavigate();
   const {
     items: categoryItems,
     category,
@@ -219,14 +214,7 @@ export function ItemCategoryPage() {
         </>
       )}
 
-      <button
-        type="button"
-        className={styles.fab}
-        onClick={() => navigate("/add-item")}
-        aria-label="Add item"
-      >
-        <PlusIcon className={styles.fabIcon} />
-      </button>
+      <Fab path="/add-item" />
     </>
   );
 }

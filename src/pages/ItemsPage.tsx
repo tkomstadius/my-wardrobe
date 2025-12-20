@@ -1,8 +1,8 @@
-import { PlusIcon } from "@radix-ui/react-icons";
-import { Link, useNavigate, useLoaderData } from "react-router";
+import { Link, useLoaderData } from "react-router";
 import { CATEGORIES } from "../utils/categories";
 import { loadItems } from "../utils/storage";
 import styles from "./ItemsPage.module.css";
+import { Fab } from "../components/common/Fab";
 
 export async function loader() {
   const items = await loadItems();
@@ -10,7 +10,6 @@ export async function loader() {
 }
 
 export function ItemsPage() {
-  const navigate = useNavigate();
   const { items } = useLoaderData<typeof loader>();
 
   const getItemsByCategory = (categoryId: string) =>
@@ -55,14 +54,7 @@ export function ItemsPage() {
         })}
       </div>
 
-      <button
-        type="button"
-        className={styles.fab}
-        onClick={() => navigate("/add-item")}
-        aria-label="Add item"
-      >
-        <PlusIcon className={styles.fabIcon} />
-      </button>
+      <Fab path="/add-item" />
     </>
   );
 }
