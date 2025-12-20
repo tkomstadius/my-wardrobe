@@ -16,7 +16,6 @@
   align-items: center;
 }
 
-.card:hover,
 .card:active {
   background-color: var(--accent-action-color);
 }
@@ -45,7 +44,8 @@
   }
 }
 
-.quickWearButton {
+.quickWearButton,
+.quickEditButton {
   all: unset;
   background: var(--accent-action-color);
   cursor: pointer;
@@ -58,7 +58,7 @@
 }
 
 .quickWearButton:active,
-.quickWearButton:hover {
+.quickEditButton:active {
   background: var(--complimentary-color);
   color: var(--accent-action-color);
 }

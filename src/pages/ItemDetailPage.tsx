@@ -136,7 +136,10 @@ export function ItemDetailPage() {
   return (
     <div className={styles.container}>
       <header className={styles.header}>
-        <Button variant="ghost" onClick={() => navigate(-1)}>
+        <Button
+          variant="ghost"
+          onClick={() => navigate(`/items/${item.category}`)}
+        >
           <ArrowLeftIcon /> Back
         </Button>
       </header>

@@ -1,7 +1,7 @@
 import { Text, Tabs, Flex, ChevronDownIcon } from "@radix-ui/themes";
 import { useLoaderData } from "react-router";
 import { useMemo } from "react";
-import { ItemCard } from "../components/features/ItemCard";
+import { ItemCard } from "../components/common/ItemCard";
 import { getDaysAgo } from "../utils/dateFormatter";
 import { CATEGORIES } from "../utils/categories";
 import { loadItems } from "../utils/storage";
@@ -46,11 +46,9 @@ function CategoryItemGrid({ items }: { items: WardrobeItem[] }) {
             <ChevronDownIcon className={styles.chevron} />
           </Accordion.Trigger>
 
-          <Accordion.Content
-            className={`${styles.compactGrid} ${styles.accordionContent}`}
-          >
+          <Accordion.Content className={styles.accordionContent}>
             {categoryItems.map((item) => (
-              <ItemCard key={item.id} item={item} compact />
+              <ItemCard key={item.id} item={item} />
             ))}
           </Accordion.Content>
         </Accordion.Item>
@@ -130,11 +128,11 @@ export function HomePage() {
                     </Text>
                   </div>
                 ) : (
-                  <div className={styles.compactGrid}>
+                  <Flex direction="column" gap="2">
                     {todayItems.map((item) => (
-                      <ItemCard item={item} compact key={item.id} />
+                      <ItemCard item={item} key={item.id} />
                     ))}
-                  </div>
+                  </Flex>
                 )}
               </Tabs.Content>
 

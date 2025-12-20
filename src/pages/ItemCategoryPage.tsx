@@ -7,7 +7,7 @@ import {
   useLoaderData,
   type LoaderFunctionArgs,
 } from "react-router";
-import { ItemCard } from "../components/features/ItemCard";
+import { ItemCard } from "../components/common/ItemCard";
 import { SearchBar } from "../components/common/SearchBar";
 import {
   FastFilters,
