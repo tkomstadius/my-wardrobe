@@ -1,0 +1,13 @@
+export const IMAGE_URL_NAME = "imageUrl";
+export const ORIGINAL_IMAGE_URL_NAME = "originalImageUrl";
+export const BRAND_NAME = "brand";
+export const CATEGORY_NAME = "category";
+export const SUBCATEGORY_NAME = "subCategory";
+export const PRICE_NAME = "price";
+export const PURCHASE_DATE_NAME = "purchaseDate";
+export const INITIAL_WEAR_COUNT_NAME = "initialWearCount";
+export const ITEM_TRAIT_NAME = "trait";
+export const NOTES_NAME = "notes";
+export const SECOND_HAND_NAME = "isSecondHand";
+export const DOG_CASUAL_NAME = "isDogCasual";
+export const HANDMADE_NAME = "isHandmade";

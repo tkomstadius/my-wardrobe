@@ -2,6 +2,7 @@ import { CameraIcon, Pencil1Icon } from "@radix-ui/react-icons";
 import { useImageUpload } from "../../../hooks/useImageUpload";
 import styles from "./ImageInput.module.css";
 import { useEffect } from "react";
+import { IMAGE_URL_NAME, ORIGINAL_IMAGE_URL_NAME } from "./formNames";
 
 type ImageInputProps = {
   originalImageUrl?: string;
@@ -45,8 +46,12 @@ export function ImageInput({ originalImageUrl }: ImageInputProps) {
         className={styles.fileInput}
       />
 
-      <input type="hidden" name="imageUrl" value={imagePreview || ""} />
-      <input type="hidden" name="originalImageUrl" value={originalImageUrl} />
+      <input type="hidden" name={IMAGE_URL_NAME} value={imagePreview || ""} />
+      <input
+        type="hidden"
+        name={ORIGINAL_IMAGE_URL_NAME}
+        value={originalImageUrl}
+      />
     </div>
   );
 }

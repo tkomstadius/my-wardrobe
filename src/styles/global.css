@@ -21,9 +21,13 @@
 }
 
 .radix-themes {
+  --accent-8: #34495e;
+  --accent-a3: #34495e;
+  --accent-a5: #34495e;
   --accent-9: #34495e;
   --accent-a11: #aad3f1;
   --accent-indicator: #aad3f1;
+  --gray-a3: #243342;
 }
 
 body {

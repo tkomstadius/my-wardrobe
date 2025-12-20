@@ -1,5 +1,12 @@
 import { ArrowLeftIcon, TrashIcon } from "@radix-ui/react-icons";
-import { Button, Callout, Select, Text, TextField } from "@radix-ui/themes";
+import {
+  Button,
+  Callout,
+  Flex,
+  Text,
+  TextArea,
+  TextField,
+} from "@radix-ui/themes";
 import { useState, useEffect } from "react";
 import {
   Form,
@@ -28,6 +35,23 @@ import {
 } from "../utils/categories";
 import styles from "./EditItemPage.module.css";
 import { ImageInput } from "../components/common/form/ImageInput";
+import { TextInput } from "../components/common/form/TextInput";
+import {
+  BRAND_NAME,
+  CATEGORY_NAME,
+  DOG_CASUAL_NAME,
+  HANDMADE_NAME,
+  IMAGE_URL_NAME,
+  INITIAL_WEAR_COUNT_NAME,
+  ITEM_TRAIT_NAME,
+  NOTES_NAME,
+  ORIGINAL_IMAGE_URL_NAME,
+  PRICE_NAME,
+  PURCHASE_DATE_NAME,
+  SECOND_HAND_NAME,
+  SUBCATEGORY_NAME,
+} from "../components/common/form/formNames";
+import { SelectInput } from "../components/common/form/SelectInput";
 
 type LoaderData = {
   item: WardrobeItem | null;
@@ -68,20 +92,19 @@ export async function clientAction({ request, params }: ActionFunctionArgs) {
   }
 
   // Handle update action
-  const imageUrl = formData.get("imageUrl") as string;
-  const originalImageUrl = formData.get("originalImageUrl") as string;
-  const brand = formData.get("brand") as string;
-  const category = formData.get("category") as ItemCategory;
-  const subCategory = formData.get("subCategory") as string;
-  const notes = formData.get("notes") as string;
-  const price = formData.get("price") as string;
-  const purchaseDate = formData.get("purchaseDate") as string;
-  const initialWearCount = formData.get("initialWearCount") as string;
-  const wearHistoryLength = formData.get("wearHistoryLength") as string;
-  const trait = formData.get("trait") as string;
-  const isSecondHand = formData.get("isSecondHand") === "on";
-  const isDogCasual = formData.get("isDogCasual") === "on";
-  const isHandmade = formData.get("isHandmade") === "on";
+  const imageUrl = formData.get(IMAGE_URL_NAME) as string;
+  const originalImageUrl = formData.get(ORIGINAL_IMAGE_URL_NAME) as string;
+  const brand = formData.get(BRAND_NAME) as string;
+  const category = formData.get(CATEGORY_NAME) as ItemCategory;
+  const subCategory = formData.get(SUBCATEGORY_NAME) as string;
+  const price = formData.get(PRICE_NAME) as string;
+  const purchaseDate = formData.get(PURCHASE_DATE_NAME) as string;
+  const initialWearCount = formData.get(INITIAL_WEAR_COUNT_NAME) as string;
+  const trait = formData.get(ITEM_TRAIT_NAME) as string;
+  const notes = formData.get(NOTES_NAME) as string;
+  const isSecondHand = formData.get(SECOND_HAND_NAME) === "on";
+  const isDogCasual = formData.get(DOG_CASUAL_NAME) === "on";
+  const isHandmade = formData.get(HANDMADE_NAME) === "on";
 
   if (!imageUrl) {
     return { error: "Please add an image of the item" };
@@ -113,11 +136,8 @@ export async function clientAction({ request, params }: ActionFunctionArgs) {
       ? Number.parseInt(initialWearCount, 10)
       : 0;
 
-    const historyLength = wearHistoryLength
-      ? Number.parseInt(wearHistoryLength, 10)
-      : 0;
-
-    const totalWearCount = newInitialWearCount + historyLength;
+    const totalWearCount =
+      newInitialWearCount + existingItem.wearHistory.length;
 
     const updatedItem: WardrobeItem = {
       ...existingItem,
@@ -152,7 +172,7 @@ export function EditItemPage() {
   const navigation = useNavigation();
   const { item } = useLoaderData<LoaderData>();
   const actionData = useActionData<ActionData>();
-  const { getAllBrands, incrementWearCount } = useWardrobe();
+  const { getAllBrands } = useWardrobe();
   const [isDeleting, setIsDeleting] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<ItemCategory>(
     item?.category || "tops"
@@ -177,18 +197,6 @@ export function EditItemPage() {
 
   const validCategory =
     item && CATEGORY_IDS.includes(item.category) ? item.category : "tops";
-
-  const handleMarkAsWorn = async () => {
-    if (!item) return;
-
-    try {
-      await incrementWearCount(item.id);
-      // Force a reload to update the wear count
-      navigate(".", { replace: true });
-    } catch (err) {
-      console.error("Failed to increment wear count:", err);
-    }
-  };
 
   const handleDelete = async () => {
     if (!item) return;
@@ -223,172 +231,105 @@ export function EditItemPage() {
         <Form method="post" className={styles.form}>
           <ImageInput originalImageUrl={item.imageUrl} />
 
-          {/* Category Warning */}
           {categoryWarning && (
             <Callout.Root color="orange" size="1">
               <Callout.Text>{categoryWarning}</Callout.Text>
             </Callout.Root>
           )}
 
-          {/* Form Fields */}
-          <div className={styles.fields}>
-            <div className={styles.field}>
-              <span className={styles.label}>Brand (Optional)</span>
-              <TextField.Root
-                name="brand"
-                placeholder="e.g., Ganni, Hope"
-                defaultValue={item.brand || ""}
-                list="brand-suggestions-edit"
-                size="3"
-              />
-              <datalist id="brand-suggestions-edit">
-                {getAllBrands().map((brand) => (
-                  <option key={brand} value={brand} />
-                ))}
-              </datalist>
-            </div>
+          <TextInput
+            label="Brand"
+            name={BRAND_NAME}
+            placeholder="e.g., Ganni, Hope"
+            defaultValue={item.brand || ""}
+            suggestions={getAllBrands()}
+          />
 
-            <div className={styles.field}>
-              <span className={styles.label}>Category</span>
-              <Select.Root
-                name="category"
-                defaultValue={validCategory}
-                size="3"
-                onValueChange={(value) =>
-                  setSelectedCategory(value as ItemCategory)
-                }
-              >
-                <Select.Trigger placeholder="Select category" />
-                <Select.Content>
-                  {CATEGORIES.map((category) => (
-                    <Select.Item key={category.id} value={category.id}>
-                      {category.title}
-                    </Select.Item>
-                  ))}
-                </Select.Content>
-              </Select.Root>
-            </div>
+          <SelectInput
+            label="Category"
+            name={CATEGORY_NAME}
+            options={CATEGORIES.map((category) => ({
+              id: category.id,
+              title: category.title,
+            }))}
+            defaultValue={validCategory}
+            onValueChange={(value) =>
+              setSelectedCategory(value as ItemCategory)
+            }
+          />
 
-            <div className={styles.field}>
-              <span className={styles.label}>Sub category (Optional)</span>
-              <Select.Root
-                name="subCategory"
-                defaultValue={item.subCategory || undefined}
-                size="3"
-              >
-                <Select.Trigger placeholder="Select subcategory" />
-                <Select.Content>
-                  {availableSubCategories.map((subCategory) => (
-                    <Select.Item key={subCategory} value={subCategory}>
-                      {subCategory}
-                    </Select.Item>
-                  ))}
-                </Select.Content>
-              </Select.Root>
-            </div>
+          <SelectInput
+            label="Sub category"
+            name={SUBCATEGORY_NAME}
+            options={availableSubCategories.map((subCategory) => ({
+              id: subCategory,
+              title: subCategory,
+            }))}
+            defaultValue={item.subCategory || undefined}
+          />
 
-            <div className={styles.field}>
-              <span className={styles.label}>Price</span>
-              <TextField.Root
-                name="price"
-                type="text"
-                placeholder="e.g., 49.99"
-                defaultValue={item.price?.toString() || ""}
-                size="3"
-              />
-            </div>
+          <TextInput
+            label="Price"
+            name={PRICE_NAME}
+            placeholder="e.g., 499"
+            defaultValue={item.price?.toString() || ""}
+          />
 
-            <div className={styles.field}>
-              <span className={styles.label}>Purchase Date</span>
-              <TextField.Root
-                name="purchaseDate"
-                type="date"
-                defaultValue={
-                  item.purchaseDate
-                    ? new Date(item.purchaseDate).toISOString().split("T")[0]
-                    : ""
-                }
-                size="3"
-              />
-            </div>
-
-            <div className={styles.field}>
-              <span className={styles.label}>
-                Initial Wear Count (before adding to app)
-              </span>
-              <TextField.Root
-                name="initialWearCount"
-                type="number"
-                placeholder="0"
-                defaultValue={(item.initialWearCount ?? 0).toString()}
-                size="3"
-              />
-              <Text size="1" color="gray" className={styles.helpText}>
-                Use this for items you already owned. Leave at 0 for new items.
-              </Text>
-            </div>
-
-            <div className={styles.field}>
-              <span className={styles.label}>Total Wear Count</span>
-              <div className={styles.wearCountContainer}>
-                <TextField.Root
-                  type="number"
-                  value={item.wearCount.toString()}
-                  size="3"
-                  className={styles.wearCountInput}
-                  disabled
-                  readOnly
-                />
-                <Button
-                  type="button"
-                  variant="soft"
-                  size="3"
-                  onClick={handleMarkAsWorn}
-                  className={styles.markWornButton}
-                >
-                  Mark as Worn
-                </Button>
-              </div>
-              <Text size="1" color="gray" className={styles.helpText}>
-                {`${item.initialWearCount || 0} initial + ${
-                  item.wearHistory?.length || 0
-                } worn in app`}
-              </Text>
-            </div>
-
-            <div className={styles.field}>
-              <span className={styles.label}>Item Trait (Optional)</span>
-              <Select.Root
-                name="trait"
-                defaultValue={item.trait || "none"}
-                size="3"
-              >
-                <Select.Trigger placeholder="Select a vibe..." />
-                <Select.Content>
-                  <Select.Item value="none">None</Select.Item>
-                  <Select.Item value="comfort">
-                    Comfort (cozy, relaxed)
-                  </Select.Item>
-                  <Select.Item value="confidence">
-                    Confidence (powerful, bold)
-                  </Select.Item>
-                  <Select.Item value="creative">
-                    Creative (expressive, artistic)
-                  </Select.Item>
-                </Select.Content>
-              </Select.Root>
-            </div>
-          </div>
-
-          <div className={styles.field}>
-            <span className={styles.label}>Notes (Optional)</span>
+          <Flex direction="column" gap="1">
+            <Text as="label" size="2" weight="bold">
+              Purchase Date
+            </Text>
             <TextField.Root
-              name="notes"
-              placeholder="e.g., favorite jeans, scratched"
-              defaultValue={item.notes || ""}
+              variant="soft"
+              name={PURCHASE_DATE_NAME}
+              type="date"
+              defaultValue={
+                item.purchaseDate
+                  ? new Date(item.purchaseDate).toISOString().split("T")[0]
+                  : ""
+              }
               size="3"
             />
-          </div>
+          </Flex>
+
+          <Flex direction="column" gap="1">
+            <Text as="label" size="2" weight="bold">
+              Initial Wear Count
+            </Text>
+            <TextField.Root
+              variant="soft"
+              name={INITIAL_WEAR_COUNT_NAME}
+              type="number"
+              placeholder="0"
+              defaultValue={(item.initialWearCount ?? 0).toString()}
+              size="3"
+            />
+          </Flex>
+
+          <SelectInput
+            label="Item Trait"
+            name={ITEM_TRAIT_NAME}
+            options={[
+              { id: "none", title: "None" },
+              { id: "comfort", title: "Comfort (cozy, relaxed)" },
+              { id: "confidence", title: "Confidence (powerful, bold)" },
+              { id: "creative", title: "Creative (expressive, artistic)" },
+            ]}
+            defaultValue={item.trait || "none"}
+          />
+
+          <Flex direction="column" gap="1">
+            <Text as="label" size="2" weight="bold">
+              Notes
+            </Text>
+            <TextArea
+              variant="soft"
+              name={NOTES_NAME}
+              placeholder="e.g., favorite jeans, scratched"
+              rows={2}
+              defaultValue={item.notes || ""}
+            />
+          </Flex>
 
           <CheckboxField
             name="isSecondHand"

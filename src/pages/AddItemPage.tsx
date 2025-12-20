@@ -1,5 +1,12 @@
 import { ArrowLeftIcon } from "@radix-ui/react-icons";
-import { Button, Callout, Select, TextField } from "@radix-ui/themes";
+import {
+  Button,
+  Callout,
+  Flex,
+  Text,
+  TextArea,
+  TextField,
+} from "@radix-ui/themes";
 import {
   Form,
   useNavigate,
@@ -22,7 +29,23 @@ import type {
 } from "../types/wardrobe";
 import { CATEGORIES, getSubCategoriesForCategory } from "../utils/categories";
 import styles from "./AddItemPage.module.css";
+import { TextInput } from "../components/common/form/TextInput";
 import { ImageInput } from "../components/common/form/ImageInput";
+import {
+  BRAND_NAME,
+  IMAGE_URL_NAME,
+  CATEGORY_NAME,
+  INITIAL_WEAR_COUNT_NAME,
+  DOG_CASUAL_NAME,
+  HANDMADE_NAME,
+  ITEM_TRAIT_NAME,
+  NOTES_NAME,
+  PURCHASE_DATE_NAME,
+  PRICE_NAME,
+  SECOND_HAND_NAME,
+  SUBCATEGORY_NAME,
+} from "../components/common/form/formNames";
+import { SelectInput } from "../components/common/form/SelectInput";
 
 type ActionData = {
   error?: string;
@@ -31,18 +54,18 @@ type ActionData = {
 export async function clientAction({ request }: ActionFunctionArgs) {
   const formData = await request.formData();
 
-  const imageUrl = formData.get("imageUrl") as string;
-  const brand = formData.get("brand") as string;
-  const category = formData.get("category") as ItemCategory;
-  const subCategory = formData.get("subCategory") as string;
-  const notes = formData.get("notes") as string;
-  const price = formData.get("price") as string;
-  const purchaseDate = formData.get("purchaseDate") as string;
-  const initialWearCount = formData.get("initialWearCount") as string;
-  const trait = formData.get("trait") as string;
-  const isSecondHand = formData.get("isSecondHand") === "on";
-  const isDogCasual = formData.get("isDogCasual") === "on";
-  const isHandmade = formData.get("isHandmade") === "on";
+  const imageUrl = formData.get(IMAGE_URL_NAME) as string;
+  const brand = formData.get(BRAND_NAME) as string;
+  const category = formData.get(CATEGORY_NAME) as ItemCategory;
+  const subCategory = formData.get(SUBCATEGORY_NAME) as string;
+  const price = formData.get(PRICE_NAME) as string;
+  const purchaseDate = formData.get(PURCHASE_DATE_NAME) as string;
+  const initialWearCount = formData.get(INITIAL_WEAR_COUNT_NAME) as string;
+  const trait = formData.get(ITEM_TRAIT_NAME) as string;
+  const notes = formData.get(NOTES_NAME) as string;
+  const isSecondHand = formData.get(SECOND_HAND_NAME) === "on";
+  const isDogCasual = formData.get(DOG_CASUAL_NAME) === "on";
+  const isHandmade = formData.get(HANDMADE_NAME) === "on";
 
   if (!imageUrl) {
     return { error: "Please add an image of the item" };
@@ -122,7 +145,7 @@ export function AddItemPage() {
   return (
     <div className={styles.container}>
       <div className={styles.header}>
-        <Button variant="ghost" onClick={() => navigate("/")}>
+        <Button variant="ghost" onClick={() => navigate("/items")}>
           <ArrowLeftIcon />
         </Button>
         <h2 className={styles.title}>Add Item</h2>
@@ -132,115 +155,84 @@ export function AddItemPage() {
       <Form method="post" className={styles.form}>
         <ImageInput />
 
-        <div className={styles.fields}>
-          <div className={styles.field}>
-            <span className={styles.label}>Brand (Optional)</span>
-            <TextField.Root
-              name="brand"
-              placeholder="e.g., Ganni, Hope"
-              list="brand-suggestions"
-              size="3"
-            />
-            <datalist id="brand-suggestions">
-              {getAllBrands().map((brand) => (
-                <option key={brand} value={brand} />
-              ))}
-            </datalist>
-          </div>
+        <TextInput
+          label="Brand"
+          name={BRAND_NAME}
+          placeholder="e.g., Ganni, Hope"
+          suggestions={getAllBrands()}
+        />
 
-          <div className={styles.field}>
-            <span className={styles.label}>Category</span>
-            <Select.Root
-              name="category"
-              size="3"
-              onValueChange={(value) =>
-                setSelectedCategory(value as ItemCategory)
-              }
-            >
-              <Select.Trigger placeholder="Select category" />
-              <Select.Content>
-                {CATEGORIES.map((category) => (
-                  <Select.Item key={category.id} value={category.id}>
-                    {category.title}
-                  </Select.Item>
-                ))}
-              </Select.Content>
-            </Select.Root>
-          </div>
+        <SelectInput
+          label="Category*"
+          name={CATEGORY_NAME}
+          options={CATEGORIES.map((category) => ({
+            id: category.id,
+            title: category.title,
+          }))}
+          onValueChange={(value) => setSelectedCategory(value as ItemCategory)}
+        />
 
-          <div className={styles.field}>
-            <span className={styles.label}>Sub category (Optional)</span>
-            {selectedCategory ? (
-              <Select.Root name="subCategory" size="3">
-                <Select.Trigger placeholder="Select subcategory" />
-                <Select.Content>
-                  {availableSubCategories.map((subCategory) => (
-                    <Select.Item key={subCategory} value={subCategory}>
-                      {subCategory}
-                    </Select.Item>
-                  ))}
-                </Select.Content>
-              </Select.Root>
-            ) : (
-              <Select.Root name="subCategory" size="3" disabled>
-                <Select.Trigger placeholder="Select category first" />
-              </Select.Root>
-            )}
-          </div>
+        <SelectInput
+          label="Sub category"
+          name={SUBCATEGORY_NAME}
+          disabled={!selectedCategory}
+          options={availableSubCategories.map((subCategory) => ({
+            id: subCategory,
+            title: subCategory,
+          }))}
+        />
 
-          <div className={styles.field}>
-            <span className={styles.label}>Price</span>
-            <TextField.Root
-              name="price"
-              type="text"
-              placeholder="e.g., 49.99"
-              size="3"
-            />
-          </div>
+        <TextInput label="Price" name={PRICE_NAME} placeholder="e.g., 499" />
 
-          <div className={styles.field}>
-            <span className={styles.label}>Purchase Date</span>
-            <TextField.Root name="purchaseDate" type="date" size="3" />
-          </div>
-
-          <div className={styles.field}>
-            <span className={styles.label}>Initial Wear Count</span>
-            <TextField.Root
-              name="initialWearCount"
-              type="number"
-              placeholder="0"
-              size="3"
-            />
-          </div>
-
-          <div className={styles.field}>
-            <span className={styles.label}>Item Trait (Optional)</span>
-            <Select.Root name="trait" defaultValue="none" size="3">
-              <Select.Trigger placeholder="Select a vibe..." />
-              <Select.Content>
-                <Select.Item value="none">None</Select.Item>
-                <Select.Item value="comfort">
-                  Comfort (cozy, relaxed)
-                </Select.Item>
-                <Select.Item value="confidence">
-                  Confidence (powerful, bold)
-                </Select.Item>
-                <Select.Item value="creative">
-                  Creative (expressive, artistic)
-                </Select.Item>
-              </Select.Content>
-            </Select.Root>
-          </div>
-        </div>
-
-        <div className={styles.field}>
-          <span className={styles.label}>Notes (Optional)</span>
+        <Flex direction="column" gap="1">
+          <Text as="label" size="2" weight="bold">
+            Purchase Date
+          </Text>
           <TextField.Root
-            name="notes"
-            placeholder="e.g., T-shirt, favorite jeans, scratched"
+            variant="soft"
+            name="purchaseDate"
+            type="date"
             size="3"
           />
-        </div>
+        </Flex>
+
+        <Flex direction="column" gap="1">
+          <Text as="label" size="2" weight="bold">
+            Initial Wear Count
+          </Text>
+          <TextField.Root
+            variant="soft"
+            name="initialWearCount"
+            type="number"
+            placeholder="0"
+            size="3"
+          />
+        </Flex>
+
+        <SelectInput
+          label="Item Trait"
+          name={ITEM_TRAIT_NAME}
+          options={[
+            { id: "none", title: "None" },
+            { id: "comfort", title: "Comfort (cozy, relaxed)" },
+            { id: "confidence", title: "Confidence (powerful, bold)" },
+            { id: "creative", title: "Creative (expressive, artistic)" },
+          ]}
+          defaultValue="none"
+        />
+
+        <Flex direction="column" gap="1">
+          <Text as="label" size="2" weight="bold">
+            Notes
+          </Text>
+          <TextArea
+            variant="soft"
+            name={NOTES_NAME}
+            placeholder="e.g., favorite jeans, scratched"
+            rows={2}
+            size="3"
+          />
+        </Flex>
 
         <CheckboxField name="isSecondHand" label="Second Hand / Thrifted" />
 

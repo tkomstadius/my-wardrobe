@@ -1,5 +1,4 @@
 .container {
-  padding: 20px;
   max-width: 600px;
   margin: 0 auto;
   min-height: 100vh;
@@ -35,26 +34,7 @@
 .form {
   display: flex;
   flex-direction: column;
-  gap: 24px;
-}
-
-/* Form Fields */
-.fields {
-  display: flex;
-  flex-direction: column;
   gap: 16px;
-}
-
-.field {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.label {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--gray-11);
 }
 
 /* Error Message */
@@ -142,10 +122,6 @@
 
 /* Mobile adjustments */
 @media (max-width: 768px) {
-  .container {
-    padding: 16px;
-  }
-
   .header {
     margin-bottom: 20px;
   }

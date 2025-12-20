@@ -16,9 +16,10 @@ export function CheckboxField({
   label,
 }: CheckboxFieldProps) {
   return (
-    <Text as="label" size="3">
+    <Text as="label" size="2" weight="bold">
       <Flex gap="2" align="center">
         <Checkbox
+          variant="soft"
           name={name}
           checked={checked}
           defaultChecked={defaultChecked}
