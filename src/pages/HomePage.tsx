@@ -1,4 +1,4 @@
-import { Text, Tabs, Flex } from "@radix-ui/themes";
+import { Text, Tabs, Flex, Box } from "@radix-ui/themes";
 import { useLoaderData } from "react-router";
 import { useMemo } from "react";
 import { ItemCard } from "../components/common/ItemCard";
@@ -20,11 +20,22 @@ import { CategoryItemsAccordion } from "../components/common/CategoryItemsAccord
 
 export async function loader() {
   const items = await loadItems();
-  return { items };
+  const weather = await fetch(
+    "https://api.open-meteo.com/v1/forecast?latitude=59.3294&longitude=18.0687&current=temperature_2m,apparent_temperature,precipitation&forecast_days=1"
+  );
+  const weatherJson = await weather.json();
+
+  const weatherData = {
+    actualTemp: `${weatherJson.current.temperature_2m}°C`,
+    feelsLikeTemp: `${weatherJson.current.apparent_temperature}°C`,
+    precipitation: `${weatherJson.current.precipitation}mm`,
+  };
+
+  return { items, weatherData };
 }
 
 export function HomePage() {
-  const { items } = useLoaderData<typeof loader>();
+  const { items, weatherData } = useLoaderData<typeof loader>();
   const hasItems = items.length > 0;
 
   const todayItems = useMemo(() => getItemsWornToday(items), [items]);
@@ -47,9 +58,22 @@ export function HomePage() {
         </Text>
       ) : (
         <>
-          <Text size="2" className={styles.info}>
-            {items.length} {items.length === 1 ? "item" : "items"} total
-          </Text>
+          <Flex justify="between" align="center">
+            <Text size="2" className={styles.info}>
+              {items.length} {items.length === 1 ? "item" : "items"} total
+            </Text>
+            <Flex gap="2">
+              <Text size="2" className={styles.info}>
+                Temp: {weatherData.actualTemp}
+              </Text>
+              <Text size="2" className={styles.info}>
+                Feels: {weatherData.feelsLikeTemp}
+              </Text>
+              <Text size="2" className={styles.info}>
+                Rain: {weatherData.precipitation}
+              </Text>
+            </Flex>
+          </Flex>
 
           <Flex direction="column" gap="4">
             <section>
