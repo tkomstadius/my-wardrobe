@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { compressImage } from "../utils/imageCompression";
+import { removeImageBackground } from "../utils/backgroundRemoval";
 
 interface UseImageUploadOptions {
   onError?: (error: string) => void;
@@ -23,8 +24,13 @@ export function useImageUpload(options: UseImageUploadOptions = {}) {
       reader.onloadend = async () => {
         try {
           const originalDataURL = reader.result as string;
+          // Step 1: Compress the image first
           const compressedDataURL = await compressImage(originalDataURL);
-          setImagePreview(compressedDataURL);
+          
+          // Step 2: Remove background after compression
+          const processedDataURL = await removeImageBackground(compressedDataURL);
+          
+          setImagePreview(processedDataURL);
         } catch (error) {
           console.error("Failed to process image:", error);
           const errorMessage = "Failed to process image. Please try another file.";
