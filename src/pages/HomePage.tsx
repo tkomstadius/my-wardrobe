@@ -1,9 +1,8 @@
-import { Text, Tabs, Flex, ChevronDownIcon } from "@radix-ui/themes";
+import { Text, Tabs, Flex } from "@radix-ui/themes";
 import { useLoaderData } from "react-router";
 import { useMemo } from "react";
 import { ItemCard } from "../components/common/ItemCard";
 import { getDaysAgo } from "../utils/dateFormatter";
-import { CATEGORIES } from "../utils/categories";
 import { loadItems } from "../utils/storage";
 import {
   getItemsWornToday,
@@ -15,53 +14,19 @@ import {
   THIS_WEEK_DAYS,
   NEGLECTED_ITEMS_THRESHOLD_DAYS,
 } from "../utils/config";
-import type { WardrobeItem } from "../types/wardrobe";
 import styles from "./HomePage.module.css";
 import { StatsCard } from "../components/common/StatsCard";
-import { Accordion } from "radix-ui";
+import { CategoryItemsAccordion } from "../components/common/CategoryItemsAccordion";
 
 export async function loader() {
   const items = await loadItems();
   return { items };
 }
 
-function CategoryItemGrid({ items }: { items: WardrobeItem[] }) {
-  const itemsByCategory = CATEGORIES.map((category) => ({
-    category: category.id,
-    title: category.title,
-    items: items.filter((item) => item.category === category.id),
-  })).filter((group) => group.items.length > 0);
-
-  return (
-    <Accordion.Root
-      type="multiple"
-      defaultValue={itemsByCategory.map(({ category }) => category)}
-    >
-      {itemsByCategory.map(({ category, title, items: categoryItems }) => (
-        <Accordion.Item value={category} key={category}>
-          <Accordion.Trigger className={styles.accordionTrigger}>
-            <Text size="2" as="p">
-              {title}
-            </Text>
-            <ChevronDownIcon className={styles.chevron} />
-          </Accordion.Trigger>
-
-          <Accordion.Content className={styles.accordionContent}>
-            {categoryItems.map((item) => (
-              <ItemCard key={item.id} item={item} />
-            ))}
-          </Accordion.Content>
-        </Accordion.Item>
-      ))}
-    </Accordion.Root>
-  );
-}
-
 export function HomePage() {
   const { items } = useLoaderData<typeof loader>();
   const hasItems = items.length > 0;
 
-  // Memoize expensive calculations
   const todayItems = useMemo(() => getItemsWornToday(items), [items]);
   const weekItems = useMemo(
     () => getItemsWornInPeriod(items, getDaysAgo(THIS_WEEK_DAYS)),
@@ -72,7 +37,6 @@ export function HomePage() {
     [items]
   );
 
-  // Quick stats calculations (memoized)
   const quickStats = useMemo(() => calculateQuickStats(items), [items]);
 
   return (
@@ -147,7 +111,7 @@ export function HomePage() {
                     </Text>
                   </div>
                 ) : (
-                  <CategoryItemGrid
+                  <CategoryItemsAccordion
                     items={weekItems.map((entry) => entry.item)}
                   />
                 )}
@@ -161,14 +125,7 @@ export function HomePage() {
                     </Text>
                   </div>
                 ) : (
-                  <>
-                    <div className={styles.tabDescription}>
-                      <Text size="2" color="gray">
-                        Items not worn in 30+ days
-                      </Text>
-                    </div>
-                    <CategoryItemGrid items={neglectedItems} />
-                  </>
+                  <CategoryItemsAccordion items={neglectedItems} />
                 )}
               </Tabs.Content>
             </Tabs.Root>

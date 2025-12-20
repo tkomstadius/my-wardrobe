@@ -66,12 +66,7 @@ export function WardrobeProvider({ children }: WardrobeProviderProps) {
     async function initializeData() {
       try {
         const loadedItems = await loadItems();
-        // Ensure backwards compatibility: add empty wearHistory if missing
-        const itemsWithHistory = loadedItems.map((item) => ({
-          ...item,
-          wearHistory: item.wearHistory || [],
-        }));
-        setItems(itemsWithHistory);
+        setItems(loadedItems);
       } catch (error) {
         console.error("Failed to load items:", error);
       } finally {

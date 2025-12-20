@@ -37,56 +37,8 @@
   border-radius: var(--border-radius);
 }
 
-.itemGrid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 1rem;
-}
-
 .itemWrapper {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-}
-
-.accordionTrigger {
-  width: 100%;
-  background: transparent;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  border: none;
-  border-bottom: 1px solid var(--accent-a11);
-  color: var(--accent-a11);
-}
-
-.accordionContent {
-  padding: 8px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.accordionTrigger[data-state="open"] > .chevron {
-  transform: rotate(180deg);
-}
-
-@media (min-width: 640px) {
-  .itemGrid {
-    grid-template-columns: repeat(3, 1fr);
-  }
-
-  .compactGrid {
-    grid-template-columns: repeat(4, 1fr);
-  }
-}
-
-@media (min-width: 1024px) {
-  .itemGrid {
-    grid-template-columns: repeat(4, 1fr);
-  }
-
-  .compactGrid {
-    grid-template-columns: repeat(6, 1fr);
-  }
 }

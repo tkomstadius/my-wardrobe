@@ -4,7 +4,7 @@ import type { ItemCategory } from "../types/wardrobe";
 export const CATEGORIES = [
   { id: "tops" as const, title: "Tops" },
   { id: "bottoms" as const, title: "Bottoms" },
-  { id: "dresses" as const, title: "Dresses & Jumpsuits" },
+  { id: "dresses" as const, title: "One piece" },
   { id: "outerwear" as const, title: "Outerwear" },
   { id: "shoes" as const, title: "Shoes" },
   { id: "bags" as const, title: "Bags" },
@@ -28,42 +28,15 @@ export const SUBCATEGORIES: Record<ItemCategory, readonly string[]> = {
     "Sweater",
     "Cardigan",
     "Hoodie",
-    "Long sleeve",    
+    "Long sleeve",
   ] as const,
-  bottoms: [
-    "Jeans",
-    "Slacks",
-    "Shorts",
-    "Skirt",
-  ] as const,
-  dresses: [
-    "Dress",
-    "Jumpsuit",
-  ] as const,
-  outerwear: [
-    "Jacket",
-    "Coat",
-  ] as const,
-  shoes: [
-    "Sneakers",
-    "Boots",
-    "Heels",
-  ] as const,
-  bags: [
-    "Handbag",
-    "Backpack",
-  ] as const,
-  jewelry: [
-    "Necklace",
-    "Earrings",
-    "Bracelet",
-    "Ring",
-  ] as const,
-  accessories: [
-    "Hat",
-    "Belt",
-    "Sunglasses",
-  ] as const,
+  bottoms: ["Jeans", "Slacks", "Shorts", "Skirt"] as const,
+  dresses: ["Dress", "Jumpsuit"] as const,
+  outerwear: ["Jacket", "Coat"] as const,
+  shoes: ["Sneakers", "Boots", "Heels"] as const,
+  bags: ["Handbag", "Backpack"] as const,
+  jewelry: ["Necklace", "Earrings", "Bracelet", "Ring"] as const,
+  accessories: ["Hat", "Belt", "Sunglasses"] as const,
 } as const;
 
 // Get subcategories for a specific category

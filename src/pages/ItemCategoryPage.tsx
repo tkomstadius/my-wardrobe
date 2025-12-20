@@ -5,9 +5,9 @@ import { Link, useLoaderData, type LoaderFunctionArgs } from "react-router";
 import { ItemCard } from "../components/common/ItemCard";
 import { SearchBar } from "../components/common/SearchBar";
 import {
-  FastFilters,
+  QuickFilters,
   type BooleanFilter,
-} from "../components/common/FastFilters";
+} from "../components/common/QuickFilters";
 import { useItemSearch } from "../hooks/useItemSearch";
 import type { ItemCategory } from "../types/wardrobe";
 import {
@@ -181,7 +181,7 @@ export function ItemCategoryPage() {
           />
 
           {category && (
-            <FastFilters
+            <QuickFilters
               category={category}
               selectedBooleanFilters={selectedBooleanFilters}
               selectedSubCategory={selectedSubCategory}
