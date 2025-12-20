@@ -12,7 +12,6 @@ import {
   type ActionFunctionArgs,
 } from "react-router";
 import { useWardrobe } from "../contexts/WardrobeContext";
-import { useImageUpload } from "../hooks/useImageUpload";
 import { DeleteConfirmDialog } from "../components/common/DeleteConfirmDialog";
 import { CheckboxField } from "../components/common/CheckboxField";
 import { getImageEmbedding } from "../utils/aiEmbedding";
@@ -28,6 +27,7 @@ import {
   getSubCategoriesForCategory,
 } from "../utils/categories";
 import styles from "./EditItemPage.module.css";
+import { ImageInput } from "../components/common/form/ImageInput";
 
 type LoaderData = {
   item: WardrobeItem | null;
@@ -100,7 +100,7 @@ export async function clientAction({ request, params }: ActionFunctionArgs) {
 
     // Regenerate embedding if image has changed
     let embedding = existingItem.embedding;
-    if (imageUrl !== originalImageUrl) {
+    if (originalImageUrl && imageUrl !== originalImageUrl) {
       try {
         embedding = await getImageEmbedding(imageUrl);
       } catch (error) {
@@ -153,7 +153,6 @@ export function EditItemPage() {
   const { item } = useLoaderData<LoaderData>();
   const actionData = useActionData<ActionData>();
   const { getAllBrands, incrementWearCount } = useWardrobe();
-  const { imagePreview, setImagePreview, handleImageUpload } = useImageUpload();
   const [isDeleting, setIsDeleting] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<ItemCategory>(
     item?.category || "tops"
@@ -169,11 +168,6 @@ export function EditItemPage() {
   }, [item]);
 
   const availableSubCategories = getSubCategoriesForCategory(selectedCategory);
-
-  // Set initial image preview from loaded item
-  if (item && !imagePreview) {
-    setImagePreview(item.imageUrl);
-  }
 
   // Validate category and show warning if needed
   const categoryWarning =
@@ -227,63 +221,7 @@ export function EditItemPage() {
         </div>
       ) : (
         <Form method="post" className={styles.form}>
-          {/* Hidden fields for tracking */}
-          <input type="hidden" name="imageUrl" value={imagePreview || ""} />
-          <input type="hidden" name="originalImageUrl" value={item.imageUrl} />
-          <input
-            type="hidden"
-            name="wearHistoryLength"
-            value={item.wearHistory?.length || 0}
-          />
-
-          {/* Image Upload Section */}
-          <div className={styles.imageSection}>
-            {imagePreview ? (
-              <div className={styles.imagePreviewContainer}>
-                <img
-                  src={imagePreview}
-                  alt="Item preview"
-                  className={styles.imagePreview}
-                />
-                <Button
-                  type="button"
-                  size="2"
-                  className={styles.changeImageButton}
-                  onClick={() =>
-                    document.getElementById("image-upload")?.click()
-                  }
-                >
-                  Change Image
-                </Button>
-                <input
-                  id="image-upload"
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageUpload}
-                  className={styles.fileInput}
-                />
-              </div>
-            ) : (
-              <div className={styles.uploadPlaceholder}>
-                <Button
-                  type="button"
-                  size="3"
-                  onClick={() =>
-                    document.getElementById("image-upload")?.click()
-                  }
-                >
-                  Upload New Image
-                </Button>
-                <input
-                  id="image-upload"
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageUpload}
-                  className={styles.fileInput}
-                />
-              </div>
-            )}
-          </div>
+          <ImageInput originalImageUrl={item.imageUrl} />
 
           {/* Category Warning */}
           {categoryWarning && (

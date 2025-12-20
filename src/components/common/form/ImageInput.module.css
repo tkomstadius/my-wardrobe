@@ -1,0 +1,59 @@
+.container {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  border-radius: var(--border-radius);
+  overflow: hidden;
+}
+
+.preview {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border: 1px solid var(--accent-9);
+  border-radius: var(--border-radius);
+}
+
+.placeholder {
+  width: 100%;
+  height: 100%;
+  background-color: var(--accent-action-color);
+  border: 2px dashed var(--accent-9);
+  border-radius: var(--border-radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--gray-11);
+}
+
+.fileInput {
+  display: none;
+}
+
+.button {
+  position: absolute;
+  bottom: 16px;
+  right: 16px;
+  width: 56px;
+  height: 56px;
+  background: var(--accent-9);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  transition: all 0.2s ease;
+  color: white;
+
+  &:hover {
+    background: var(--text-color);
+    color: var(--accent-9);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+    transform: scale(1.05);
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+}

@@ -1,4 +1,4 @@
-import { ArrowLeftIcon, CameraIcon } from "@radix-ui/react-icons";
+import { ArrowLeftIcon } from "@radix-ui/react-icons";
 import { Button, Callout, Select, TextField } from "@radix-ui/themes";
 import {
   Form,
@@ -10,7 +10,6 @@ import {
 } from "react-router";
 import { useState } from "react";
 import { useWardrobe } from "../contexts/WardrobeContext";
-import { useImageUpload } from "../hooks/useImageUpload";
 import { CheckboxField } from "../components/common/CheckboxField";
 import { getImageEmbedding } from "../utils/aiEmbedding";
 import { saveItem } from "../utils/indexedDB";
@@ -23,6 +22,7 @@ import type {
 } from "../types/wardrobe";
 import { CATEGORIES, getSubCategoriesForCategory } from "../utils/categories";
 import styles from "./AddItemPage.module.css";
+import { ImageInput } from "../components/common/form/ImageInput";
 
 type ActionData = {
   error?: string;
@@ -108,7 +108,6 @@ export function AddItemPage() {
   const navigation = useNavigation();
   const actionData = useActionData<ActionData>();
   const { getAllBrands } = useWardrobe();
-  const { imagePreview, handleImageUpload } = useImageUpload();
   const [selectedCategory, setSelectedCategory] = useState<ItemCategory | "">(
     ""
   );
@@ -131,34 +130,7 @@ export function AddItemPage() {
       </div>
 
       <Form method="post" className={styles.form}>
-        <div className={styles.imageSection}>
-          <div className={styles.imageContainer}>
-            {imagePreview ? (
-              <img
-                src={imagePreview}
-                alt="Item preview"
-                className={styles.previewImage}
-              />
-            ) : (
-              <div className={styles.imagePlaceholder}>
-                <p>No image selected</p>
-              </div>
-            )}
-
-            <label htmlFor="image-upload" className={styles.cameraButton}>
-              <CameraIcon width={24} height={24} />
-            </label>
-            <input
-              id="image-upload"
-              type="file"
-              accept="image/*"
-              onChange={handleImageUpload}
-              className={styles.fileInput}
-            />
-            {/* Hidden field to store image data */}
-            <input type="hidden" name="imageUrl" value={imagePreview || ""} />
-          </div>
-        </div>
+        <ImageInput />
 
         <div className={styles.fields}>
           <div className={styles.field}>

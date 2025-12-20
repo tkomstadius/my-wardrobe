@@ -64,6 +64,8 @@ html {
 
 /* Better button touch targets for mobile */
 button {
+  all: unset;
+  cursor: pointer;
   min-height: 44px;
   min-width: 44px;
 }
