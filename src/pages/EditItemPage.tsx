@@ -1,4 +1,4 @@
-import { ArrowLeftIcon, TrashIcon } from "@radix-ui/react-icons";
+import { TrashIcon } from "@radix-ui/react-icons";
 import {
   Button,
   Callout,
@@ -50,8 +50,10 @@ import {
   PURCHASE_DATE_NAME,
   SECOND_HAND_NAME,
   SUBCATEGORY_NAME,
+  TRAIT_OPTIONS,
 } from "../components/common/form/formNames";
 import { SelectInput } from "../components/common/form/SelectInput";
+import { BackLink } from "../components/common/BackLink";
 
 type LoaderData = {
   item: WardrobeItem | null;
@@ -214,10 +216,7 @@ export function EditItemPage() {
   return (
     <div className={styles.container}>
       <div className={styles.header}>
-        <Button variant="ghost" onClick={() => navigate(-1)}>
-          <ArrowLeftIcon />
-          Back
-        </Button>
+        <BackLink to={`/item/${item?.id}`} />
         <h2 className={styles.title}>Edit Item</h2>
         <div className={styles.spacer} />
       </div>
@@ -309,12 +308,7 @@ export function EditItemPage() {
           <SelectInput
             label="Item Trait"
             name={ITEM_TRAIT_NAME}
-            options={[
-              { id: "none", title: "None" },
-              { id: "comfort", title: "Comfort (cozy, relaxed)" },
-              { id: "confidence", title: "Confidence (powerful, bold)" },
-              { id: "creative", title: "Creative (expressive, artistic)" },
-            ]}
+            options={TRAIT_OPTIONS}
             defaultValue={item.trait || "none"}
           />
 

@@ -9,6 +9,7 @@ import { DeleteConfirmDialog } from "../components/common/DeleteConfirmDialog";
 import { ItemSelector } from "../components/common/ItemSelector";
 import { RatingButtons } from "../components/common/RatingButtons";
 import styles from "./CreateOutfitPage.module.css";
+import { BackLink } from "../components/common/BackLink";
 
 export function EditOutfitPage() {
   const { id } = useParams<{ id: string }>();
@@ -115,9 +116,7 @@ export function EditOutfitPage() {
           <Text size="2" color="gray">
             Outfit not found
           </Text>
-          <Button onClick={() => navigate("/outfits")} variant="soft">
-            Back to Outfits
-          </Button>
+          <BackLink to="/outfits" />
         </div>
       </div>
     );

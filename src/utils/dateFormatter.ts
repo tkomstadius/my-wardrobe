@@ -1,5 +1,6 @@
 import {
   format,
+  set,
   subDays,
   subMonths,
   subYears,
@@ -36,6 +37,16 @@ export function normalizeToStartOfDay(date: Date): Date {
   const normalized = new Date(date);
   normalized.setHours(0, 0, 0, 0);
   return normalized;
+}
+
+// Normalize a date to noon (12:00:00.000) to avoid timezone issues
+export function normalizeToNoon(date: Date | string): Date {
+  return set(new Date(date), {
+    hours: 12,
+    minutes: 0,
+    seconds: 0,
+    milliseconds: 0,
+  });
 }
 
 // Check if two dates are on the same day

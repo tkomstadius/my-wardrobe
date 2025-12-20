@@ -11,3 +11,10 @@ export const NOTES_NAME = "notes";
 export const SECOND_HAND_NAME = "isSecondHand";
 export const DOG_CASUAL_NAME = "isDogCasual";
 export const HANDMADE_NAME = "isHandmade";
+
+export const TRAIT_OPTIONS = [
+  { id: "none", title: "None" },
+  { id: "comfort", title: "Comfort (cozy, relaxed)" },
+  { id: "confidence", title: "Confidence (powerful, bold)" },
+  { id: "creative", title: "Creative (expressive, artistic)" },
+];

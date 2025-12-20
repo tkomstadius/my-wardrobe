@@ -1,6 +1,5 @@
-import { ArrowLeftIcon, Pencil1Icon, TrashIcon } from "@radix-ui/react-icons";
-import { Badge, Button, Heading, Text } from "@radix-ui/themes";
-import { set } from "date-fns";
+import { Pencil1Icon, TrashIcon } from "@radix-ui/react-icons";
+import { Badge, Button, Flex, Heading, Text } from "@radix-ui/themes";
 import { useState } from "react";
 import {
   Link,
@@ -18,9 +17,11 @@ import {
   formatDateDisplay,
   formatItemAge,
   formatLastWorn,
+  normalizeToNoon,
 } from "../utils/dateFormatter";
 import { getTraitEmoji, getTraitLabel } from "../utils/traits";
 import styles from "./ItemDetailPage.module.css";
+import { BackLink } from "../components/common/BackLink";
 
 export async function loader({ params }: LoaderFunctionArgs) {
   const { id } = params;
@@ -58,9 +59,7 @@ export function ItemDetailPage() {
       <div className={styles.container}>
         <div className={styles.notFound}>
           <Heading size="5">Item not found</Heading>
-          <Button onClick={() => navigate("/")} variant="soft">
-            Back to Home
-          </Button>
+          <BackLink to={"/items"} />
         </div>
       </div>
     );
@@ -96,13 +95,7 @@ export function ItemDetailPage() {
     if (!item || !selectedDate) return;
 
     try {
-      // Set to noon to avoid timezone issues using date-fns
-      const date = set(new Date(selectedDate), {
-        hours: 12,
-        minutes: 0,
-        seconds: 0,
-        milliseconds: 0,
-      });
+      const date = normalizeToNoon(selectedDate);
       await logWearOnDate(item.id, date);
       setShowDatePicker(false);
       setSelectedDate("");
@@ -135,16 +128,11 @@ export function ItemDetailPage() {
 
   return (
     <div className={styles.container}>
-      <header className={styles.header}>
-        <Button
-          variant="ghost"
-          onClick={() => navigate(`/items/${item.category}`)}
-        >
-          <ArrowLeftIcon /> Back
-        </Button>
-      </header>
+      <Flex gap="2" mb="3">
+        <BackLink to={`/items/${item.category}`} />
+      </Flex>
 
-      <div className={styles.content}>
+      <Flex direction="column" gap="3">
         <div className={styles.imageSection}>
           <img src={item.imageUrl} alt={item.notes || item.brand || "Item"} />
         </div>
@@ -449,7 +437,7 @@ export function ItemDetailPage() {
           <Heading size="4">Statistics</Heading>
           // Wear frequency chart, cost per wear over time, etc.
         </section> */}
-      </div>
+      </Flex>
     </div>
   );
 }

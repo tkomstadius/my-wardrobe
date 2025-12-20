@@ -1,20 +1,12 @@
-import { Outlet, useLocation, useNavigate } from "react-router";
+import { Outlet, useNavigate } from "react-router";
 import { BottomNav } from "./BottomNav";
 import { ScrollToTop } from "../common/ScrollToTop";
 import styles from "./MainLayout.module.css";
 import { BarChartIcon, GearIcon } from "@radix-ui/react-icons";
 import { Flex, IconButton } from "@radix-ui/themes";
 
-const PAGES_WITHOUT_BOTTOM_NAV = ["/add-item"];
-
 export function MainLayout() {
-  const location = useLocation();
   const navigate = useNavigate();
-
-  // Hide bottom nav on form pages (add/edit item)
-  const shouldShowBottomNav =
-    !PAGES_WITHOUT_BOTTOM_NAV.includes(location.pathname) &&
-    !location.pathname.startsWith("/edit-item/");
 
   return (
     <Flex direction="column" className={styles.layout}>
@@ -47,7 +39,7 @@ export function MainLayout() {
       <main className={styles.main}>
         <Outlet />
       </main>
-      {shouldShowBottomNav && <BottomNav />}
+      <BottomNav />
     </Flex>
   );
 }

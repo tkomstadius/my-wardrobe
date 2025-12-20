@@ -1,5 +1,4 @@
 .container {
-  padding: 20px;
   max-width: 800px;
   margin: 0 auto;
   min-height: 100vh;
@@ -22,22 +21,14 @@
   gap: 16px;
 }
 
-.content {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-}
-
-/* Image Section */
 .imageSection {
   width: 100%;
   max-width: 500px;
   margin: 0 auto;
-  aspect-ratio: 1;
-  border-radius: 12px;
+  aspect-ratio: 4 / 3;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--accent-9);
   overflow: hidden;
-  background: var(--gray-4);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .imageSection img {
@@ -319,14 +310,6 @@
 
 /* Mobile adjustments */
 @media (max-width: 900px) {
-  .container {
-    padding: 16px;
-  }
-
-  .header {
-    margin-bottom: 20px;
-  }
-
   .costPerWearCard {
     padding: 20px;
   }

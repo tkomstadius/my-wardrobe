@@ -1,4 +1,3 @@
-import { ArrowLeftIcon } from "@radix-ui/react-icons";
 import { Button, Text } from "@radix-ui/themes";
 import { useState, useMemo } from "react";
 import { Link, useLoaderData, type LoaderFunctionArgs } from "react-router";
@@ -18,6 +17,7 @@ import {
 import { loadItems } from "../utils/storage";
 import styles from "./ItemCategoryPage.module.css";
 import { Fab } from "../components/common/Fab";
+import { BackLink } from "../components/common/BackLink";
 
 export async function loader({ params }: LoaderFunctionArgs) {
   const { category } = params;
@@ -130,12 +130,7 @@ export function ItemCategoryPage() {
     return (
       <div className={styles.container}>
         <div className={styles.header}>
-          <Link to="/items">
-            <Button variant="ghost" size="3">
-              <ArrowLeftIcon />
-              Back
-            </Button>
-          </Link>
+          <BackLink to={"/items"} />
         </div>
         <div className={styles.errorState}>
           <Text size="2" color="gray">
@@ -149,12 +144,7 @@ export function ItemCategoryPage() {
   return (
     <>
       <div className={styles.header}>
-        <Link to="/items">
-          <Button variant="ghost" size="3" color="gray">
-            <ArrowLeftIcon />
-            Back
-          </Button>
-        </Link>
+        <BackLink to={"/items"} />
         <h2 className={styles.title}>{title}</h2>
         <div className={styles.spacer} />
       </div>

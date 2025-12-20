@@ -1,4 +1,4 @@
-import { ArrowLeftIcon, TrashIcon, Pencil1Icon } from "@radix-ui/react-icons";
+import { TrashIcon, Pencil1Icon } from "@radix-ui/react-icons";
 import { Button, Heading, Text } from "@radix-ui/themes";
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router";
@@ -8,6 +8,7 @@ import { DeleteConfirmDialog } from "../components/common/DeleteConfirmDialog";
 import { formatDate } from "../utils/dateFormatter";
 import { getTraitEmoji, getTraitLabel } from "../utils/traits";
 import styles from "./OutfitDetailPage.module.css";
+import { BackLink } from "../components/common/BackLink";
 
 export function OutfitDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -23,9 +24,7 @@ export function OutfitDetailPage() {
       <div className={styles.container}>
         <div className={styles.notFound}>
           <Heading size="5">Outfit not found</Heading>
-          <Button onClick={() => navigate("/outfits")} variant="soft">
-            Back to Outfits
-          </Button>
+          <BackLink to="/outfits" />
         </div>
       </div>
     );
@@ -63,9 +62,7 @@ export function OutfitDetailPage() {
   return (
     <div className={styles.container}>
       <header className={styles.header}>
-        <Button variant="ghost" onClick={() => navigate("/outfits")}>
-          <ArrowLeftIcon /> Back
-        </Button>
+        <BackLink to="/outfits" />
       </header>
 
       <div className={styles.content}>
@@ -141,7 +138,8 @@ export function OutfitDetailPage() {
                 {traitCounts.confidence > 0 && (
                   <div className={styles.traitItem}>
                     <Text size="2" color="orange" weight="bold">
-                      {getTraitEmoji("confidence")} {getTraitLabel("confidence")}
+                      {getTraitEmoji("confidence")}{" "}
+                      {getTraitLabel("confidence")}
                     </Text>
                     <Text size="2" color="gray">
                       {traitCounts.confidence}/{totalItems} items

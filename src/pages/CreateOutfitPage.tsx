@@ -8,6 +8,7 @@ import { useImageUpload } from "../hooks/useImageUpload";
 import { ItemSelector } from "../components/common/ItemSelector";
 import { RatingButtons } from "../components/common/RatingButtons";
 import styles from "./CreateOutfitPage.module.css";
+import { BackLink } from "../components/common/BackLink";
 
 export function CreateOutfitPage() {
   const navigate = useNavigate();
@@ -67,19 +68,13 @@ export function CreateOutfitPage() {
   return (
     <div className={styles.container}>
       <header className={styles.header}>
+        <BackLink to={"/outfits"} />
         <Heading size="6">Create Outfit</Heading>
-        <Button variant="ghost" onClick={() => navigate("/outfits")}>
-          Cancel
-        </Button>
       </header>
 
       <form onSubmit={handleSubmit} className={styles.form}>
         {/* Outfit Photo */}
         <section className={styles.section}>
-          <Text weight="bold" size="2">
-            Outfit Photo (Optional)
-          </Text>
-
           <div className={styles.imageSection}>
             <div className={styles.imageContainer}>
               {imagePreview ? (
@@ -142,9 +137,10 @@ export function CreateOutfitPage() {
 
           <label className={styles.label}>
             <Text weight="bold" size="2">
-              Notes (Optional)
+              Notes
             </Text>
             <TextArea
+              variant="soft"
               placeholder="Add any notes about this outfit..."
               value={formData.notes}
               onChange={(e) =>
@@ -159,7 +155,7 @@ export function CreateOutfitPage() {
         {/* Rating Scales */}
         <section className={styles.section}>
           <Text weight="bold" size="2" className={styles.ratingHeader}>
-            Rate This Outfit (Optional)
+            Rate This Outfit
           </Text>
 
           <RatingButtons

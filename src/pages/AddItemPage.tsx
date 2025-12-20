@@ -1,4 +1,3 @@
-import { ArrowLeftIcon } from "@radix-ui/react-icons";
 import {
   Button,
   Callout,
@@ -9,7 +8,6 @@ import {
 } from "@radix-ui/themes";
 import {
   Form,
-  useNavigate,
   useNavigation,
   useActionData,
   redirect,
@@ -44,8 +42,10 @@ import {
   PRICE_NAME,
   SECOND_HAND_NAME,
   SUBCATEGORY_NAME,
+  TRAIT_OPTIONS,
 } from "../components/common/form/formNames";
 import { SelectInput } from "../components/common/form/SelectInput";
+import { BackLink } from "../components/common/BackLink";
 
 type ActionData = {
   error?: string;
@@ -127,7 +127,6 @@ export async function clientAction({ request }: ActionFunctionArgs) {
 }
 
 export function AddItemPage() {
-  const navigate = useNavigate();
   const navigation = useNavigation();
   const actionData = useActionData<ActionData>();
   const { getAllBrands } = useWardrobe();
@@ -145,9 +144,7 @@ export function AddItemPage() {
   return (
     <div className={styles.container}>
       <div className={styles.header}>
-        <Button variant="ghost" onClick={() => navigate("/items")}>
-          <ArrowLeftIcon />
-        </Button>
+        <BackLink to={"/items"} />
         <h2 className={styles.title}>Add Item</h2>
         <div className={styles.spacer} />
       </div>
@@ -212,12 +209,7 @@ export function AddItemPage() {
         <SelectInput
           label="Item Trait"
           name={ITEM_TRAIT_NAME}
-          options={[
-            { id: "none", title: "None" },
-            { id: "comfort", title: "Comfort (cozy, relaxed)" },
-            { id: "confidence", title: "Confidence (powerful, bold)" },
-            { id: "creative", title: "Creative (expressive, artistic)" },
-          ]}
+          options={TRAIT_OPTIONS}
           defaultValue="none"
         />
 
