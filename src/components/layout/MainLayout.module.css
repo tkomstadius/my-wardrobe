@@ -23,6 +23,11 @@
   font-weight: 600;
 }
 
+.weatherText {
+  color: var(--text-color);
+  white-space: nowrap;
+}
+
 .iconButton {
   color: var(--text-color);
 }

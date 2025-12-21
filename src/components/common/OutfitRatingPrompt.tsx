@@ -2,21 +2,22 @@ import { Button, Dialog, Flex, Text } from "@radix-ui/themes";
 import { useState } from "react";
 import { RatingButtons } from "./form/RatingButtons";
 import type { Outfit, OutfitRating } from "../../types/outfit";
-import {
-  markOutfitAsPrompted,
-  markPromptedToday,
-} from "../../utils/outfitRatingPrompt";
+import { markOutfitAsPrompted } from "../../utils/outfitRatingPrompt";
 
 interface OutfitRatingPromptProps {
   outfit: Outfit;
   onRate: (outfitId: string, rating: OutfitRating) => Promise<void>;
   onDismiss: () => void;
+  currentIndex?: number;
+  totalCount?: number;
 }
 
 export function OutfitRatingPrompt({
   outfit,
   onRate,
   onDismiss,
+  currentIndex = 0,
+  totalCount = 1,
 }: OutfitRatingPromptProps) {
   const [rating, setRating] = useState<OutfitRating | undefined>(undefined);
   const [isSaving, setIsSaving] = useState(false);
@@ -28,7 +29,6 @@ export function OutfitRatingPrompt({
     try {
       await onRate(outfit.id, rating);
       markOutfitAsPrompted(outfit.id);
-      markPromptedToday();
       onDismiss();
     } catch (error) {
       console.error("Failed to save rating:", error);
@@ -39,16 +39,22 @@ export function OutfitRatingPrompt({
 
   const handleDismiss = () => {
     markOutfitAsPrompted(outfit.id);
-    markPromptedToday();
     onDismiss();
   };
 
   return (
     <Dialog.Root open={true} onOpenChange={(open) => !open && handleDismiss()}>
       <Dialog.Content maxWidth="450px">
-        <Dialog.Title>Rate Today's Outfit</Dialog.Title>
+        <Dialog.Title>
+          Rate Outfit
+          {totalCount > 1 && (
+            <Text size="2" color="gray" ml="2">
+              ({currentIndex + 1} of {totalCount})
+            </Text>
+          )}
+        </Dialog.Title>
         <Dialog.Description size="2">
-          How did you feel about this outfit today?
+          How did you feel about this outfit?
         </Dialog.Description>
 
         {outfit.photo && (

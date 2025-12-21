@@ -3,10 +3,12 @@ import { BottomNav } from "./BottomNav";
 import { ScrollToTop } from "../common/ScrollToTop";
 import styles from "./MainLayout.module.css";
 import { BarChartIcon, GearIcon } from "@radix-ui/react-icons";
-import { Flex, IconButton } from "@radix-ui/themes";
+import { Flex, IconButton, Text } from "@radix-ui/themes";
+import { useWeather } from "../../contexts/WeatherContext";
 
 export function MainLayout() {
   const navigate = useNavigate();
+  const { weatherData, isLoading } = useWeather();
 
   return (
     <Flex direction="column" className={styles.layout}>
@@ -37,6 +39,19 @@ export function MainLayout() {
         </Flex>
       </header>
       <main className={styles.main}>
+        {weatherData && !isLoading && (
+          <Flex gap="2" align="center" justify="end">
+            <Text size="1" className={styles.weatherText}>
+              Actual: {weatherData.actualTemp}
+            </Text>
+            <Text size="1" className={styles.weatherText}>
+              Feels: {weatherData.feelsLikeTemp}
+            </Text>
+            <Text size="1" className={styles.weatherText}>
+              Rain: {weatherData.precipitation}
+            </Text>
+          </Flex>
+        )}
         <Outlet />
       </main>
       <BottomNav />

@@ -15,6 +15,7 @@ import { useNavigate } from "react-router";
 import { ItemSelector } from "../components/common/ItemSelector";
 import { useOutfit } from "../contexts/OutfitContext";
 import { useWardrobe } from "../contexts/WardrobeContext";
+import { useWeather } from "../contexts/WeatherContext";
 import { useImageUpload } from "../hooks/useImageUpload";
 import {
   hashImageData,
@@ -29,6 +30,7 @@ export function LogWearPage() {
   const navigate = useNavigate();
   const { items, incrementWearCount } = useWardrobe();
   const { addOutfit } = useOutfit();
+  const { weatherData } = useWeather();
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
   const [error, setError] = useState<string>("");
   const [isAIMode, setIsAIMode] = useState(true);
@@ -269,6 +271,13 @@ export function LogWearPage() {
         photo: imagePreview,
         itemIds: loggedItemIds,
         createdAt: new Date(),
+        weather: weatherData
+          ? {
+              actualTemp: weatherData.actualTemp,
+              feelsLikeTemp: weatherData.feelsLikeTemp,
+              precipitation: weatherData.precipitation,
+            }
+          : undefined,
       });
       setShowSaveOutfitDialog(false);
       navigate("/outfits");

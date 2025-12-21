@@ -19,33 +19,22 @@ import { StatsCard } from "../components/common/StatsCard";
 import { CategoryItemsAccordion } from "../components/common/CategoryItemsAccordion";
 import { OutfitRatingPrompt } from "../components/common/OutfitRatingPrompt";
 import { useOutfit } from "../contexts/OutfitContext";
-import { shouldShowRatingPrompt } from "../utils/outfitRatingPrompt";
+import { findUnratedOutfits } from "../utils/outfitRatingPrompt";
 import type { OutfitRating } from "../types/outfit";
 
 export async function loader() {
   const items = await loadItems();
-  const weather = await fetch(
-    "https://api.open-meteo.com/v1/forecast?latitude=59.3294&longitude=18.0687&current=temperature_2m,apparent_temperature,precipitation&forecast_days=1"
-  );
-  const weatherJson = await weather.json();
-
-  const weatherData = {
-    actualTemp: `${weatherJson.current.temperature_2m}°C`,
-    feelsLikeTemp: `${weatherJson.current.apparent_temperature}°C`,
-    precipitation: `${weatherJson.current.precipitation}mm`,
-  };
-
-  return { items, weatherData };
+  return { items };
 }
 
 export function HomePage() {
-  const { items, weatherData } = useLoaderData<typeof loader>();
+  const { items } = useLoaderData<typeof loader>();
   const { outfits, updateOutfit } = useOutfit();
   const hasItems = items.length > 0;
-  const [showRatingPrompt, setShowRatingPrompt] = useState(false);
-  const [outfitToRate, setOutfitToRate] = useState<
-    import("../types/outfit").Outfit | undefined
-  >(undefined);
+  const [unratedOutfits, setUnratedOutfits] = useState<
+    import("../types/outfit").Outfit[]
+  >([]);
+  const [currentOutfitIndex, setCurrentOutfitIndex] = useState(0);
 
   const todayItems = useMemo(() => getItemsWornToday(items), [items]);
   const weekItems = useMemo(
@@ -59,33 +48,43 @@ export function HomePage() {
 
   const quickStats = useMemo(() => calculateQuickStats(items), [items]);
 
-  // Check if rating prompt should be shown
+  // Find unrated outfits when component mounts or outfits change
   useEffect(() => {
-    if (outfits.length === 0) return;
-
-    const { shouldShow, outfit } = shouldShowRatingPrompt(outfits);
-    if (shouldShow && outfit) {
-      setOutfitToRate(outfit);
-      setShowRatingPrompt(true);
-    }
+    const unrated = findUnratedOutfits(outfits);
+    setUnratedOutfits(unrated);
+    setCurrentOutfitIndex(0);
   }, [outfits]);
 
   const handleRateOutfit = async (outfitId: string, rating: OutfitRating) => {
     await updateOutfit(outfitId, { rating });
+    // Move to next outfit or close if no more
+    if (currentOutfitIndex < unratedOutfits.length - 1) {
+      setCurrentOutfitIndex(currentOutfitIndex + 1);
+    } else {
+      setUnratedOutfits([]);
+    }
   };
 
   const handleDismissRating = () => {
-    setShowRatingPrompt(false);
-    setOutfitToRate(undefined);
+    // Move to next outfit or close if no more
+    if (currentOutfitIndex < unratedOutfits.length - 1) {
+      setCurrentOutfitIndex(currentOutfitIndex + 1);
+    } else {
+      setUnratedOutfits([]);
+    }
   };
+
+  const currentOutfit = unratedOutfits[currentOutfitIndex];
 
   return (
     <>
-      {showRatingPrompt && outfitToRate && (
+      {currentOutfit && (
         <OutfitRatingPrompt
-          outfit={outfitToRate}
+          outfit={currentOutfit}
           onRate={handleRateOutfit}
           onDismiss={handleDismissRating}
+          currentIndex={currentOutfitIndex}
+          totalCount={unratedOutfits.length}
         />
       )}
       <Flex direction="column" gap="4">
@@ -99,17 +98,6 @@ export function HomePage() {
               <Text size="2" className={styles.info}>
                 {items.length} {items.length === 1 ? "item" : "items"} total
               </Text>
-              <Flex gap="2">
-                <Text size="2" className={styles.info}>
-                  Temp: {weatherData.actualTemp}
-                </Text>
-                <Text size="2" className={styles.info}>
-                  Feels: {weatherData.feelsLikeTemp}
-                </Text>
-                <Text size="2" className={styles.info}>
-                  Rain: {weatherData.precipitation}
-                </Text>
-              </Flex>
             </Flex>
 
             <Flex direction="column" gap="4">
