@@ -3,13 +3,15 @@ import { useImageUpload } from "../../../hooks/useImageUpload";
 import styles from "./ImageInput.module.css";
 import { useEffect } from "react";
 import { IMAGE_URL_NAME, ORIGINAL_IMAGE_URL_NAME } from "./constants";
+import { Spinner } from "@radix-ui/themes";
 
 type ImageInputProps = {
   originalImageUrl?: string;
 };
 
 export function ImageInput({ originalImageUrl }: ImageInputProps) {
-  const { imagePreview, setImagePreview, handleImageUpload } = useImageUpload();
+  const { imagePreview, setImagePreview, handleImageUpload, isUploading } =
+    useImageUpload();
 
   useEffect(() => {
     if (originalImageUrl) {
@@ -19,6 +21,7 @@ export function ImageInput({ originalImageUrl }: ImageInputProps) {
 
   return (
     <div className={styles.container}>
+      {isUploading && <Spinner size="3" className={styles.spinner} />}
       {imagePreview ? (
         <img
           src={imagePreview}
@@ -27,7 +30,7 @@ export function ImageInput({ originalImageUrl }: ImageInputProps) {
         />
       ) : (
         <div className={styles.placeholder}>
-          <p>No image selected</p>
+          {!isUploading && <p>No image selected</p>}
         </div>
       )}
 
