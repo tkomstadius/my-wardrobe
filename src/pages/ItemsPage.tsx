@@ -1,23 +1,37 @@
 import { Link, useLoaderData } from "react-router";
+import { Grid, Text } from "@radix-ui/themes";
+import { loadItems } from "../utils/storageCommands";
 import { CATEGORIES } from "../utils/categories";
-import { loadItems } from "../utils/storage";
-import styles from "./ItemsPage.module.css";
 import { Fab } from "../components/common/Fab";
+import styles from "./ItemsPage.module.css";
 
 export async function loader() {
-  const items = await loadItems();
-  return { items };
+  try {
+    const items = await loadItems();
+    return { items, error: null };
+  } catch (error) {
+    console.error("Failed to load items:", error);
+    return { items: [], error: error as string };
+  }
 }
 
 export function ItemsPage() {
-  const { items } = useLoaderData<typeof loader>();
+  const { items, error } = useLoaderData<typeof loader>();
 
   const getItemsByCategory = (categoryId: string) =>
     items.filter((item) => item.category === categoryId);
 
+  if (error) {
+    return (
+      <Text size="2" color="red">
+        Could not load items.
+      </Text>
+    );
+  }
+
   return (
     <>
-      <div className={styles.container}>
+      <Grid columns="2" gap="3">
         {CATEGORIES.map((category) => {
           const categoryItems = getItemsByCategory(category.id);
           const previewItems = categoryItems.slice(0, 4);
@@ -52,7 +66,7 @@ export function ItemsPage() {
             </Link>
           );
         })}
-      </div>
+      </Grid>
 
       <Fab path="/add-item" />
     </>

@@ -18,7 +18,7 @@ import { useWardrobe } from "../contexts/WardrobeContext";
 import { CheckboxField } from "../components/common/CheckboxField";
 import { getImageEmbedding } from "../utils/aiEmbedding";
 import { saveItem } from "../utils/indexedDB";
-import { generateId } from "../utils/storage";
+import { generateId } from "../utils/storageCommands";
 import type {
   ItemCategory,
   WardrobeItem,

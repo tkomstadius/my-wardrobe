@@ -1,6 +1,7 @@
 import {
   format,
   set,
+  startOfDay,
   subDays,
   subMonths,
   subYears,
@@ -34,9 +35,7 @@ export function getMonthsAgo(months: number): Date {
 
 // Normalize a date to the start of the day (00:00:00.000)
 export function normalizeToStartOfDay(date: Date): Date {
-  const normalized = new Date(date);
-  normalized.setHours(0, 0, 0, 0);
-  return normalized;
+  return startOfDay(date);
 }
 
 // Normalize a date to noon (12:00:00.000) to avoid timezone issues

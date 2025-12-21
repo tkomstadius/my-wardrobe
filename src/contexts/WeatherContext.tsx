@@ -44,9 +44,9 @@ async function fetchWeatherData(): Promise<WeatherData> {
   const weatherJson = await response.json();
 
   return {
-    actualTemp: `${weatherJson.current.temperature_2m}${weatherJson.current.temperature_unit}`,
-    feelsLikeTemp: `${weatherJson.current.apparent_temperature}${weatherJson.current.temperature_unit}`,
-    precipitation: `${weatherJson.current.precipitation}${weatherJson.current.precipitation_unit}`,
+    actualTemp: `${weatherJson.current.temperature_2m}°C`,
+    feelsLikeTemp: `${weatherJson.current.apparent_temperature}°C`,
+    precipitation: `${weatherJson.current.precipitation}mm`,
     timestamp: new Date(),
   };
 }
@@ -70,6 +70,7 @@ export function WeatherProvider({ children }: WeatherProviderProps) {
     }
   };
 
+  // Fetch weather on mount, using cache if available
   useEffect(() => {
     refreshWeather();
   }, []);

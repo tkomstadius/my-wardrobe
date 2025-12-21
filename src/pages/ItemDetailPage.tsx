@@ -1,5 +1,5 @@
 import { Pencil1Icon, TrashIcon } from "@radix-ui/react-icons";
-import { Badge, Button, Flex, Heading, Text } from "@radix-ui/themes";
+import { Button, Flex, Heading, Text } from "@radix-ui/themes";
 import { useState } from "react";
 import {
   Link,
@@ -10,8 +10,7 @@ import {
 } from "react-router";
 import { DeleteConfirmDialog } from "../components/common/DeleteConfirmDialog";
 import { useWardrobe } from "../contexts/WardrobeContext";
-import { loadItems } from "../utils/storage";
-import { loadOutfits } from "../utils/storage";
+import { getOutfitsWithItemId } from "../utils/storageCommands";
 import {
   formatDate,
   formatDateDisplay,
@@ -22,6 +21,7 @@ import {
 import { RATING_OPTIONS } from "../components/common/form/constants";
 import styles from "./ItemDetailPage.module.css";
 import { BackLink } from "../components/common/BackLink";
+import { loadItemById } from "../utils/indexedDB";
 
 export async function loader({ params }: LoaderFunctionArgs) {
   const { id } = params;
@@ -30,14 +30,12 @@ export async function loader({ params }: LoaderFunctionArgs) {
     return { item: null, outfits: [] };
   }
 
-  const [items, allOutfits] = await Promise.all([loadItems(), loadOutfits()]);
+  const [item, outfits] = await Promise.all([
+    loadItemById(id),
+    getOutfitsWithItemId(id),
+  ]);
 
-  const item = items.find((i) => i.id === id) || null;
-  const outfitsWithItem = allOutfits.filter((outfit) =>
-    outfit.itemIds.includes(id)
-  );
-
-  return { item, outfits: outfitsWithItem };
+  return { item, outfits };
 }
 
 export function ItemDetailPage() {
@@ -53,17 +51,6 @@ export function ItemDetailPage() {
   const [showAllWears, setShowAllWears] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [selectedDate, setSelectedDate] = useState("");
-
-  if (!item) {
-    return (
-      <div className={styles.container}>
-        <div className={styles.notFound}>
-          <Heading size="5">Item not found</Heading>
-          <BackLink to={"/items"} />
-        </div>
-      </div>
-    );
-  }
 
   const handleDelete = async () => {
     if (!item) return;
@@ -120,6 +107,17 @@ export function ItemDetailPage() {
       setDeletingWearIndex(null);
     }
   };
+
+  if (!item) {
+    return (
+      <div className={styles.container}>
+        <div className={styles.notFound}>
+          <Heading size="5">Item not found</Heading>
+          <BackLink to={"/items"} />
+        </div>
+      </div>
+    );
+  }
 
   const costPerWear =
     item.price !== undefined && item.wearCount > 0
@@ -196,49 +194,16 @@ export function ItemDetailPage() {
             )}
           </div>
 
-          {/* Badges */}
-          <div className={styles.badges}>
-            {item.isSecondHand && (
-              <Badge color="amber" size="2">
-                Second Hand / Thrifted
-              </Badge>
-            )}
-            {item.isDogCasual && (
-              <Badge color="cyan" size="2">
-                Dog Casual
-              </Badge>
-            )}
-            {item.isHandmade && (
-              <Badge color="green" size="2">
-                Handmade
-              </Badge>
-            )}
+          <Flex gap="2">
+            {item.isSecondHand && <span>♻️</span>}
+            {item.isDogCasual && <span>🐶</span>}
+            {item.isHandmade && <span>🧶</span>}
             {item.rating !== undefined && (
-              <Badge color="blue" size="2">
+              <span>
                 {RATING_OPTIONS.find((r) => r.value === item.rating)?.emoji}
-              </Badge>
+              </span>
             )}
-          </div>
-
-          {/* AI Embedding Debug Info */}
-          {item.embedding && (
-            <div className={styles.embeddingDebug}>
-              <Text size="1" color="gray">
-                AI Embedding (first 3 values):
-              </Text>
-              <Text size="1" className={styles.embeddingValues}>
-                [
-                {item.embedding
-                  .slice(0, 3)
-                  .map((v) => v.toFixed(4))
-                  .join(", ")}
-                ...]
-              </Text>
-              <Badge color="green" size="1">
-                ✓ AI Ready
-              </Badge>
-            </div>
-          )}
+          </Flex>
 
           {/* Mark as Worn Buttons */}
           <div className={styles.actions}>
@@ -253,7 +218,7 @@ export function ItemDetailPage() {
                 </Button>
                 <Button
                   size="3"
-                  variant="soft"
+                  variant="outline"
                   onClick={() => {
                     // Default to today's date using date-fns formatDate (Swedish ISO 8601)
                     const dateStr = formatDate(new Date());
@@ -290,6 +255,7 @@ export function ItemDetailPage() {
                     Cancel
                   </Button>
                   <Button
+                    variant="soft"
                     size="2"
                     onClick={handleLogWearOnDate}
                     disabled={!selectedDate}

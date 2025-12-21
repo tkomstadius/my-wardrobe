@@ -6,13 +6,9 @@ import {
   useEffect,
   useState,
 } from "react";
-import type {
-  ItemCategory,
-  NewWardrobeItem,
-  WardrobeItem,
-} from "../types/wardrobe";
+import type { ItemCategory, WardrobeItem } from "../types/wardrobe";
 import { saveItem } from "../utils/indexedDB";
-import { generateId, loadItems, removeItem } from "../utils/storage";
+import { loadItems, removeItem } from "../utils/storageCommands";
 import {
   getItemsWornInPeriod as getItemsWornInPeriodUtil,
   getUnwornItemsSince,
@@ -21,8 +17,6 @@ import { getSubCategoriesForCategory as getSubCategoriesForCategoryUtil } from "
 
 interface WardrobeContextValue {
   items: WardrobeItem[];
-  addItem: (newItem: NewWardrobeItem) => Promise<WardrobeItem>;
-  updateItem: (id: string, updates: Partial<WardrobeItem>) => Promise<void>;
   updateItemEmbedding: (id: string, embedding: number[]) => Promise<void>;
   deleteItem: (id: string) => Promise<void>;
   incrementWearCount: (id: string) => Promise<number>;
@@ -66,6 +60,7 @@ export function WardrobeProvider({ children }: WardrobeProviderProps) {
     async function initializeData() {
       try {
         const loadedItems = await loadItems();
+
         setItems(loadedItems);
       } catch (error) {
         console.error("Failed to load items:", error);
@@ -76,47 +71,6 @@ export function WardrobeProvider({ children }: WardrobeProviderProps) {
 
     initializeData();
   }, []);
-
-  const addItem = async (newItem: NewWardrobeItem): Promise<WardrobeItem> => {
-    const now = new Date();
-    const initialWearCount = newItem.initialWearCount ?? 0;
-    const item: WardrobeItem = {
-      ...newItem,
-      id: generateId(),
-      initialWearCount,
-      wearCount: initialWearCount, // Start with initial count (will increase as worn in app)
-      wearHistory: [], // Initialize with empty wear history
-      createdAt: now,
-      updatedAt: now,
-    };
-
-    // Save to IndexedDB first
-    await saveItem(item);
-
-    // Then update state
-    setItems((prev) => [item, ...prev]);
-    return item;
-  };
-
-  const updateItem = async (
-    id: string,
-    updates: Partial<WardrobeItem>
-  ): Promise<void> => {
-    const itemToUpdate = items.find((item) => item.id === id);
-    if (!itemToUpdate) {
-      throw new Error("Item not found");
-    }
-
-    const updatedItem = { ...itemToUpdate, ...updates, updatedAt: new Date() };
-
-    // Save to IndexedDB first
-    await saveItem(updatedItem);
-
-    // Then update state
-    setItems((prev) =>
-      prev.map((item) => (item.id === id ? updatedItem : item))
-    );
-  };
 
   const updateItemEmbedding = async (
     id: string,
@@ -336,8 +290,6 @@ export function WardrobeProvider({ children }: WardrobeProviderProps) {
 
   const value: WardrobeContextValue = {
     items,
-    addItem,
-    updateItem,
     updateItemEmbedding,
     deleteItem,
     incrementWearCount,

@@ -14,7 +14,7 @@
   top: 0;
   z-index: 100;
   background-color: var(--accent-9);
-  padding: 1rem;
+  padding: 1rem 1rem 0.25rem;
   color: var(--text-color);
 }
 
@@ -24,7 +24,7 @@
 }
 
 .weatherText {
-  color: var(--text-color);
+  color: var(--complimentary-color);
   white-space: nowrap;
 }
 

@@ -277,6 +277,16 @@ export async function loadItemById(id: string): Promise<WardrobeItem | null> {
   return item;
 }
 
+export async function loadItemsByCategory(
+  category: ItemCategory
+): Promise<WardrobeItem[]> {
+  const db = await getDB();
+  const tx = db.transaction(STORE_NAME, "readonly");
+  const dbItems = await tx.store.index("category").getAll(category);
+
+  return Promise.all(dbItems.map((dbItem) => dbItemToWardrobeItem(dbItem)));
+}
+
 // Delete an item from IndexedDB
 export async function deleteItem(id: string): Promise<void> {
   const db = await getDB();

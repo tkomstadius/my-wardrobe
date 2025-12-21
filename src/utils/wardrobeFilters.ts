@@ -1,33 +1,18 @@
+import { isSameDay } from "date-fns";
 import type { WardrobeItem } from "../types/wardrobe";
-import {
-  getDaysAgo,
-  countWearsInRange,
-  normalizeToStartOfDay,
-} from "./dateFormatter";
+import { getDaysAgo, countWearsInRange } from "./dateFormatter";
 
-/**
- * Get items worn on a specific date
- */
 export function getItemsWornOnDate(
   items: WardrobeItem[],
   targetDate: Date
 ): WardrobeItem[] {
-  const normalizedTarget = normalizeToStartOfDay(targetDate);
+  return items.filter(({ wearHistory }) => {
+    const lastWorn = wearHistory?.at(-1);
 
-  return items.filter((item) => {
-    if (!item.wearHistory || item.wearHistory.length === 0) {
-      return false;
-    }
-    return item.wearHistory.some((wearDate) => {
-      const normalizedWear = normalizeToStartOfDay(new Date(wearDate));
-      return normalizedWear.getTime() === normalizedTarget.getTime();
-    });
+    return lastWorn && isSameDay(new Date(lastWorn), targetDate);
   });
 }
 
-/**
- * Get items worn today
- */
 export function getItemsWornToday(items: WardrobeItem[]): WardrobeItem[] {
   return getItemsWornOnDate(items, new Date());
 }
@@ -39,6 +24,7 @@ export function isWornToday(item: WardrobeItem): boolean {
   if (!item.wearHistory || item.wearHistory.length === 0) {
     return false;
   }
+
   return getItemsWornOnDate([item], new Date()).length > 0;
 }
 

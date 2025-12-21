@@ -3,6 +3,7 @@
  * Finds all unrated outfits that should be prompted
  */
 
+import { compareDesc } from "date-fns";
 import type { Outfit } from "../types/outfit";
 
 const PROMPTED_OUTFITS_KEY = "outfitRatingPrompt_promptedOutfits";
@@ -43,17 +44,12 @@ export function wasOutfitPrompted(outfitId: string): boolean {
  * Find all unrated outfits that haven't been prompted yet
  */
 export function findUnratedOutfits(outfits: Outfit[]): Outfit[] {
-  const promptedIds = getPromptedOutfitIds();
-
   return outfits
     .filter((outfit) => {
       // Must not have a rating
       if (outfit.rating !== undefined) return false;
 
-      // Must not have been prompted already
-      if (promptedIds.includes(outfit.id)) return false;
-
       return true;
     })
-    .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime()); // Most recent first
+    .sort((a, b) => compareDesc(a.createdAt, b.createdAt)); // Most recent first
 }

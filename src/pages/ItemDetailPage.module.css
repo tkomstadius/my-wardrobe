@@ -102,31 +102,6 @@
   color: var(--blue-11);
 }
 
-/* Badges */
-.badges {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-/* AI Embedding Debug */
-.embeddingDebug {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  padding: 12px;
-  background: var(--gray-2);
-  border: 1px solid var(--gray-6);
-  border-radius: var(--radius-2);
-  font-family: monospace;
-}
-
-.embeddingValues {
-  color: var(--blue-11);
-  font-size: 0.75rem;
-  word-break: break-all;
-}
-
 /* Actions */
 .actions {
   display: flex;

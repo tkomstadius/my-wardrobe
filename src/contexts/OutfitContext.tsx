@@ -11,7 +11,7 @@ import {
   loadOutfits,
   removeOutfit,
   saveOutfitToStorage,
-} from "../utils/storage";
+} from "../utils/storageCommands";
 
 interface OutfitContextValue {
   outfits: Outfit[];

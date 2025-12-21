@@ -1,7 +1,7 @@
 import { Text, Heading } from "@radix-ui/themes";
 import { useMemo } from "react";
 import { useLoaderData } from "react-router";
-import { loadItems } from "../utils/storage";
+import { loadItems } from "../utils/storageCommands";
 import { calculateFullStats } from "../utils/statsCalculations";
 import styles from "./StatsPage.module.css";
 import { StatsCard } from "../components/common/StatsCard";
@@ -57,7 +57,6 @@ export function StatsPage() {
           <Heading size="4" className={styles.sectionTitle}>
             Personal Style Insights
           </Heading>
-
 
           <div className={styles.subsection}>
             <Text size="3" weight="medium" className={styles.subsectionTitle}>

@@ -37,8 +37,6 @@ export function MainLayout() {
             </IconButton>
           </Flex>
         </Flex>
-      </header>
-      <main className={styles.main}>
         {weatherData && !isLoading && (
           <Flex gap="2" align="center" justify="end">
             <Text size="1" className={styles.weatherText}>
@@ -52,6 +50,9 @@ export function MainLayout() {
             </Text>
           </Flex>
         )}
+      </header>
+
+      <main className={styles.main}>
         <Outlet />
       </main>
       <BottomNav />

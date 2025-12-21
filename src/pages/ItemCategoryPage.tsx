@@ -14,7 +14,7 @@ import {
   CATEGORY_IDS,
   getSubCategoriesForCategory,
 } from "../utils/categories";
-import { loadItems } from "../utils/storage";
+import { getItemsByCategory } from "../utils/storageCommands";
 import styles from "./ItemCategoryPage.module.css";
 import { Fab } from "../components/common/Fab";
 import { BackLink } from "../components/common/BackLink";
@@ -29,9 +29,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
     return { items: [], category: null, title: null, isValid: false };
   }
 
-  // TODO: add loading items by category
-  const allItems = await loadItems();
-  const categoryItems = allItems.filter((item) => item.category === category);
+  const categoryItems = await getItemsByCategory(category as ItemCategory);
 
   return {
     items: categoryItems,
