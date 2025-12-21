@@ -2,7 +2,7 @@ import { CameraIcon, Pencil1Icon } from "@radix-ui/react-icons";
 import { useImageUpload } from "../../../hooks/useImageUpload";
 import styles from "./ImageInput.module.css";
 import { useEffect } from "react";
-import { IMAGE_URL_NAME, ORIGINAL_IMAGE_URL_NAME } from "./formNames";
+import { IMAGE_URL_NAME, ORIGINAL_IMAGE_URL_NAME } from "./constants";
 
 type ImageInputProps = {
   originalImageUrl?: string;

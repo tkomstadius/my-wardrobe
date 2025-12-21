@@ -1,9 +1,11 @@
+export type OutfitRating = 1 | 0 | -1; // 1 = good, 0 = meh, -1 = nope
+
 export interface Outfit {
   id: string;
   photo?: string; // Data URL of outfit photo
   itemIds: string[]; // IDs of wardrobe items in this outfit
   notes?: string;
-  rating?: number; // Overall rating (1-5)
+  rating?: OutfitRating; // Overall rating (1 = good, 0 = meh, -1 = nope)
   createdAt: Date;
   updatedAt: Date;
 }

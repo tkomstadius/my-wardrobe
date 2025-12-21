@@ -19,7 +19,7 @@ import {
   formatLastWorn,
   normalizeToNoon,
 } from "../utils/dateFormatter";
-import { getTraitEmoji, getTraitLabel } from "../utils/traits";
+import { RATING_OPTIONS } from "../components/common/form/constants";
 import styles from "./ItemDetailPage.module.css";
 import { BackLink } from "../components/common/BackLink";
 
@@ -213,9 +213,9 @@ export function ItemDetailPage() {
                 Handmade
               </Badge>
             )}
-            {item.trait && (
-              <Badge color="purple" size="2">
-                {getTraitEmoji(item.trait)} {getTraitLabel(item.trait)}
+            {item.rating !== undefined && (
+              <Badge color="blue" size="2">
+                {RATING_OPTIONS.find((r) => r.value === item.rating)?.emoji}
               </Badge>
             )}
           </div>

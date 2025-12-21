@@ -28,6 +28,7 @@
   --accent-a11: #aad3f1;
   --accent-indicator: #aad3f1;
   --gray-a3: #243342;
+  --color-surface: var(--accent-9);
 }
 
 body {

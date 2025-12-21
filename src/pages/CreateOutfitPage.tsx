@@ -6,7 +6,8 @@ import { useOutfit } from "../contexts/OutfitContext";
 import { useWardrobe } from "../contexts/WardrobeContext";
 import { useImageUpload } from "../hooks/useImageUpload";
 import { ItemSelector } from "../components/common/ItemSelector";
-import { RatingButtons } from "../components/common/RatingButtons";
+import { RatingButtons } from "../components/common/form/RatingButtons";
+import type { OutfitRating } from "../types/outfit";
 import styles from "./CreateOutfitPage.module.css";
 import { BackLink } from "../components/common/BackLink";
 
@@ -19,7 +20,7 @@ export function CreateOutfitPage() {
   const [formData, setFormData] = useState({
     createdDate: new Date().toISOString().split("T")[0] as string, // Default to today
     notes: "",
-    rating: undefined as number | undefined,
+    rating: undefined as OutfitRating | undefined,
   });
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
   const [isSaving, setIsSaving] = useState(false);
@@ -159,7 +160,6 @@ export function CreateOutfitPage() {
           </Text>
 
           <RatingButtons
-            label="How do you feel about this outfit? (Optional)"
             value={formData.rating}
             onChange={(value) => setFormData({ ...formData, rating: value })}
           />

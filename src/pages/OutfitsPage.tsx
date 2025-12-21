@@ -6,6 +6,7 @@ import { useOutfit } from "../contexts/OutfitContext";
 import { useWardrobe } from "../contexts/WardrobeContext";
 import styles from "./OutfitsPage.module.css";
 import { Fab } from "../components/common/Fab";
+import { RATING_OPTIONS } from "../components/common/form/constants";
 
 type SortOption = "date" | "score";
 
@@ -27,13 +28,13 @@ export function OutfitsPage() {
 
   const sortedOutfits = [...outfits].sort((a, b) => {
     if (sortBy === "score") {
-      // Sort by rating (highest first), then by date if no rating
-      const ratingA = a.rating ?? 0;
-      const ratingB = b.rating ?? 0;
+      // Sort by rating (1 > 0 > -1), then by date if no rating
+      const ratingA = a.rating ?? -2; // -2 is lower than -1, so unrated items sort last
+      const ratingB = b.rating ?? -2;
       if (ratingB !== ratingA) {
         return ratingB - ratingA;
       }
-      // If ratings are equal (or both 0), sort by date
+      // If ratings are equal, sort by date
       return b.createdAt.getTime() - a.createdAt.getTime();
     } else {
       // Sort by date (newest first)
@@ -55,7 +56,7 @@ export function OutfitsPage() {
               onValueChange={(value) => setSortBy(value as SortOption)}
               size="2"
             >
-              <Select.Trigger className={styles.sortTrigger} />
+              <Select.Trigger variant="soft" className={styles.sortTrigger} />
               <Select.Content>
                 <Select.Item value="date">Date (Newest)</Select.Item>
                 <Select.Item value="score">Score (Highest)</Select.Item>
@@ -111,9 +112,13 @@ export function OutfitsPage() {
                 </div>
 
                 <div className={styles.outfitInfo}>
-                  {outfit.rating && (
+                  {outfit.rating != undefined && (
                     <Text size="2" weight="bold" color="blue">
-                      ⭐ {outfit.rating}/5
+                      {
+                        RATING_OPTIONS.find(
+                          (rating) => rating.value === outfit.rating
+                        )?.emoji
+                      }
                     </Text>
                   )}
                   {outfit.notes && (

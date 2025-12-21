@@ -1,4 +1,4 @@
-import type { WardrobeItem, ItemTrait } from "../types/wardrobe";
+import type { WardrobeItem } from "../types/wardrobe";
 import { CATEGORIES } from "./categories";
 
 /**
@@ -21,7 +21,6 @@ export interface FullStats extends QuickStats {
     count: number;
     wears: number;
   }>;
-  traitWears: Record<ItemTrait, { count: number; wears: number }>;
   mostWorn: WardrobeItem[];
   leastWorn: WardrobeItem[];
   neverWorn: WardrobeItem[];
@@ -83,22 +82,6 @@ export function calculateFullStats(items: WardrobeItem[]): FullStats {
     };
   }).sort((a, b) => b.wears - a.wears);
 
-  // Trait distribution
-  const traitWears: Record<ItemTrait, { count: number; wears: number }> = {
-    comfort: { count: 0, wears: 0 },
-    confidence: { count: 0, wears: 0 },
-    creative: { count: 0, wears: 0 },
-  };
-
-  items.forEach((item) => {
-    if (item.trait) {
-      const traitData = traitWears[item.trait];
-      if (traitData) {
-        traitData.count += 1;
-        traitData.wears += getAppTrackedWears(item);
-      }
-    }
-  });
 
   // Most worn items (by app-tracked wears)
   const mostWorn = [...items]
@@ -152,7 +135,6 @@ export function calculateFullStats(items: WardrobeItem[]): FullStats {
   return {
     ...quickStats,
     categoryWears,
-    traitWears,
     mostWorn,
     leastWorn,
     neverWorn,

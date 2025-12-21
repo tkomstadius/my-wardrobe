@@ -21,7 +21,6 @@ import { saveItem } from "../utils/indexedDB";
 import { generateId } from "../utils/storage";
 import type {
   ItemCategory,
-  ItemTrait,
   WardrobeItem,
   NewWardrobeItem,
 } from "../types/wardrobe";
@@ -36,15 +35,16 @@ import {
   INITIAL_WEAR_COUNT_NAME,
   DOG_CASUAL_NAME,
   HANDMADE_NAME,
-  ITEM_TRAIT_NAME,
   NOTES_NAME,
   PURCHASE_DATE_NAME,
   PRICE_NAME,
+  RATING_NAME,
   SECOND_HAND_NAME,
   SUBCATEGORY_NAME,
-  TRAIT_OPTIONS,
-} from "../components/common/form/formNames";
+} from "../components/common/form/constants";
 import { SelectInput } from "../components/common/form/SelectInput";
+import { RatingButtons } from "../components/common/form/RatingButtons";
+import type { OutfitRating } from "../types/outfit";
 import { BackLink } from "../components/common/BackLink";
 
 type ActionData = {
@@ -61,8 +61,8 @@ export async function clientAction({ request }: ActionFunctionArgs) {
   const price = formData.get(PRICE_NAME) as string;
   const purchaseDate = formData.get(PURCHASE_DATE_NAME) as string;
   const initialWearCount = formData.get(INITIAL_WEAR_COUNT_NAME) as string;
-  const trait = formData.get(ITEM_TRAIT_NAME) as string;
   const notes = formData.get(NOTES_NAME) as string;
+  const rating = formData.get(RATING_NAME) as string;
   const isSecondHand = formData.get(SECOND_HAND_NAME) === "on";
   const isDogCasual = formData.get(DOG_CASUAL_NAME) === "on";
   const isHandmade = formData.get(HANDMADE_NAME) === "on";
@@ -101,7 +101,9 @@ export async function clientAction({ request }: ActionFunctionArgs) {
       isSecondHand,
       isDogCasual,
       isHandmade,
-      trait: trait === "none" || !trait ? undefined : (trait as ItemTrait),
+      rating: rating
+        ? (Number.parseInt(rating, 10) as OutfitRating)
+        : undefined,
       purchaseDate: purchaseDate ? new Date(purchaseDate) : undefined,
       initialWearCount: initialCount,
       embedding,
@@ -206,13 +208,6 @@ export function AddItemPage() {
           />
         </Flex>
 
-        <SelectInput
-          label="Item Trait"
-          name={ITEM_TRAIT_NAME}
-          options={TRAIT_OPTIONS}
-          defaultValue="none"
-        />
-
         <Flex direction="column" gap="1">
           <Text as="label" size="2" weight="bold">
             Notes
@@ -231,6 +226,13 @@ export function AddItemPage() {
         <CheckboxField name="isDogCasual" label="Dog casual" />
 
         <CheckboxField name="isHandmade" label="Handmade" />
+
+        <Flex direction="column" gap="2">
+          <Text size="2" weight="bold">
+            Rating
+          </Text>
+          <RatingButtons name={RATING_NAME} />
+        </Flex>
 
         {actionData?.error && (
           <Callout.Root color="red" size="1">

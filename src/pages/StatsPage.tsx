@@ -1,10 +1,8 @@
-import { Text, Heading, Card } from "@radix-ui/themes";
+import { Text, Heading } from "@radix-ui/themes";
 import { useMemo } from "react";
 import { useLoaderData } from "react-router";
 import { loadItems } from "../utils/storage";
-import { getTraitEmoji, getTraitLabel } from "../utils/traits";
 import { calculateFullStats } from "../utils/statsCalculations";
-import type { ItemTrait } from "../types/wardrobe";
 import styles from "./StatsPage.module.css";
 import { StatsCard } from "../components/common/StatsCard";
 
@@ -60,49 +58,6 @@ export function StatsPage() {
             Personal Style Insights
           </Heading>
 
-          <div className={styles.subsection}>
-            <Text size="3" weight="medium" className={styles.subsectionTitle}>
-              Trait Distribution
-            </Text>
-            <div className={styles.traitGrid}>
-              {(["comfort", "confidence", "creative"] as ItemTrait[]).map(
-                (trait) => {
-                  const data = stats.traitWears[trait] || {
-                    count: 0,
-                    wears: 0,
-                  };
-                  return (
-                    <Card key={trait} className={styles.traitCard}>
-                      <div className={styles.traitHeader}>
-                        <Text size="5">{getTraitEmoji(trait)}</Text>
-                        <Text size="2" weight="medium">
-                          {getTraitLabel(trait)}
-                        </Text>
-                      </div>
-                      <div className={styles.traitStats}>
-                        <div>
-                          <Text size="6" weight="bold">
-                            {data.count}
-                          </Text>
-                          <Text size="1" color="gray">
-                            items
-                          </Text>
-                        </div>
-                        <div>
-                          <Text size="6" weight="bold">
-                            {data.wears}
-                          </Text>
-                          <Text size="1" color="gray">
-                            wears
-                          </Text>
-                        </div>
-                      </div>
-                    </Card>
-                  );
-                }
-              )}
-            </div>
-          </div>
 
           <div className={styles.subsection}>
             <Text size="3" weight="medium" className={styles.subsectionTitle}>

@@ -1,4 +1,4 @@
-import { Text, Tabs, Flex, Box } from "@radix-ui/themes";
+import { Text, Tabs, Flex } from "@radix-ui/themes";
 import { useLoaderData } from "react-router";
 import { useMemo } from "react";
 import { ItemCard } from "../components/common/ItemCard";

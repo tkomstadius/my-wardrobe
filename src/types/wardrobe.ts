@@ -1,3 +1,5 @@
+import type { OutfitRating } from "./outfit";
+
 export type ItemCategory =
   | "tops"
   | "bottoms"
@@ -8,7 +10,6 @@ export type ItemCategory =
   | "bags"
   | "jewelry";
 
-export type ItemTrait = "comfort" | "confidence" | "creative";
 
 // Subcategory is kept as string for backward compatibility with existing data
 // but should ideally match one of the predefined subcategories for the category
@@ -26,7 +27,7 @@ export type WardrobeItem = {
   isSecondHand?: boolean;
   isDogCasual?: boolean;
   isHandmade?: boolean;
-  trait?: ItemTrait; // What vibe does this item give? (comfort, confidence, creative)
+  rating?: OutfitRating; // Overall rating (1 = good, 0 = meh, -1 = nope)
   purchaseDate?: Date;
   createdAt: Date;
   updatedAt: Date;

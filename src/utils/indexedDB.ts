@@ -1,8 +1,8 @@
 // IndexedDB wrapper for wardrobe storage
 
 import { openDB, type IDBPDatabase } from "idb";
-import type { ItemCategory, ItemTrait, WardrobeItem } from "../types/wardrobe";
-import type { Outfit } from "../types/outfit";
+import type { ItemCategory, WardrobeItem } from "../types/wardrobe";
+import type { Outfit, OutfitRating } from "../types/outfit";
 
 const DB_NAME = "MyWardrobeDB";
 const DB_VERSION = 4; // Updated to match aiLearning.ts
@@ -133,7 +133,7 @@ interface DBItem {
   isSecondHand?: boolean;
   isDogCasual?: boolean;
   isHandmade?: boolean;
-  trait?: string;
+  rating?: number; // 1 = good, 0 = meh, -1 = nope
   purchaseDate?: string; // ISO string
   createdAt: string; // ISO string
   updatedAt: string; // ISO string
@@ -169,7 +169,10 @@ async function dbItemToWardrobeItem(dbItem: DBItem): Promise<WardrobeItem> {
     isSecondHand: dbItem.isSecondHand,
     isDogCasual: dbItem.isDogCasual,
     isHandmade: dbItem.isHandmade,
-    trait: dbItem.trait as ItemTrait | undefined,
+    rating:
+      dbItem.rating === 1 || dbItem.rating === 0 || dbItem.rating === -1
+        ? dbItem.rating
+        : undefined,
     purchaseDate: dbItem.purchaseDate
       ? new Date(dbItem.purchaseDate)
       : undefined,
@@ -200,7 +203,7 @@ export async function saveItem(item: WardrobeItem): Promise<void> {
     isSecondHand: item.isSecondHand,
     isDogCasual: item.isDogCasual,
     isHandmade: item.isHandmade,
-    trait: item.trait,
+    rating: item.rating,
     purchaseDate: item.purchaseDate?.toISOString(),
     createdAt: item.createdAt.toISOString(),
     updatedAt: item.updatedAt.toISOString(),
@@ -224,6 +227,26 @@ export async function loadAllItems(): Promise<Array<WardrobeItem>> {
     dbItems.map((dbItem) => dbItemToWardrobeItem(dbItem))
   );
 
+  // Clean up old trait data: if dbItem has trait field (from old data), remove it
+  const itemsToClean = dbItems.filter(
+    (dbItem) => "trait" in dbItem && dbItem.trait !== undefined
+  );
+
+  // Save cleaned items back to database (without trait)
+  if (itemsToClean.length > 0) {
+    const cleanedItems = await Promise.all(
+      itemsToClean.map(async (dbItem) => {
+        const item = await dbItemToWardrobeItem(dbItem);
+        return {
+          ...item,
+          updatedAt: new Date(),
+        };
+      })
+    );
+
+    await Promise.all(cleanedItems.map((item) => saveItem(item)));
+  }
+
   return items;
 }
 
@@ -238,8 +261,20 @@ export async function loadItemById(id: string): Promise<WardrobeItem | null> {
     return null;
   }
 
-  // Convert database item to WardrobeItem format
-  return await dbItemToWardrobeItem(dbItem);
+  const item = await dbItemToWardrobeItem(dbItem);
+
+  // Clean up old trait data: if dbItem has trait field (from old data), remove it
+  if ("trait" in dbItem && dbItem.trait !== undefined) {
+    const cleanedItem = {
+      ...item,
+      updatedAt: new Date(),
+    };
+    // Save cleaned item back to database (without trait)
+    await saveItem(cleanedItem);
+    return cleanedItem;
+  }
+
+  return item;
 }
 
 // Delete an item from IndexedDB
@@ -284,6 +319,12 @@ export async function getStorageEstimate(): Promise<{
 
 // Helper function to convert database outfit format to Outfit
 async function dbOutfitToOutfit(dbOutfit: DBOutfit): Promise<Outfit> {
+  // Validate rating is a valid OutfitRating (1, 0, or -1)
+  const rating: OutfitRating | undefined =
+    dbOutfit.rating === 1 || dbOutfit.rating === 0 || dbOutfit.rating === -1
+      ? dbOutfit.rating
+      : undefined;
+
   return {
     id: dbOutfit.id,
     photo: dbOutfit.photoBlob
@@ -291,7 +332,7 @@ async function dbOutfitToOutfit(dbOutfit: DBOutfit): Promise<Outfit> {
       : undefined,
     itemIds: dbOutfit.itemIds,
     notes: dbOutfit.notes,
-    rating: dbOutfit.rating,
+    rating,
     createdAt: new Date(dbOutfit.createdAt),
     updatedAt: new Date(dbOutfit.updatedAt),
   };
@@ -329,6 +370,36 @@ export async function loadAllOutfits(): Promise<Outfit[]> {
     dbOutfits.map((dbOutfit) => dbOutfitToOutfit(dbOutfit))
   );
 
+  // Clean up invalid ratings: if rating exists but is not 1, 0, or -1, remove it
+  const outfitsToClean = outfits.filter(
+    (outfit) =>
+      outfit.rating !== undefined &&
+      outfit.rating !== 1 &&
+      outfit.rating !== 0 &&
+      outfit.rating !== -1
+  );
+
+  // Save cleaned outfits back to database (without invalid ratings)
+  if (outfitsToClean.length > 0) {
+    const cleanedOutfits = outfitsToClean.map((outfit) => ({
+      ...outfit,
+      rating: undefined,
+      updatedAt: new Date(),
+    }));
+
+    await Promise.all(cleanedOutfits.map((outfit) => saveOutfit(outfit)));
+
+    // Update the outfits array with cleaned ratings
+    return outfits.map((outfit) => {
+      const needsCleaning =
+        outfit.rating !== undefined &&
+        outfit.rating !== 1 &&
+        outfit.rating !== 0 &&
+        outfit.rating !== -1;
+      return needsCleaning ? { ...outfit, rating: undefined } : outfit;
+    });
+  }
+
   return outfits;
 }
 
@@ -343,8 +414,26 @@ export async function loadOutfitById(id: string): Promise<Outfit | null> {
     return null;
   }
 
-  // Convert database outfit to Outfit format
-  return await dbOutfitToOutfit(dbOutfit);
+  const outfit = await dbOutfitToOutfit(dbOutfit);
+
+  // Clean up invalid rating: if rating exists but is not 1, 0, or -1, remove it
+  if (
+    outfit.rating !== undefined &&
+    outfit.rating !== 1 &&
+    outfit.rating !== 0 &&
+    outfit.rating !== -1
+  ) {
+    const cleanedOutfit = {
+      ...outfit,
+      rating: undefined,
+      updatedAt: new Date(),
+    };
+    // Save cleaned outfit back to database
+    await saveOutfit(cleanedOutfit);
+    return cleanedOutfit;
+  }
+
+  return outfit;
 }
 
 // Delete an outfit from IndexedDB

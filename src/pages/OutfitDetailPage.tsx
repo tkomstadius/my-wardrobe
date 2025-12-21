@@ -6,9 +6,9 @@ import { useOutfit } from "../contexts/OutfitContext";
 import { useWardrobe } from "../contexts/WardrobeContext";
 import { DeleteConfirmDialog } from "../components/common/DeleteConfirmDialog";
 import { formatDate } from "../utils/dateFormatter";
-import { getTraitEmoji, getTraitLabel } from "../utils/traits";
 import styles from "./OutfitDetailPage.module.css";
 import { BackLink } from "../components/common/BackLink";
+import { RATING_OPTIONS } from "../components/common/form/constants";
 
 export function OutfitDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -33,19 +33,6 @@ export function OutfitDetailPage() {
   const outfitItems = outfit.itemIds
     .map((itemId) => getItemById(itemId))
     .filter((item): item is NonNullable<typeof item> => item !== undefined);
-
-  // Calculate trait summary
-  const traitCounts = {
-    comfort: outfitItems.filter((item) => item.trait === "comfort").length,
-    confidence: outfitItems.filter((item) => item.trait === "confidence")
-      .length,
-    creative: outfitItems.filter((item) => item.trait === "creative").length,
-  };
-  const totalItems = outfitItems.length;
-  const hasTraits =
-    traitCounts.comfort > 0 ||
-    traitCounts.confidence > 0 ||
-    traitCounts.creative > 0;
 
   const handleDelete = async () => {
     setIsDeleting(true);
@@ -113,50 +100,12 @@ export function OutfitDetailPage() {
                 Rating
               </Text>
               <Text size="4" weight="bold" color="blue">
-                {outfit.rating}/5
+                {
+                  RATING_OPTIONS.find(
+                    (rating) => rating.value === outfit.rating
+                  )?.emoji
+                }
               </Text>
-            </div>
-          )}
-
-          {/* Trait Summary */}
-          {hasTraits && (
-            <div className={styles.traitSummary}>
-              <Text size="2" color="gray" weight="medium">
-                Outfit Vibe
-              </Text>
-              <div className={styles.traitCounts}>
-                {traitCounts.comfort > 0 && (
-                  <div className={styles.traitItem}>
-                    <Text size="2" color="purple" weight="bold">
-                      {getTraitEmoji("comfort")} {getTraitLabel("comfort")}
-                    </Text>
-                    <Text size="2" color="gray">
-                      {traitCounts.comfort}/{totalItems} items
-                    </Text>
-                  </div>
-                )}
-                {traitCounts.confidence > 0 && (
-                  <div className={styles.traitItem}>
-                    <Text size="2" color="orange" weight="bold">
-                      {getTraitEmoji("confidence")}{" "}
-                      {getTraitLabel("confidence")}
-                    </Text>
-                    <Text size="2" color="gray">
-                      {traitCounts.confidence}/{totalItems} items
-                    </Text>
-                  </div>
-                )}
-                {traitCounts.creative > 0 && (
-                  <div className={styles.traitItem}>
-                    <Text size="2" color="pink" weight="bold">
-                      {getTraitEmoji("creative")} {getTraitLabel("creative")}
-                    </Text>
-                    <Text size="2" color="gray">
-                      {traitCounts.creative}/{totalItems} items
-                    </Text>
-                  </div>
-                )}
-              </div>
             </div>
           )}
         </section>
