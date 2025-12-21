@@ -94,7 +94,7 @@ export function OutfitDetailPage() {
           )}
 
           {/* Ratings */}
-          {outfit.rating && (
+          {outfit.rating != undefined && (
             <div className={styles.rating}>
               <Text size="2" color="gray">
                 Rating

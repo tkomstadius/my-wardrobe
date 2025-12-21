@@ -1,6 +1,6 @@
 import { Text, Tabs, Flex } from "@radix-ui/themes";
 import { useLoaderData } from "react-router";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ItemCard } from "../components/common/ItemCard";
 import { getDaysAgo } from "../utils/dateFormatter";
 import { loadItems } from "../utils/storage";
@@ -17,6 +17,10 @@ import {
 import styles from "./HomePage.module.css";
 import { StatsCard } from "../components/common/StatsCard";
 import { CategoryItemsAccordion } from "../components/common/CategoryItemsAccordion";
+import { OutfitRatingPrompt } from "../components/common/OutfitRatingPrompt";
+import { useOutfit } from "../contexts/OutfitContext";
+import { shouldShowRatingPrompt } from "../utils/outfitRatingPrompt";
+import type { OutfitRating } from "../types/outfit";
 
 export async function loader() {
   const items = await loadItems();
@@ -36,7 +40,12 @@ export async function loader() {
 
 export function HomePage() {
   const { items, weatherData } = useLoaderData<typeof loader>();
+  const { outfits, updateOutfit } = useOutfit();
   const hasItems = items.length > 0;
+  const [showRatingPrompt, setShowRatingPrompt] = useState(false);
+  const [outfitToRate, setOutfitToRate] = useState<
+    import("../types/outfit").Outfit | undefined
+  >(undefined);
 
   const todayItems = useMemo(() => getItemsWornToday(items), [items]);
   const weekItems = useMemo(
@@ -50,112 +59,144 @@ export function HomePage() {
 
   const quickStats = useMemo(() => calculateQuickStats(items), [items]);
 
+  // Check if rating prompt should be shown
+  useEffect(() => {
+    if (outfits.length === 0) return;
+
+    const { shouldShow, outfit } = shouldShowRatingPrompt(outfits);
+    if (shouldShow && outfit) {
+      setOutfitToRate(outfit);
+      setShowRatingPrompt(true);
+    }
+  }, [outfits]);
+
+  const handleRateOutfit = async (outfitId: string, rating: OutfitRating) => {
+    await updateOutfit(outfitId, { rating });
+  };
+
+  const handleDismissRating = () => {
+    setShowRatingPrompt(false);
+    setOutfitToRate(undefined);
+  };
+
   return (
-    <Flex direction="column" gap="4">
-      {!hasItems ? (
-        <Text size="2" className={styles.info}>
-          No items yet. Add your first wardrobe item to get started!
-        </Text>
-      ) : (
-        <>
-          <Flex justify="between" align="center">
-            <Text size="2" className={styles.info}>
-              {items.length} {items.length === 1 ? "item" : "items"} total
-            </Text>
-            <Flex gap="2">
-              <Text size="2" className={styles.info}>
-                Temp: {weatherData.actualTemp}
-              </Text>
-              <Text size="2" className={styles.info}>
-                Feels: {weatherData.feelsLikeTemp}
-              </Text>
-              <Text size="2" className={styles.info}>
-                Rain: {weatherData.precipitation}
-              </Text>
-            </Flex>
-          </Flex>
-
-          <Flex direction="column" gap="4">
-            <section>
-              <div className={styles.quickStatsGrid}>
-                <StatsCard title="Total Items" value={quickStats.totalWears} />
-                <StatsCard
-                  title="Avg per Item"
-                  value={quickStats.averageWears.toFixed(1)}
-                />
-                {quickStats.avgCostPerWear !== null && (
-                  <StatsCard
-                    title="Avg Cost/Wear"
-                    value={quickStats.avgCostPerWear.toFixed(2)}
-                  />
-                )}
-              </div>
-            </section>
-
-            <Tabs.Root defaultValue="today">
-              <Tabs.List className={styles.tabsList}>
-                <Tabs.Trigger value="today" className={styles.tabTrigger}>
-                  Today
-                </Tabs.Trigger>
-                <Tabs.Trigger value="week" className={styles.tabTrigger}>
-                  This Week
-                </Tabs.Trigger>
-                <Tabs.Trigger value="neglected" className={styles.tabTrigger}>
-                  Neglected
-                </Tabs.Trigger>
-              </Tabs.List>
-
-              <Tabs.Content value="today" className={styles.tabContent}>
-                {todayItems.length === 0 ? (
-                  <div className={styles.emptySection}>
-                    <Text size="1" as="p">
-                      No items worn today yet.
-                    </Text>
-                    <Text size="1" as="p">
-                      Mark items as worn to track what you're wearing!
-                    </Text>
-                  </div>
-                ) : (
-                  <Flex direction="column" gap="2">
-                    {todayItems.map((item) => (
-                      <ItemCard item={item} key={item.id} />
-                    ))}
-                  </Flex>
-                )}
-              </Tabs.Content>
-
-              <Tabs.Content value="week" className={styles.tabContent}>
-                {weekItems.length === 0 ? (
-                  <div className={styles.emptySection}>
-                    <Text size="1" as="p">
-                      No items worn in the last 7 days.
-                    </Text>
-                    <Text size="1" as="p">
-                      Mark items as worn to track your wardrobe usage!
-                    </Text>
-                  </div>
-                ) : (
-                  <CategoryItemsAccordion
-                    items={weekItems.map((entry) => entry.item)}
-                  />
-                )}
-              </Tabs.Content>
-
-              <Tabs.Content value="neglected" className={styles.tabContent}>
-                {neglectedItems.length === 0 ? (
-                  <div className={styles.emptySection}>
-                    <Text size="2" color="gray">
-                      Great job! All your items have been worn recently.
-                    </Text>
-                  </div>
-                ) : (
-                  <CategoryItemsAccordion items={neglectedItems} />
-                )}
-              </Tabs.Content>
-            </Tabs.Root>
-          </Flex>
-        </>
+    <>
+      {showRatingPrompt && outfitToRate && (
+        <OutfitRatingPrompt
+          outfit={outfitToRate}
+          onRate={handleRateOutfit}
+          onDismiss={handleDismissRating}
+        />
       )}
-    </Flex>
+      <Flex direction="column" gap="4">
+        {!hasItems ? (
+          <Text size="2" className={styles.info}>
+            No items yet. Add your first wardrobe item to get started!
+          </Text>
+        ) : (
+          <>
+            <Flex justify="between" align="center">
+              <Text size="2" className={styles.info}>
+                {items.length} {items.length === 1 ? "item" : "items"} total
+              </Text>
+              <Flex gap="2">
+                <Text size="2" className={styles.info}>
+                  Temp: {weatherData.actualTemp}
+                </Text>
+                <Text size="2" className={styles.info}>
+                  Feels: {weatherData.feelsLikeTemp}
+                </Text>
+                <Text size="2" className={styles.info}>
+                  Rain: {weatherData.precipitation}
+                </Text>
+              </Flex>
+            </Flex>
+
+            <Flex direction="column" gap="4">
+              <section>
+                <div className={styles.quickStatsGrid}>
+                  <StatsCard
+                    title="Total Items"
+                    value={quickStats.totalWears}
+                  />
+                  <StatsCard
+                    title="Avg per Item"
+                    value={quickStats.averageWears.toFixed(1)}
+                  />
+                  {quickStats.avgCostPerWear !== null && (
+                    <StatsCard
+                      title="Avg Cost/Wear"
+                      value={quickStats.avgCostPerWear.toFixed(2)}
+                    />
+                  )}
+                </div>
+              </section>
+
+              <Tabs.Root defaultValue="today">
+                <Tabs.List className={styles.tabsList}>
+                  <Tabs.Trigger value="today" className={styles.tabTrigger}>
+                    Today
+                  </Tabs.Trigger>
+                  <Tabs.Trigger value="week" className={styles.tabTrigger}>
+                    This Week
+                  </Tabs.Trigger>
+                  <Tabs.Trigger value="neglected" className={styles.tabTrigger}>
+                    Neglected
+                  </Tabs.Trigger>
+                </Tabs.List>
+
+                <Tabs.Content value="today" className={styles.tabContent}>
+                  {todayItems.length === 0 ? (
+                    <div className={styles.emptySection}>
+                      <Text size="1" as="p">
+                        No items worn today yet.
+                      </Text>
+                      <Text size="1" as="p">
+                        Mark items as worn to track what you're wearing!
+                      </Text>
+                    </div>
+                  ) : (
+                    <Flex direction="column" gap="2">
+                      {todayItems.map((item) => (
+                        <ItemCard item={item} key={item.id} />
+                      ))}
+                    </Flex>
+                  )}
+                </Tabs.Content>
+
+                <Tabs.Content value="week" className={styles.tabContent}>
+                  {weekItems.length === 0 ? (
+                    <div className={styles.emptySection}>
+                      <Text size="1" as="p">
+                        No items worn in the last 7 days.
+                      </Text>
+                      <Text size="1" as="p">
+                        Mark items as worn to track your wardrobe usage!
+                      </Text>
+                    </div>
+                  ) : (
+                    <CategoryItemsAccordion
+                      items={weekItems.map((entry) => entry.item)}
+                    />
+                  )}
+                </Tabs.Content>
+
+                <Tabs.Content value="neglected" className={styles.tabContent}>
+                  {neglectedItems.length === 0 ? (
+                    <div className={styles.emptySection}>
+                      <Text size="2" color="gray">
+                        Great job! All your items have been worn recently.
+                      </Text>
+                    </div>
+                  ) : (
+                    <CategoryItemsAccordion items={neglectedItems} />
+                  )}
+                </Tabs.Content>
+              </Tabs.Root>
+            </Flex>
+          </>
+        )}
+      </Flex>
+    </>
   );
 }

@@ -1,11 +1,19 @@
 import { CameraIcon } from "@radix-ui/react-icons";
-import { Button, Callout, Heading, Text, Tabs } from "@radix-ui/themes";
+import {
+  Button,
+  Callout,
+  Dialog,
+  Flex,
+  Heading,
+  Spinner,
+  Text,
+  Tabs,
+} from "@radix-ui/themes";
 import { differenceInDays } from "date-fns";
-import { useOptimistic, useRef, useState } from "react";
-import ReactCrop, { type Crop, type PixelCrop } from "react-image-crop";
+import { useOptimistic, useState } from "react";
 import { useNavigate } from "react-router";
-import "react-image-crop/dist/ReactCrop.css";
 import { ItemSelector } from "../components/common/ItemSelector";
+import { useOutfit } from "../contexts/OutfitContext";
 import { useWardrobe } from "../contexts/WardrobeContext";
 import { useImageUpload } from "../hooks/useImageUpload";
 import {
@@ -15,12 +23,12 @@ import {
   updatePreferencesFromFeedback,
 } from "../utils/aiLearning";
 import { findMatchingItems, type ItemMatch } from "../utils/aiMatching";
-import { getCroppedImage } from "../utils/imageCrop";
 import styles from "./LogWearPage.module.css";
 
 export function LogWearPage() {
   const navigate = useNavigate();
   const { items, incrementWearCount } = useWardrobe();
+  const { addOutfit } = useOutfit();
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
   const [error, setError] = useState<string>("");
   const [isAIMode, setIsAIMode] = useState(true);
@@ -37,20 +45,11 @@ export function LogWearPage() {
     medium: false,
     low: false,
   });
-  const { imagePreview, handleImageUpload, clearImage } = useImageUpload();
-
-  // Cropping state
-  const [showCropper, setShowCropper] = useState(false);
-  const [crop, setCrop] = useState<Crop>({
-    unit: "%",
-    x: 10,
-    y: 10,
-    width: 80,
-    height: 80,
-  });
-  const [completedCrop, setCompletedCrop] = useState<PixelCrop | null>(null);
-  const [croppedImage, setCroppedImage] = useState<string | null>(null);
-  const imgRef = useRef<HTMLImageElement | null>(null);
+  const { imagePreview, handleImageUpload, clearImage, isUploading } =
+    useImageUpload();
+  const [showSaveOutfitDialog, setShowSaveOutfitDialog] = useState(false);
+  const [loggedItemIds, setLoggedItemIds] = useState<string[]>([]);
+  const [isSavingOutfit, setIsSavingOutfit] = useState(false);
 
   // useOptimistic: Track items that are being logged optimistically
   // This lets us show instant UI feedback while the database updates happen
@@ -101,7 +100,7 @@ export function LogWearPage() {
         const feedback: MatchFeedback = {
           id: `${Date.now()}-${itemId}`,
           timestamp: new Date(),
-          outfitPhotoHash: hashImageData(croppedImage || imagePreview),
+          outfitPhotoHash: hashImageData(imagePreview),
           suggestedItemId: itemId,
           baseSimilarity: match.baseSimilarity,
           boostedSimilarity: match.similarity,
@@ -151,7 +150,7 @@ export function LogWearPage() {
         const feedback: MatchFeedback = {
           id: `${Date.now()}-${itemId}`,
           timestamp: new Date(),
-          outfitPhotoHash: hashImageData(croppedImage || imagePreview),
+          outfitPhotoHash: hashImageData(imagePreview),
           suggestedItemId: itemId,
           baseSimilarity: match.baseSimilarity,
           boostedSimilarity: match.similarity,
@@ -180,45 +179,14 @@ export function LogWearPage() {
     }
   };
 
-  const handleCropConfirm = async () => {
-    if (!imagePreview || !completedCrop || !imgRef.current) return;
-
-    try {
-      const cropped = await getCroppedImage(
-        imagePreview,
-        completedCrop,
-        imgRef.current
-      );
-      setCroppedImage(cropped);
-      setShowCropper(false);
-    } catch (error) {
-      console.error("Failed to crop image:", error);
-      setError("Failed to crop image. Please try again.");
-    }
-  };
-
-  const handleCropCancel = () => {
-    setShowCropper(false);
-    setCrop({
-      unit: "%",
-      x: 10,
-      y: 10,
-      width: 80,
-      height: 80,
-    });
-    setCompletedCrop(null);
-  };
-
   const handleAnalyzeOutfit = async () => {
-    // Use cropped image if available, otherwise original
-    const imageToAnalyze = croppedImage || imagePreview;
-    if (!imageToAnalyze) return;
+    if (!imagePreview) return;
 
     setIsAnalyzing(true);
     setError("");
 
     try {
-      const matches = await findMatchingItems(imageToAnalyze, items, {
+      const matches = await findMatchingItems(imagePreview, items, {
         minThreshold: 0.6, // Higher threshold for better quality
         maxPerConfidence: {
           high: 10, // Show top 10 high confidence
@@ -272,9 +240,14 @@ export function LogWearPage() {
         // Don't block user flow on learning errors
       });
 
-      // Success! Navigate back to home
-      // The optimistic state is no longer needed - items are truly saved
-      navigate("/");
+      // If there's a photo, offer to save as outfit
+      if (imagePreview) {
+        setLoggedItemIds(itemsToLog);
+        setShowSaveOutfitDialog(true);
+      } else {
+        // No photo, navigate back to home
+        navigate("/");
+      }
     } catch (err) {
       console.error("Failed to log wear:", err);
 
@@ -285,6 +258,31 @@ export function LogWearPage() {
       // Re-select the items that failed so user can retry
       setSelectedItems(new Set(itemsToLog));
     }
+  };
+
+  const handleSaveOutfit = async () => {
+    if (loggedItemIds.length === 0 || !imagePreview) return;
+
+    setIsSavingOutfit(true);
+    try {
+      await addOutfit({
+        photo: imagePreview,
+        itemIds: loggedItemIds,
+        createdAt: new Date(),
+      });
+      setShowSaveOutfitDialog(false);
+      navigate("/outfits");
+    } catch (error) {
+      console.error("Failed to save outfit:", error);
+      setError("Failed to save outfit. Please try again.");
+    } finally {
+      setIsSavingOutfit(false);
+    }
+  };
+
+  const handleSkipSaveOutfit = () => {
+    setShowSaveOutfitDialog(false);
+    navigate("/");
   };
 
   const isPending = optimisticLoggedItems.size > 0;
@@ -347,61 +345,41 @@ export function LogWearPage() {
 
           {!imagePreview ? (
             <div className={styles.uploadButtons}>
-              <Button
-                size="3"
-                onClick={() =>
-                  document.getElementById("outfit-upload")?.click()
-                }
-              >
-                <CameraIcon /> Upload Photo
-              </Button>
+              {isUploading ? (
+                <Flex direction="column" align="center" gap="3">
+                  <Spinner size="3" />
+                  <Text size="2" color="gray">
+                    Processing photo...
+                  </Text>
+                </Flex>
+              ) : (
+                <Button
+                  size="3"
+                  onClick={() =>
+                    document.getElementById("outfit-upload")?.click()
+                  }
+                >
+                  <CameraIcon /> Upload Photo
+                </Button>
+              )}
               <input
                 id="outfit-upload"
                 type="file"
                 accept="image/*"
                 onChange={handleImageUpload}
+                disabled={isUploading}
                 style={{ display: "none" }}
               />
-            </div>
-          ) : showCropper ? (
-            <div className={styles.cropperContainer}>
-              <ReactCrop
-                crop={crop}
-                onChange={(c) => setCrop(c)}
-                onComplete={(c) => setCompletedCrop(c)}
-                className={styles.cropperWrapper}
-              >
-                <img
-                  ref={imgRef}
-                  src={imagePreview}
-                  alt="Crop preview"
-                  style={{ maxWidth: "100%" }}
-                />
-              </ReactCrop>
-              <div className={styles.cropperActions}>
-                <Button variant="soft" color="gray" onClick={handleCropCancel}>
-                  Cancel
-                </Button>
-                <Button onClick={handleCropConfirm}>Confirm Crop</Button>
-              </div>
             </div>
           ) : (
             <div className={styles.photoPreview}>
               <div className={styles.imageContainer}>
-                <img src={croppedImage || imagePreview} alt="Outfit" />
-                <button
-                  type="button"
-                  className={styles.cropButton}
-                  onClick={() => {
-                    if (croppedImage) {
-                      setCroppedImage(null);
-                    }
-                    setShowCropper(true);
-                  }}
-                  title={croppedImage ? "Adjust Crop" : "Crop Photo"}
-                >
-                  ✂️
-                </button>
+                <img src={imagePreview} alt="Outfit" />
+                {isUploading && (
+                  <div className={styles.loadingOverlay}>
+                    <Spinner size="3" />
+                  </div>
+                )}
               </div>
               <div className={styles.photoActions}>
                 <Button
@@ -409,7 +387,6 @@ export function LogWearPage() {
                   color="red"
                   onClick={() => {
                     clearImage();
-                    setCroppedImage(null);
                     setAIMatches([]);
                   }}
                 >
@@ -546,6 +523,53 @@ export function LogWearPage() {
                           })}
                         </div>
                       )}
+
+                      {/* Save Outfit Dialog */}
+                      <Dialog.Root
+                        open={showSaveOutfitDialog}
+                        onOpenChange={setShowSaveOutfitDialog}
+                      >
+                        <Dialog.Content maxWidth="450px">
+                          <Dialog.Title>Save Outfit Photo?</Dialog.Title>
+                          <Dialog.Description size="2">
+                            Would you like to save this outfit photo to your
+                            outfits collection?
+                          </Dialog.Description>
+                          {imagePreview && (
+                            <Flex justify="center" my="4">
+                              <img
+                                src={imagePreview}
+                                alt="Outfit preview"
+                                style={{
+                                  maxWidth: "100%",
+                                  maxHeight: "200px",
+                                  borderRadius: "var(--radius-3)",
+                                  objectFit: "contain",
+                                }}
+                              />
+                            </Flex>
+                          )}
+                          <Flex gap="3" mt="4" justify="end">
+                            <Dialog.Close>
+                              <Button
+                                variant="soft"
+                                color="gray"
+                                onClick={handleSkipSaveOutfit}
+                                disabled={isSavingOutfit}
+                              >
+                                Skip
+                              </Button>
+                            </Dialog.Close>
+                            <Button
+                              variant="solid"
+                              onClick={handleSaveOutfit}
+                              disabled={isSavingOutfit}
+                            >
+                              {isSavingOutfit ? "Saving..." : "Save Outfit"}
+                            </Button>
+                          </Flex>
+                        </Dialog.Content>
+                      </Dialog.Root>
                     </div>
                   );
                 })}
