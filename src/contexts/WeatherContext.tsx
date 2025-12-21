@@ -32,43 +32,6 @@ interface WeatherProviderProps {
 const DEFAULT_LATITUDE = 59.3294;
 const DEFAULT_LONGITUDE = 18.0687;
 
-// Cache weather data for 24 hours
-const WEATHER_CACHE_DURATION = 24 * 60 * 60 * 1000;
-const WEATHER_CACHE_KEY = "wardrobe_weather_cache";
-
-function getCachedWeather(): WeatherData | null {
-  try {
-    const cached = localStorage.getItem(WEATHER_CACHE_KEY);
-    if (!cached) return null;
-
-    const parsed = JSON.parse(cached);
-    const cachedData: WeatherData = {
-      ...parsed,
-      timestamp: new Date(parsed.timestamp),
-    };
-
-    // Check if cache is still valid (less than 24 hours old)
-    const age = Date.now() - cachedData.timestamp.getTime();
-    if (age < WEATHER_CACHE_DURATION) {
-      return cachedData;
-    }
-
-    // Cache expired, remove it
-    localStorage.removeItem(WEATHER_CACHE_KEY);
-    return null;
-  } catch {
-    return null;
-  }
-}
-
-function setCachedWeather(data: WeatherData): void {
-  try {
-    localStorage.setItem(WEATHER_CACHE_KEY, JSON.stringify(data));
-  } catch (error) {
-    console.error("Failed to cache weather data:", error);
-  }
-}
-
 async function fetchWeatherData(): Promise<WeatherData> {
   const response = await fetch(
     `https://api.open-meteo.com/v1/forecast?latitude=${DEFAULT_LATITUDE}&longitude=${DEFAULT_LONGITUDE}&current=temperature_2m,apparent_temperature,precipitation&forecast_days=1`
@@ -81,9 +44,9 @@ async function fetchWeatherData(): Promise<WeatherData> {
   const weatherJson = await response.json();
 
   return {
-    actualTemp: `${weatherJson.current.temperature_2m}°C`,
-    feelsLikeTemp: `${weatherJson.current.apparent_temperature}°C`,
-    precipitation: `${weatherJson.current.precipitation}mm`,
+    actualTemp: `${weatherJson.current.temperature_2m}${weatherJson.current.temperature_unit}`,
+    feelsLikeTemp: `${weatherJson.current.apparent_temperature}${weatherJson.current.temperature_unit}`,
+    precipitation: `${weatherJson.current.precipitation}${weatherJson.current.precipitation_unit}`,
     timestamp: new Date(),
   };
 }
@@ -99,7 +62,6 @@ export function WeatherProvider({ children }: WeatherProviderProps) {
     try {
       const data = await fetchWeatherData();
       setWeatherData(data);
-      setCachedWeather(data);
     } catch (err) {
       console.error("Failed to fetch weather:", err);
       setError("Failed to load weather data");
@@ -108,17 +70,8 @@ export function WeatherProvider({ children }: WeatherProviderProps) {
     }
   };
 
-  // Fetch weather on mount, using cache if available
   useEffect(() => {
-    const cached = getCachedWeather();
-    if (cached) {
-      // Use cached data immediately
-      setWeatherData(cached);
-      setIsLoading(false);
-    } else {
-      // No valid cache, fetch fresh data
-      refreshWeather();
-    }
+    refreshWeather();
   }, []);
 
   const value: WeatherContextValue = {
@@ -140,4 +93,3 @@ export function useWeather(): WeatherContextValue {
   }
   return context;
 }
-
