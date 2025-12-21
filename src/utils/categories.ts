@@ -1,6 +1,5 @@
 import type { ItemCategory } from "../types/wardrobe";
 
-// Single source of truth for category definitions
 export const CATEGORIES = [
   { id: "tops" as const, title: "Tops" },
   { id: "bottoms" as const, title: "Bottoms" },
@@ -12,7 +11,6 @@ export const CATEGORIES = [
   { id: "accessories" as const, title: "Accessories" },
 ] as const;
 
-// Extract just the category IDs for validation
 export const CATEGORY_IDS = CATEGORIES.map((cat) => cat.id) as ItemCategory[];
 
 // Create title lookup object for backwards compatibility
@@ -20,15 +18,17 @@ export const CATEGORY_TITLES: Record<ItemCategory, string> = Object.fromEntries(
   CATEGORIES.map((cat) => [cat.id, cat.title])
 ) as Record<ItemCategory, string>;
 
-// Subcategories per category
 export const SUBCATEGORIES: Record<ItemCategory, readonly string[]> = {
   tops: [
     "T-Shirt",
+    "Tank top",
+    "Long sleeve",
     "Shirt",
+    "Sweatshirt",
+    "Hoodie",
     "Sweater",
     "Cardigan",
-    "Hoodie",
-    "Long sleeve",
+    "Jacket",
   ] as const,
   bottoms: ["Jeans", "Slacks", "Shorts", "Skirt"] as const,
   dresses: ["Dress", "Jumpsuit"] as const,
@@ -39,14 +39,12 @@ export const SUBCATEGORIES: Record<ItemCategory, readonly string[]> = {
   accessories: ["Hat", "Belt", "Sunglasses"] as const,
 } as const;
 
-// Get subcategories for a specific category
 export function getSubCategoriesForCategory(
   category: ItemCategory
 ): readonly string[] {
   return SUBCATEGORIES[category] || [];
 }
 
-// Get all unique subcategories across all categories
 export function getAllSubCategories(): string[] {
   const allSubCategories = new Set<string>();
   for (const subCategories of Object.values(SUBCATEGORIES)) {
