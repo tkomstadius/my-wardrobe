@@ -7,6 +7,7 @@ import {
   useLoaderData,
   useRevalidator,
   type LoaderFunctionArgs,
+  ActionFunctionArgs,
 } from "react-router";
 import { DeleteConfirmDialog } from "../components/common/DeleteConfirmDialog";
 import { useWardrobe } from "../contexts/WardrobeContext";
@@ -36,6 +37,17 @@ export async function loader({ params }: LoaderFunctionArgs) {
   ]);
 
   return { item, outfits };
+}
+
+export async function clientAction({ request }: ActionFunctionArgs) {
+  const formData = await request.formData();
+  const intent = formData.get("intent") as string;
+
+  if (intent === "delete") {
+    return { error: "Item ID is required" };
+  }
+
+  return { success: true };
 }
 
 export function ItemDetailPage() {

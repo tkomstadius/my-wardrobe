@@ -3,6 +3,7 @@ import { MainLayout } from "./components/layout/MainLayout";
 import {
   AddItemPage,
   clientAction as addItemAction,
+  clientLoader as addItemLoader,
 } from "./pages/AddItemPage";
 import {
   ItemCategoryPage,
@@ -36,6 +37,7 @@ const router = createBrowserRouter([
       {
         path: "add-item",
         element: <AddItemPage />,
+        loader: addItemLoader,
         action: addItemAction,
       },
       { path: "items", element: <ItemsPage />, loader: itemsLoader },

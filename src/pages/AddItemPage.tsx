@@ -12,13 +12,13 @@ import {
   useActionData,
   redirect,
   type ActionFunctionArgs,
+  useLoaderData,
 } from "react-router";
 import { useState } from "react";
-import { useWardrobe } from "../contexts/WardrobeContext";
 import { CheckboxField } from "../components/common/CheckboxField";
 import { getImageEmbedding } from "../utils/aiEmbedding";
 import { saveItem } from "../utils/indexedDB";
-import { generateId } from "../utils/storageCommands";
+import { generateId, getAllBrands } from "../utils/storageCommands";
 import type {
   ItemCategory,
   WardrobeItem,
@@ -50,6 +50,12 @@ import { BackLink } from "../components/common/BackLink";
 type ActionData = {
   error?: string;
 };
+
+export async function clientLoader() {
+  const brands = await getAllBrands();
+
+  return { brands };
+}
 
 export async function clientAction({ request }: ActionFunctionArgs) {
   const formData = await request.formData();
@@ -130,8 +136,8 @@ export async function clientAction({ request }: ActionFunctionArgs) {
 
 export function AddItemPage() {
   const navigation = useNavigation();
+  const { brands } = useLoaderData<typeof clientLoader>();
   const actionData = useActionData<ActionData>();
-  const { getAllBrands } = useWardrobe();
   const [selectedCategory, setSelectedCategory] = useState<ItemCategory | "">(
     ""
   );
@@ -158,7 +164,7 @@ export function AddItemPage() {
           label="Brand"
           name={BRAND_NAME}
           placeholder="e.g., Ganni, Hope"
-          suggestions={getAllBrands()}
+          suggestions={brands}
         />
 
         <SelectInput

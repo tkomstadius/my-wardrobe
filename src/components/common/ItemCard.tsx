@@ -1,20 +1,19 @@
 import { Pencil1Icon, PlusIcon } from "@radix-ui/react-icons";
 import { Link, useNavigate } from "react-router";
-import { useWardrobe } from "../../contexts/WardrobeContext";
 import type { WardrobeItem } from "../../types/wardrobe";
 import { formatItemAge } from "../../utils/dateFormatter";
 import { isWornToday } from "../../utils/wardrobeFilters";
 import styles from "./ItemCard.module.css";
 import { useState } from "react";
+import { incrementWearCount } from "../../utils/storageCommands";
 
 interface ItemCardProps {
   item: WardrobeItem;
 }
 
 export function ItemCard({ item }: ItemCardProps) {
-  const { incrementWearCount } = useWardrobe();
   const navigate = useNavigate();
-  const [isIncremented, setIsIncremented] = useState(false);
+  const [newWearCount, setNewWearCount] = useState<number>();
 
   const wornToday = isWornToday(item);
 
@@ -29,8 +28,8 @@ export function ItemCard({ item }: ItemCardProps) {
     e.stopPropagation();
 
     try {
-      await incrementWearCount(item.id);
-      setIsIncremented(true);
+      const newCount = await incrementWearCount(item.id);
+      setNewWearCount(newCount);
     } catch (err) {
       console.error("Failed to increment wear count:", err);
     }
@@ -55,7 +54,7 @@ export function ItemCard({ item }: ItemCardProps) {
         <div className={styles.content}>
           {item.brand && <p className={styles.brand}>{item.brand}</p>}
           <p className={styles.wearCount}>
-            Worn {item.wearCount + (isIncremented ? 1 : 0)}×
+            Worn {newWearCount ?? item.wearCount}×
           </p>
           <div className={styles.metadata}>
             {item.isSecondHand && <p>Thrifted</p>}
@@ -84,7 +83,7 @@ export function ItemCard({ item }: ItemCardProps) {
             wornToday ? styles.disabled : ""
           }`}
           onClick={handleQuickWear}
-          disabled={isIncremented}
+          disabled={!!newWearCount}
           title={wornToday ? "Already worn today" : "Mark as worn"}
         >
           <PlusIcon />

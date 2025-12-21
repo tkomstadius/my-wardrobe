@@ -8,6 +8,7 @@ import {
   loadAllOutfits,
   deleteOutfit,
   loadItemsByCategory,
+  loadItemById,
 } from "./indexedDB";
 
 export async function saveItems(items: WardrobeItem[]): Promise<void> {
@@ -45,6 +46,45 @@ export async function removeItem(id: string): Promise<void> {
   } catch (error) {
     console.error("Failed to delete item from IndexedDB:", error);
     throw new Error("Failed to delete item.");
+  }
+}
+
+export async function incrementWearCount(itemId: string): Promise<number> {
+  const item = await loadItemById(itemId);
+
+  if (!item) {
+    throw new Error("Item not found");
+  }
+
+  const now = new Date();
+  const newWearHistory = [...(item.wearHistory || []), now];
+  const initialCount = item.initialWearCount ?? 0;
+
+  const updatedItem = {
+    ...item,
+    wearCount: initialCount + newWearHistory.length,
+    wearHistory: newWearHistory,
+    updatedAt: now,
+  };
+
+  await saveItem(updatedItem);
+
+  return updatedItem.wearCount;
+}
+
+export async function getAllBrands(): Promise<string[]> {
+  try {
+    const items = await loadItems();
+    const brands = new Set<string>();
+    for (const item of items) {
+      if (item.brand?.trim()) {
+        brands.add(item.brand.trim());
+      }
+    }
+    return Array.from(brands).sort();
+  } catch (error) {
+    console.error("Failed to get all brands from IndexedDB:", error);
+    return [];
   }
 }
 
