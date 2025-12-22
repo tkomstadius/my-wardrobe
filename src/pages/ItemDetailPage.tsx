@@ -1,5 +1,5 @@
 import { Pencil1Icon, TrashIcon } from "@radix-ui/react-icons";
-import { Button, Flex, Heading, Text } from "@radix-ui/themes";
+import { Button, Flex, Grid, Heading, Text, TextField } from "@radix-ui/themes";
 import { useState } from "react";
 import {
   Link,
@@ -11,7 +11,10 @@ import {
 } from "react-router";
 import { DeleteConfirmDialog } from "../components/common/DeleteConfirmDialog";
 import { useWardrobe } from "../contexts/WardrobeContext";
-import { getOutfitsWithItemId } from "../utils/storageCommands";
+import {
+  getOutfitsWithItemId,
+  incrementWearCount,
+} from "../utils/storageCommands";
 import {
   formatDate,
   formatDateDisplay,
@@ -54,8 +57,7 @@ export function ItemDetailPage() {
   const navigate = useNavigate();
   const revalidator = useRevalidator();
   const { item, outfits: outfitsWithItem } = useLoaderData<typeof loader>();
-  const { deleteItem, incrementWearCount, logWearOnDate, removeWear } =
-    useWardrobe();
+  const { deleteItem, logWearOnDate, removeWear } = useWardrobe();
   const [isDeleting, setIsDeleting] = useState(false);
   const [deletingWearIndex, setDeletingWearIndex] = useState<number | null>(
     null
@@ -63,6 +65,7 @@ export function ItemDetailPage() {
   const [showAllWears, setShowAllWears] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [selectedDate, setSelectedDate] = useState("");
+  const [newWearCount, setNewWearCount] = useState<number>();
 
   const handleDelete = async () => {
     if (!item) return;
@@ -82,8 +85,8 @@ export function ItemDetailPage() {
     if (!item) return;
 
     try {
-      await incrementWearCount(item.id);
-      revalidator.revalidate(); // Reload data to show updated wear count
+      const newCount = await incrementWearCount(item.id);
+      setNewWearCount(newCount);
     } catch (error) {
       console.error("Failed to mark as worn:", error);
       alert("Failed to update wear count. Please try again.");
@@ -147,80 +150,69 @@ export function ItemDetailPage() {
           <img src={item.imageUrl} alt={item.notes || item.brand || "Item"} />
         </div>
 
-        <section className={styles.infoSection}>
-          <div className={styles.topInfo}>
-            {item.brand && (
-              <Text size="3" weight="medium" color="gray">
-                {item.brand}
-              </Text>
-            )}
-            {item.price !== undefined && (
-              <Text size="3" className={styles.priceText}>
-                Price: {item.price.toFixed(2)} kr
-              </Text>
-            )}
-            {item.purchaseDate && (
-              <Text size="2" color="gray">
-                Purchased {formatDateDisplay(item.purchaseDate)} (
-                {formatItemAge(item.purchaseDate)})
-              </Text>
-            )}
-            <Text size="2" weight="bold" className={styles.wearCountInline}>
-              Worn {item.wearCount}×
-            </Text>
-            {item.wearHistory && item.wearHistory.length > 0 && (
-              <Text size="2" color="gray">
-                {formatLastWorn(item.wearHistory)}
-              </Text>
-            )}
-          </div>
-
-          {costPerWear !== null && (
-            <div className={styles.costPerWearCard}>
-              <Text size="1" color="gray">
-                Cost Per Wear
-              </Text>
-              <Text size="7" weight="bold" className={styles.costPerWear}>
-                {costPerWear.toFixed(2)} kr
-              </Text>
-              <Text size="2" color="gray">
-                Based on {item.wearCount} wear{item.wearCount !== 1 ? "s" : ""}
-              </Text>
-            </div>
-          )}
-
-          {/* Category and Notes */}
-          <div className={styles.bottomInfo}>
-            <Text size="2" color="gray" className={styles.category}>
-              {item.category.charAt(0).toUpperCase() + item.category.slice(1)}
-            </Text>
-            {item.subCategory && (
+        <section>
+          <Grid columns="2" gap="3">
+            <Flex direction="column" gap="1">
               <Text size="1" color="gray" className={styles.category}>
-                {item.subCategory}
+                {item.category}
               </Text>
-            )}
+              {item.subCategory && (
+                <Text size="1" color="gray" className={styles.category}>
+                  {item.subCategory}
+                </Text>
+              )}
+              {item.brand && <Text size="1">{item.brand}</Text>}
+              {item.purchaseDate && (
+                <Text size="1" color="gray">
+                  Purchased {formatDateDisplay(item.purchaseDate)} (
+                  {formatItemAge(item.purchaseDate)})
+                </Text>
+              )}
+              {item.price !== undefined && (
+                <Text size="1" color="gray">
+                  Price: {item.price.toFixed(2)} kr
+                </Text>
+              )}
+            </Flex>
+
+            <Flex direction="column" gap="1">
+              <Text size="2">Worn {newWearCount ?? item.wearCount}×</Text>
+              {item.wearHistory && item.wearHistory.length > 0 && (
+                <Text size="1" color="gray">
+                  Last worn: {formatLastWorn(item.wearHistory)}
+                </Text>
+              )}
+              {costPerWear !== null && (
+                <Text size="2" weight="bold" className={styles.costPerWear}>
+                  {costPerWear?.toFixed(2)} kr/wear
+                </Text>
+              )}
+            </Flex>
+          </Grid>
+          <div className={styles.divider} />
+
+          <Flex direction="column" gap="1" mb="3">
             {item.notes && (
               <Text size="3" color="gray" className={styles.description}>
                 {item.notes}
               </Text>
             )}
-          </div>
 
-          <Flex gap="2">
-            {item.isSecondHand && <span>♻️</span>}
-            {item.isDogCasual && <span>🐶</span>}
-            {item.isHandmade && <span>🧶</span>}
-            {item.rating !== undefined && (
-              <span>
-                {RATING_OPTIONS.find((r) => r.value === item.rating)?.emoji}
-              </span>
-            )}
+            <Flex gap="2">
+              {item.isSecondHand && <span>♻️</span>}
+              {item.isDogCasual && <span>🐶</span>}
+              {item.isHandmade && <span>🧶</span>}
+              {item.rating !== undefined && (
+                <span className={styles.rating}>
+                  {RATING_OPTIONS.find((r) => r.value === item.rating)?.emoji}
+                </span>
+              )}
+            </Flex>
           </Flex>
 
-          {/* Mark as Worn Buttons */}
-          <div className={styles.actions}>
+          <Flex direction="column" gap="2">
             {!showDatePicker ? (
-              <div className={styles.buttonGroup}>
+              <Flex gap="2" direction="column">
                 <Button
                   size="3"
                   onClick={handleMarkAsWorn}
@@ -232,7 +224,6 @@ export function ItemDetailPage() {
                   size="3"
                   variant="outline"
                   onClick={() => {
-                    // Default to today's date using date-fns formatDate (Swedish ISO 8601)
                     const dateStr = formatDate(new Date());
                     setSelectedDate(dateStr);
                     setShowDatePicker(true);
@@ -241,20 +232,21 @@ export function ItemDetailPage() {
                 >
                   Log Wear on Different Date
                 </Button>
-              </div>
+              </Flex>
             ) : (
               <div className={styles.datePickerContainer}>
                 <Text size="2" weight="medium">
                   Select the date you wore this item:
                 </Text>
-                <input
+                <TextField.Root
+                  variant="soft"
                   type="date"
+                  size="3"
                   value={selectedDate}
                   onChange={(e) => setSelectedDate(e.target.value)}
                   max={formatDate(new Date())}
-                  className={styles.datePicker}
                 />
-                <div className={styles.datePickerActions}>
+                <Flex gap="2" justify="end">
                   <Button
                     size="2"
                     variant="soft"
@@ -274,10 +266,10 @@ export function ItemDetailPage() {
                   >
                     Log Wear
                   </Button>
-                </div>
+                </Flex>
               </div>
             )}
-          </div>
+          </Flex>
         </section>
 
         {/* Wear History */}
