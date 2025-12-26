@@ -84,6 +84,13 @@ export function ItemCategoryPage() {
   const { searchQuery, setSearchQuery, clearSearch, filteredItems } =
     useItemSearch(fastFilteredItems);
 
+  // Sort by last edited (most recently updated first)
+  const sortedItems = useMemo(() => {
+    return [...filteredItems].sort((a, b) => {
+      return b.updatedAt.getTime() - a.updatedAt.getTime();
+    });
+  }, [filteredItems]);
+
   // Calculate filter counts
   const filterCounts = useMemo(() => {
     const counts = {
@@ -122,7 +129,7 @@ export function ItemCategoryPage() {
   };
 
   const hasItems = categoryItems.length > 0;
-  const hasFilteredItems = filteredItems.length > 0;
+  const hasFilteredItems = sortedItems.length > 0;
 
   if (!isValid) {
     return (
@@ -165,7 +172,7 @@ export function ItemCategoryPage() {
             onChange={setSearchQuery}
             onClear={clearSearch}
             placeholder="Search in this category..."
-            resultCount={filteredItems.length}
+            resultCount={sortedItems.length}
           />
 
           {category && (
@@ -181,7 +188,7 @@ export function ItemCategoryPage() {
 
           {hasFilteredItems ? (
             <div className={styles.grid}>
-              {filteredItems.map((item) => (
+              {sortedItems.map((item) => (
                 <ItemCard key={item.id} item={item} />
               ))}
             </div>
