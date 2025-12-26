@@ -24,6 +24,7 @@
   overflow: hidden;
   background: var(--accent-9);
   position: relative;
+  flex-shrink: 0;
 }
 
 .image {
@@ -101,6 +102,8 @@
   flex-direction: column;
   gap: 2px;
   color: var(--text-color);
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .brand {
