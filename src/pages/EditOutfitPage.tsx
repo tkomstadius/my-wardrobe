@@ -1,9 +1,8 @@
 import { CameraIcon, TrashIcon, ArrowLeftIcon } from "@radix-ui/react-icons";
 import { Button, Heading, Text, TextArea } from "@radix-ui/themes";
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router";
+import { useLoaderData, useNavigate, useParams } from "react-router";
 import { useOutfit } from "../contexts/OutfitContext";
-import { useWardrobe } from "../contexts/WardrobeContext";
 import { useImageUpload } from "../hooks/useImageUpload";
 import { DeleteConfirmDialog } from "../components/common/DeleteConfirmDialog";
 import { ItemSelector } from "../components/common/ItemSelector";
@@ -11,12 +10,18 @@ import { RatingButtons } from "../components/common/form/RatingButtons";
 import type { OutfitRating } from "../types/outfit";
 import styles from "./CreateOutfitPage.module.css";
 import { BackLink } from "../components/common/BackLink";
+import { loadItems } from "../utils/storageCommands";
+
+export async function loader() {
+  const items = await loadItems();
+  return { items };
+}
 
 export function EditOutfitPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { updateOutfit, getOutfitById, deleteOutfit } = useOutfit();
-  const { items } = useWardrobe();
+  const { items } = useLoaderData<typeof loader>();
   const { imagePreview, setImagePreview, handleImageUpload, clearImage } =
     useImageUpload();
 

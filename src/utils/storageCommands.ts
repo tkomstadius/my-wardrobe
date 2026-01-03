@@ -10,6 +10,7 @@ import {
   loadItemsByCategory,
   loadItemById,
 } from "./indexedDB";
+import { compareAsc } from "date-fns";
 
 export async function saveItems(items: WardrobeItem[]): Promise<void> {
   try {
@@ -25,6 +26,25 @@ export async function loadItems(): Promise<WardrobeItem[]> {
     return await loadAllItems();
   } catch (error) {
     console.error("Failed to load items from IndexedDB:", error);
+    return [];
+  }
+}
+
+export async function getItemById(id: string): Promise<WardrobeItem | null> {
+  try {
+    return await loadItemById(id);
+  } catch (error) {
+    console.error("Failed to load item by id from IndexedDB:", error);
+    return null;
+  }
+}
+
+export async function getItemsByIds(ids: string[]): Promise<WardrobeItem[]> {
+  try {
+    const items = await Promise.all(ids.map((id) => getItemById(id)));
+    return items.filter((item): item is WardrobeItem => item !== null);
+  } catch (error) {
+    console.error("Failed to load items by ids from IndexedDB:", error);
     return [];
   }
 }
@@ -72,6 +92,49 @@ export async function incrementWearCount(itemId: string): Promise<number> {
   return updatedItem.wearCount;
 }
 
+export async function logWearOnDate(itemId: string, date: Date): Promise<void> {
+  const item = await loadItemById(itemId);
+  if (!item) {
+    throw new Error("Item not found");
+  }
+  const newWearHistory = [...(item.wearHistory || []), date].sort(compareAsc);
+  const initialCount = item.initialWearCount ?? 0;
+
+  const updatedItem = {
+    ...item,
+    wearCount: initialCount + newWearHistory.length,
+    wearHistory: newWearHistory,
+    updatedAt: new Date(),
+  };
+
+  await saveItem(updatedItem);
+}
+
+export async function removeWear(
+  itemId: string,
+  wearIndex: number
+): Promise<void> {
+  const item = await loadItemById(itemId);
+  if (!item) {
+    throw new Error("Item not found");
+  }
+  if (wearIndex < 0 || wearIndex >= item.wearHistory.length) {
+    throw new Error("Invalid wear index");
+  }
+  const newWearHistory = [...(item.wearHistory || [])];
+  newWearHistory.splice(wearIndex, 1);
+  const initialCount = item.initialWearCount ?? 0;
+
+  const updatedItem = {
+    ...item,
+    wearCount: initialCount + newWearHistory.length,
+    wearHistory: newWearHistory,
+    updatedAt: new Date(),
+  };
+
+  await saveItem(updatedItem);
+}
+
 export async function getAllBrands(): Promise<string[]> {
   try {
     const items = await loadItems();
@@ -86,6 +149,23 @@ export async function getAllBrands(): Promise<string[]> {
     console.error("Failed to get all brands from IndexedDB:", error);
     return [];
   }
+}
+
+export async function updateItemEmbedding(
+  id: string,
+  embedding: number[]
+): Promise<void> {
+  const item = await loadItemById(id);
+  if (!item) {
+    throw new Error("Item not found");
+  }
+  const updatedItem = {
+    ...item,
+    embedding,
+    updatedAt: new Date(),
+  };
+
+  await saveItem(updatedItem);
 }
 
 export function generateId(): string {

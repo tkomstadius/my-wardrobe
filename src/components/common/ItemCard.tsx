@@ -65,7 +65,7 @@ export function ItemCard({ item }: ItemCardProps) {
             <p className={styles.itemAge}>{formatItemAge(item.purchaseDate)}</p>
           )}
         </div>
-        {costPerWear && (
+        {costPerWear !== null && (
           <p className={styles.costPerWear}>
             {costPerWear?.toFixed(2)} kr/wear
           </p>

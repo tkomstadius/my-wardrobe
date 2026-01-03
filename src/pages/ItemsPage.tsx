@@ -34,7 +34,9 @@ export function ItemsPage() {
       <Grid columns="2" gap="3">
         {CATEGORIES.map((category) => {
           const categoryItems = getItemsByCategory(category.id);
-          const previewItems = categoryItems.slice(0, 4);
+          const previewItems = categoryItems
+            .sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime())
+            .slice(0, 4);
 
           return (
             <Link

@@ -6,7 +6,6 @@ import {
 import { Button, Callout, Card, Text } from "@radix-ui/themes";
 import { useEffect, useRef, useState } from "react";
 import { useOutfit } from "../contexts/OutfitContext";
-import { useWardrobe } from "../contexts/WardrobeContext";
 import { getImageEmbedding } from "../utils/aiEmbedding";
 import {
   clearAllFeedback,
@@ -25,9 +24,16 @@ import {
   repairWearCountMismatches,
 } from "../utils/repairData";
 import styles from "./SettingsPage.module.css";
+import { loadItems, updateItemEmbedding } from "../utils/storageCommands";
+import { useLoaderData } from "react-router-dom";
+
+export async function loader() {
+  const items = await loadItems();
+  return { items };
+}
 
 export function SettingsPage() {
-  const { items, updateItemEmbedding } = useWardrobe();
+  const { items } = useLoaderData<typeof loader>();
   const { outfits } = useOutfit();
   const [isExporting, setIsExporting] = useState(false);
   const [isImporting, setIsImporting] = useState(false);

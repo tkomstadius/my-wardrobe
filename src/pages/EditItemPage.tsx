@@ -18,15 +18,10 @@ import {
   type LoaderFunctionArgs,
   type ActionFunctionArgs,
 } from "react-router";
-import { useWardrobe } from "../contexts/WardrobeContext";
 import { DeleteConfirmDialog } from "../components/common/DeleteConfirmDialog";
 import { CheckboxField } from "../components/common/CheckboxField";
 import { getImageEmbedding } from "../utils/aiEmbedding";
-import {
-  loadItemById,
-  saveItem,
-  deleteItem as deleteItemFromDB,
-} from "../utils/indexedDB";
+import { loadItemById, saveItem } from "../utils/indexedDB";
 import type { ItemCategory, WardrobeItem } from "../types/wardrobe";
 import {
   CATEGORIES,
@@ -55,10 +50,11 @@ import { SelectInput } from "../components/common/form/SelectInput";
 import { RatingButtons } from "../components/common/form/RatingButtons";
 import type { OutfitRating } from "../types/outfit";
 import { BackLink } from "../components/common/BackLink";
-
-type LoaderData = {
-  item: WardrobeItem | null;
-};
+import {
+  getAllBrands,
+  getItemById,
+  removeItem,
+} from "../utils/storageCommands";
 
 type ActionData = {
   error?: string;
@@ -70,8 +66,9 @@ export async function clientLoader({ params }: LoaderFunctionArgs) {
     return { item: null };
   }
 
-  const item = await loadItemById(id);
-  return { item };
+  const [item, brands] = await Promise.all([getItemById(id), getAllBrands()]);
+
+  return { item, brands };
 }
 
 export async function clientAction({ request, params }: ActionFunctionArgs) {
@@ -86,7 +83,7 @@ export async function clientAction({ request, params }: ActionFunctionArgs) {
   // Handle delete action
   if (intent === "delete") {
     try {
-      await deleteItemFromDB(id);
+      await removeItem(id);
       return redirect("/");
     } catch (err) {
       console.error("Failed to delete item:", err);
@@ -175,9 +172,8 @@ export async function clientAction({ request, params }: ActionFunctionArgs) {
 export function EditItemPage() {
   const navigate = useNavigate();
   const navigation = useNavigation();
-  const { item } = useLoaderData<LoaderData>();
+  const { item, brands } = useLoaderData<typeof clientLoader>();
   const actionData = useActionData<ActionData>();
-  const { getAllBrands } = useWardrobe();
   const [isDeleting, setIsDeleting] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<ItemCategory>(
     item?.category || "tops"
@@ -208,7 +204,7 @@ export function EditItemPage() {
 
     setIsDeleting(true);
     try {
-      await deleteItemFromDB(item.id);
+      await removeItem(item.id);
       navigate("/");
     } catch (err) {
       console.error("Failed to delete item:", err);
@@ -244,7 +240,7 @@ export function EditItemPage() {
             name={BRAND_NAME}
             placeholder="e.g., Ganni, Hope"
             defaultValue={item.brand || ""}
-            suggestions={getAllBrands()}
+            suggestions={brands}
           />
 
           <SelectInput

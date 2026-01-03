@@ -1,20 +1,25 @@
 import { CameraIcon, TrashIcon } from "@radix-ui/react-icons";
 import { Button, Heading, Text, TextArea } from "@radix-ui/themes";
 import { useState } from "react";
-import { useNavigate } from "react-router";
+import { useLoaderData, useNavigate } from "react-router";
 import { useOutfit } from "../contexts/OutfitContext";
-import { useWardrobe } from "../contexts/WardrobeContext";
 import { useImageUpload } from "../hooks/useImageUpload";
 import { ItemSelector } from "../components/common/ItemSelector";
 import { RatingButtons } from "../components/common/form/RatingButtons";
 import type { OutfitRating } from "../types/outfit";
 import styles from "./CreateOutfitPage.module.css";
 import { BackLink } from "../components/common/BackLink";
+import { loadItems } from "../utils/storageCommands";
+
+export async function loader() {
+  const items = await loadItems();
+  return { items };
+}
 
 export function CreateOutfitPage() {
   const navigate = useNavigate();
   const { addOutfit } = useOutfit();
-  const { items } = useWardrobe();
+  const { items } = useLoaderData<typeof loader>();
   const { imagePreview, handleImageUpload, clearImage } = useImageUpload();
 
   const [formData, setFormData] = useState({

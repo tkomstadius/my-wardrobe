@@ -3,7 +3,6 @@ import { Button, Heading, Text, Select } from "@radix-ui/themes";
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import { useOutfit } from "../contexts/OutfitContext";
-import { useWardrobe } from "../contexts/WardrobeContext";
 import styles from "./OutfitsPage.module.css";
 import { Fab } from "../components/common/Fab";
 import { RATING_OPTIONS } from "../components/common/form/constants";
@@ -13,7 +12,6 @@ type SortOption = "date" | "score";
 export function OutfitsPage() {
   const navigate = useNavigate();
   const { outfits, isLoading } = useOutfit();
-  const { getItemById } = useWardrobe();
   const [sortBy, setSortBy] = useState<SortOption>("date");
 
   if (isLoading) {
@@ -83,55 +81,48 @@ export function OutfitsPage() {
         </div>
       ) : (
         <div className={styles.outfitsGrid}>
-          {sortedOutfits.map((outfit) => {
-            const firstItem = outfit.itemIds[0]
-              ? getItemById(outfit.itemIds[0])
-              : null;
-            const displayImage = outfit.photo || firstItem?.imageUrl;
-
-            return (
-              <div
-                key={outfit.id}
-                className={styles.outfitCard}
-                onClick={() => navigate(`/outfit/${outfit.id}`)}
-              >
-                <div className={styles.outfitImage}>
-                  {displayImage ? (
-                    <img src={displayImage} alt="Outfit" />
-                  ) : (
-                    <div className={styles.noImage}>
-                      <MixIcon width="32" height="32" />
-                    </div>
-                  )}
-                  <div className={styles.itemCount}>
-                    <Text size="1" weight="bold">
-                      {outfit.itemIds.length}{" "}
-                      {outfit.itemIds.length === 1 ? "item" : "items"}
-                    </Text>
+          {sortedOutfits.map((outfit) => (
+            <div
+              key={outfit.id}
+              className={styles.outfitCard}
+              onClick={() => navigate(`/outfit/${outfit.id}`)}
+            >
+              <div className={styles.outfitImage}>
+                {outfit.photo ? (
+                  <img src={outfit.photo} alt="Outfit" />
+                ) : (
+                  <div className={styles.noImage}>
+                    <MixIcon width="32" height="32" />
                   </div>
-                </div>
-
-                <div className={styles.outfitInfo}>
-                  {outfit.rating != undefined && (
-                    <Text size="2" weight="bold" color="blue">
-                      {
-                        RATING_OPTIONS.find(
-                          (rating) => rating.value === outfit.rating
-                        )?.emoji
-                      }
-                    </Text>
-                  )}
-                  {outfit.notes && (
-                    <Text size="1" color="gray" className={styles.outfitNotes}>
-                      {outfit.notes.length > 40
-                        ? `${outfit.notes.substring(0, 40)}...`
-                        : outfit.notes}
-                    </Text>
-                  )}
+                )}
+                <div className={styles.itemCount}>
+                  <Text size="1" weight="bold">
+                    {outfit.itemIds.length}{" "}
+                    {outfit.itemIds.length === 1 ? "item" : "items"}
+                  </Text>
                 </div>
               </div>
-            );
-          })}
+
+              <div className={styles.outfitInfo}>
+                {outfit.rating != undefined && (
+                  <Text size="2" weight="bold" color="blue">
+                    {
+                      RATING_OPTIONS.find(
+                        (rating) => rating.value === outfit.rating
+                      )?.emoji
+                    }
+                  </Text>
+                )}
+                {outfit.notes && (
+                  <Text size="1" color="gray" className={styles.outfitNotes}>
+                    {outfit.notes.length > 40
+                      ? `${outfit.notes.substring(0, 40)}...`
+                      : outfit.notes}
+                  </Text>
+                )}
+              </div>
+            </div>
+          ))}
         </div>
       )}
 

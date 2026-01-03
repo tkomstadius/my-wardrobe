@@ -84,7 +84,6 @@ export function ItemCategoryPage() {
   const { searchQuery, setSearchQuery, clearSearch, filteredItems } =
     useItemSearch(fastFilteredItems);
 
-  // Sort by last edited (most recently updated first)
   const sortedItems = useMemo(() => {
     return [...filteredItems].sort((a, b) => {
       return b.updatedAt.getTime() - a.updatedAt.getTime();

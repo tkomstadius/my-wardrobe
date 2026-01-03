@@ -10,10 +10,12 @@ import {
   ActionFunctionArgs,
 } from "react-router";
 import { DeleteConfirmDialog } from "../components/common/DeleteConfirmDialog";
-import { useWardrobe } from "../contexts/WardrobeContext";
 import {
   getOutfitsWithItemId,
   incrementWearCount,
+  logWearOnDate,
+  removeItem,
+  removeWear,
 } from "../utils/storageCommands";
 import {
   formatDate,
@@ -57,7 +59,6 @@ export function ItemDetailPage() {
   const navigate = useNavigate();
   const revalidator = useRevalidator();
   const { item, outfits: outfitsWithItem } = useLoaderData<typeof loader>();
-  const { deleteItem, logWearOnDate, removeWear } = useWardrobe();
   const [isDeleting, setIsDeleting] = useState(false);
   const [deletingWearIndex, setDeletingWearIndex] = useState<number | null>(
     null
@@ -72,7 +73,7 @@ export function ItemDetailPage() {
 
     setIsDeleting(true);
     try {
-      await deleteItem(item.id);
+      await removeItem(item.id);
       navigate(`/items/${item.category}`);
     } catch (error) {
       console.error("Failed to delete item:", error);

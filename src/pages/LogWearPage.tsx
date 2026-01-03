@@ -11,10 +11,9 @@ import {
 } from "@radix-ui/themes";
 import { differenceInDays } from "date-fns";
 import { useOptimistic, useState } from "react";
-import { useNavigate } from "react-router";
+import { useLoaderData, useNavigate } from "react-router";
 import { CategoryItemsAccordion } from "../components/common/CategoryItemsAccordion";
 import { useOutfit } from "../contexts/OutfitContext";
-import { useWardrobe } from "../contexts/WardrobeContext";
 import { useWeather } from "../contexts/WeatherContext";
 import { useImageUpload } from "../hooks/useImageUpload";
 import {
@@ -25,10 +24,16 @@ import {
 } from "../utils/aiLearning";
 import { findMatchingItems, type ItemMatch } from "../utils/aiMatching";
 import styles from "./LogWearPage.module.css";
+import { incrementWearCount, loadItems } from "../utils/storageCommands";
+
+export async function loader() {
+  const items = await loadItems();
+  return { items };
+}
 
 export function LogWearPage() {
   const navigate = useNavigate();
-  const { items, incrementWearCount } = useWardrobe();
+  const { items } = useLoaderData<typeof loader>();
   const { addOutfit } = useOutfit();
   const { weatherData } = useWeather();
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());

@@ -1,23 +1,39 @@
 import { TrashIcon, Pencil1Icon } from "@radix-ui/react-icons";
 import { Button, Heading, Text } from "@radix-ui/themes";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router";
 import { useOutfit } from "../contexts/OutfitContext";
-import { useWardrobe } from "../contexts/WardrobeContext";
 import { DeleteConfirmDialog } from "../components/common/DeleteConfirmDialog";
 import { formatDate } from "../utils/dateFormatter";
 import styles from "./OutfitDetailPage.module.css";
 import { BackLink } from "../components/common/BackLink";
 import { RATING_OPTIONS } from "../components/common/form/constants";
+import { getItemsByIds } from "../utils/storageCommands";
+import { WardrobeItem } from "../types/wardrobe";
 
 export function OutfitDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { getOutfitById, deleteOutfit } = useOutfit();
-  const { getItemById } = useWardrobe();
   const [isDeleting, setIsDeleting] = useState(false);
+  const [outfitItems, setOutfitItems] = useState<WardrobeItem[]>([]);
 
   const outfit = id ? getOutfitById(id) : null;
+
+  useEffect(() => {
+    const fetchOutfitItems = async () => {
+      if (!outfit) return;
+
+      try {
+        const items = await getItemsByIds(outfit.itemIds);
+        setOutfitItems(items);
+      } catch (error) {
+        console.error("Failed to fetch outfit items:", error);
+      }
+    };
+
+    fetchOutfitItems();
+  }, [outfit, getItemsByIds]);
 
   if (!outfit) {
     return (
@@ -29,10 +45,6 @@ export function OutfitDetailPage() {
       </div>
     );
   }
-
-  const outfitItems = outfit.itemIds
-    .map((itemId) => getItemById(itemId))
-    .filter((item): item is NonNullable<typeof item> => item !== undefined);
 
   const handleDelete = async () => {
     setIsDeleting(true);

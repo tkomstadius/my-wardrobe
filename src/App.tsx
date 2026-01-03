@@ -18,6 +18,9 @@ import {
   ItemDetailPage,
   loader as itemDetailLoader,
 } from "./pages/ItemDetailPage";
+import { loader as editOutfitLoader } from "./pages/EditOutfitPage";
+import { loader as createOutfitLoader } from "./pages/CreateOutfitPage";
+import { loader as settingsLoader } from "./pages/SettingsPage";
 import { HomePage, loader as homeLoader } from "./pages/HomePage";
 import { ItemsPage, loader as itemsLoader } from "./pages/ItemsPage";
 import { LogWearPage } from "./pages/LogWearPage";
@@ -59,11 +62,22 @@ const router = createBrowserRouter([
         action: editItemAction,
       },
       { path: "outfits", element: <OutfitsPage /> },
-      { path: "create-outfit", element: <CreateOutfitPage /> },
-      { path: "outfit/:id", element: <OutfitDetailPage /> },
-      { path: "edit-outfit/:id", element: <EditOutfitPage /> },
+      {
+        path: "create-outfit",
+        element: <CreateOutfitPage />,
+        loader: createOutfitLoader,
+      },
+      {
+        path: "outfit/:id",
+        element: <OutfitDetailPage />,
+      },
+      {
+        path: "edit-outfit/:id",
+        element: <EditOutfitPage />,
+        loader: editOutfitLoader,
+      },
       { path: "stats", element: <StatsPage />, loader: statsLoader },
-      { path: "settings", element: <SettingsPage /> },
+      { path: "settings", element: <SettingsPage />, loader: settingsLoader },
     ],
   },
 ]);
