@@ -70,7 +70,6 @@ export function WeatherProvider({ children }: WeatherProviderProps) {
     }
   };
 
-  // Fetch weather on mount, using cache if available
   useEffect(() => {
     refreshWeather();
   }, []);

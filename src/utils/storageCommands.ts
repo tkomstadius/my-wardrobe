@@ -118,7 +118,7 @@ export async function removeWear(
   if (!item) {
     throw new Error("Item not found");
   }
-  if (wearIndex < 0 || wearIndex >= item.wearHistory.length) {
+  if (wearIndex < 0 || wearIndex >= item.wearHistory?.length) {
     throw new Error("Invalid wear index");
   }
   const newWearHistory = [...(item.wearHistory || [])];

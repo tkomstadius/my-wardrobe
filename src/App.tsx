@@ -23,7 +23,7 @@ import { loader as createOutfitLoader } from "./pages/CreateOutfitPage";
 import { loader as settingsLoader } from "./pages/SettingsPage";
 import { HomePage, loader as homeLoader } from "./pages/HomePage";
 import { ItemsPage, loader as itemsLoader } from "./pages/ItemsPage";
-import { LogWearPage } from "./pages/LogWearPage";
+import { LogWearPage, loader as logWearLoader } from "./pages/LogWearPage";
 import { OutfitsPage } from "./pages/OutfitsPage";
 import { CreateOutfitPage } from "./pages/CreateOutfitPage";
 import { OutfitDetailPage } from "./pages/OutfitDetailPage";
@@ -44,7 +44,7 @@ const router = createBrowserRouter([
         action: addItemAction,
       },
       { path: "items", element: <ItemsPage />, loader: itemsLoader },
-      { path: "log-wear", element: <LogWearPage /> },
+      { path: "log-wear", element: <LogWearPage />, loader: logWearLoader },
       {
         path: "items/:category",
         element: <ItemCategoryPage />,
