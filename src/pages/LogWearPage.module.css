@@ -26,6 +26,26 @@
   flex-direction: column;
 }
 
+.manualMode {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 0 1rem 1rem;
+}
+
+.actionButtons {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  padding-top: 1rem;
+  border-top: 1px solid var(--gray-6);
+  position: sticky;
+  bottom: 0;
+  background: var(--gray-1);
+  padding-bottom: 1rem;
+  margin-top: auto;
+}
+
 .callout {
   margin: 0 1rem;
 }

@@ -1,11 +1,26 @@
 import { Accordion } from "radix-ui";
-import { ChevronDownIcon, Text } from "@radix-ui/themes";
+import { ChevronDownIcon, Text, Checkbox } from "@radix-ui/themes";
 import { WardrobeItem } from "../../types/wardrobe";
 import { CATEGORIES } from "../../utils/categories";
 import { ItemCard } from "./ItemCard";
 import styles from "./CategoryItemsAccordion.module.css";
 
-export function CategoryItemsAccordion({ items }: { items: WardrobeItem[] }) {
+interface CategoryItemsAccordionProps {
+  items: WardrobeItem[];
+  selectedItems?: Set<string>;
+  onToggleSelection?: (itemId: string) => void;
+  disabledItems?: Set<string>;
+}
+
+export function CategoryItemsAccordion({
+  items,
+  selectedItems,
+  onToggleSelection,
+  disabledItems,
+}: CategoryItemsAccordionProps) {
+  const isSelectionMode =
+    selectedItems !== undefined && onToggleSelection !== undefined;
+
   const itemsByCategory = CATEGORIES.map((category) => ({
     category: category.id,
     title: category.title,
@@ -27,9 +42,54 @@ export function CategoryItemsAccordion({ items }: { items: WardrobeItem[] }) {
           </Accordion.Trigger>
 
           <Accordion.Content className={styles.accordionContent}>
-            {categoryItems.map((item) => (
-              <ItemCard key={item.id} item={item} />
-            ))}
+            {isSelectionMode
+              ? categoryItems.map((item) => {
+                  const isSelected = selectedItems!.has(item.id);
+                  const isDisabled = disabledItems?.has(item.id) ?? false;
+
+                  return (
+                    <div
+                      key={item.id}
+                      className={`${styles.selectableItem} ${
+                        isSelected ? styles.selected : ""
+                      } ${isDisabled ? styles.disabled : ""}`}
+                      onClick={() => {
+                        if (!isDisabled) {
+                          onToggleSelection!(item.id);
+                        }
+                      }}
+                    >
+                      <Checkbox
+                        checked={isSelected}
+                        disabled={isDisabled}
+                        onCheckedChange={() => {
+                          if (!isDisabled) {
+                            onToggleSelection!(item.id);
+                          }
+                        }}
+                      />
+                      <div className={styles.itemPreview}>
+                        <img
+                          src={item.imageUrl}
+                          alt={item.brand || item.category}
+                          className={styles.itemImage}
+                        />
+                        <div className={styles.itemInfo}>
+                          <Text size="2" weight="bold">
+                            {item.brand || item.category}
+                          </Text>
+                          <Text size="1" color="gray">
+                            {item.category}
+                            {item.wearCount > 0 && ` • Worn ${item.wearCount}×`}
+                          </Text>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })
+              : categoryItems.map((item) => (
+                  <ItemCard key={item.id} item={item} />
+                ))}
           </Accordion.Content>
         </Accordion.Item>
       ))}

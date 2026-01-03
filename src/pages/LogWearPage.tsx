@@ -12,7 +12,7 @@ import {
 import { differenceInDays } from "date-fns";
 import { useOptimistic, useState } from "react";
 import { useNavigate } from "react-router";
-import { ItemSelector } from "../components/common/ItemSelector";
+import { CategoryItemsAccordion } from "../components/common/CategoryItemsAccordion";
 import { useOutfit } from "../contexts/OutfitContext";
 import { useWardrobe } from "../contexts/WardrobeContext";
 import { useWeather } from "../contexts/WeatherContext";
@@ -603,15 +603,20 @@ export function LogWearPage() {
 
       {/* Manual Mode */}
       {!isAIMode && (
-        <div className={styles.selectorContainer}>
-          <ItemSelector
-            items={items}
-            selectedItems={selectedItems}
-            onToggleSelection={toggleItemSelection}
-            disabledItems={optimisticLoggedItems}
-            emptyMessage="No items in your wardrobe yet"
-            actionButtons={
-              <>
+        <div className={styles.manualMode}>
+          {items.length === 0 ? (
+            <Text size="2" color="gray">
+              No items in your wardrobe yet
+            </Text>
+          ) : (
+            <>
+              <CategoryItemsAccordion
+                items={items}
+                selectedItems={selectedItems}
+                onToggleSelection={toggleItemSelection}
+                disabledItems={optimisticLoggedItems}
+              />
+              <div className={styles.actionButtons}>
                 <Button
                   size="3"
                   variant="soft"
@@ -632,9 +637,9 @@ export function LogWearPage() {
                         selectedItems.size === 1 ? "Item" : "Items"
                       }`}
                 </Button>
-              </>
-            }
-          />
+              </div>
+            </>
+          )}
         </div>
       )}
     </div>
