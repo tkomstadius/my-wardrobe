@@ -1,30 +1,22 @@
 import { PlusIcon, MixIcon } from "@radix-ui/react-icons";
 import { Button, Heading, Text, Select } from "@radix-ui/themes";
 import { useState } from "react";
-import { useNavigate } from "react-router";
-import { useOutfit } from "../contexts/OutfitContext";
+import { useLoaderData, useNavigate } from "react-router";
 import styles from "./OutfitsPage.module.css";
 import { Fab } from "../components/common/Fab";
 import { RATING_OPTIONS } from "../components/common/form/constants";
+import { loadOutfits } from "../utils/storageCommands";
+import { Outfit } from "../types/outfit";
 
 type SortOption = "date" | "score";
 
-export function OutfitsPage() {
-  const navigate = useNavigate();
-  const { outfits, isLoading } = useOutfit();
-  const [sortBy, setSortBy] = useState<SortOption>("date");
+export async function loader() {
+  const outfits = await loadOutfits();
+  return { outfits };
+}
 
-  if (isLoading) {
-    return (
-      <div className={styles.container}>
-        <div className={styles.loadingState}>
-          <Text>Loading outfits...</Text>
-        </div>
-      </div>
-    );
-  }
-
-  const sortedOutfits = [...outfits].sort((a, b) => {
+const getSortedOutfits = (outfits: Outfit[], sortBy: SortOption) => {
+  return [...outfits].sort((a, b) => {
     if (sortBy === "score") {
       // Sort by rating (1 > 0 > -1), then by date if no rating
       const ratingA = a.rating ?? -2; // -2 is lower than -1, so unrated items sort last
@@ -39,6 +31,14 @@ export function OutfitsPage() {
       return b.createdAt.getTime() - a.createdAt.getTime();
     }
   });
+};
+
+export function OutfitsPage() {
+  const navigate = useNavigate();
+  const { outfits } = useLoaderData<typeof loader>();
+  const [sortBy, setSortBy] = useState<SortOption>("date");
+
+  const sortedOutfits = getSortedOutfits(outfits, sortBy);
 
   return (
     <div className={styles.container}>

@@ -3,7 +3,7 @@ import { useLoaderData } from "react-router";
 import { useEffect, useMemo, useState } from "react";
 import { ItemCard } from "../components/common/ItemCard";
 import { getDaysAgo } from "../utils/dateFormatter";
-import { loadItems, updateOutfit } from "../utils/storageCommands";
+import { loadItems, loadOutfits, updateOutfit } from "../utils/storageCommands";
 import {
   getItemsWornToday,
   getItemsWornInPeriod,
@@ -18,14 +18,14 @@ import styles from "./HomePage.module.css";
 import { StatsCard } from "../components/common/StatsCard";
 import { CategoryItemsAccordion } from "../components/common/CategoryItemsAccordion";
 import { OutfitRatingPrompt } from "../components/common/OutfitRatingPrompt";
-import { useOutfit } from "../contexts/OutfitContext";
 import { findUnratedOutfits } from "../utils/outfitRatingPrompt";
 import type { Outfit, OutfitRating } from "../types/outfit";
 
 export async function loader() {
   try {
     const items = await loadItems();
-    return { items, error: null };
+    const outfits = await loadOutfits();
+    return { items, outfits, error: null };
   } catch (error) {
     console.error("Failed to load items:", error);
     return { items: [], error: error as string };
@@ -33,8 +33,7 @@ export async function loader() {
 }
 
 export function HomePage() {
-  const { items, error } = useLoaderData<typeof loader>();
-  const { outfits } = useOutfit();
+  const { items, outfits, error } = useLoaderData<typeof loader>();
   const hasItems = items.length > 0;
   const [unratedOutfits, setUnratedOutfits] = useState<Outfit[]>([]);
   const [currentOutfitIndex, setCurrentOutfitIndex] = useState(0);

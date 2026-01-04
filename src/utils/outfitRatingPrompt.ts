@@ -43,7 +43,9 @@ export function wasOutfitPrompted(outfitId: string): boolean {
 /**
  * Find all unrated outfits that haven't been prompted yet
  */
-export function findUnratedOutfits(outfits: Outfit[]): Outfit[] {
+export function findUnratedOutfits(outfits?: Outfit[]): Outfit[] {
+  if (!outfits) return [];
+
   return outfits
     .filter((outfit) => {
       // Must not have a rating

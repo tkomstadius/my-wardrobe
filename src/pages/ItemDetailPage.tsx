@@ -55,6 +55,9 @@ export async function clientAction({ request }: ActionFunctionArgs) {
   return { success: true };
 }
 
+// TODO maybe handle delete differently using a form action instead
+// TODO add outfits it is included in
+
 export function ItemDetailPage() {
   const navigate = useNavigate();
   const revalidator = useRevalidator();

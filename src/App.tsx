@@ -24,12 +24,15 @@ import { loader as settingsLoader } from "./pages/SettingsPage";
 import { HomePage, loader as homeLoader } from "./pages/HomePage";
 import { ItemsPage, loader as itemsLoader } from "./pages/ItemsPage";
 import { LogWearPage, loader as logWearLoader } from "./pages/LogWearPage";
-import { OutfitsPage } from "./pages/OutfitsPage";
+import { OutfitsPage, loader as outfitsLoader } from "./pages/OutfitsPage";
 import {
   CreateOutfitPage,
   action as createOutfitAction,
 } from "./pages/CreateOutfitPage";
-import { OutfitDetailPage } from "./pages/OutfitDetailPage";
+import {
+  OutfitDetailPage,
+  loader as outfitDetailLoader,
+} from "./pages/OutfitDetailPage";
 import {
   EditOutfitPage,
   action as editOutfitAction,
@@ -67,7 +70,7 @@ const router = createBrowserRouter([
         loader: editItemLoader,
         action: editItemAction,
       },
-      { path: "outfits", element: <OutfitsPage /> },
+      { path: "outfits", element: <OutfitsPage />, loader: outfitsLoader },
       {
         path: "create-outfit",
         element: <CreateOutfitPage />,
@@ -77,6 +80,7 @@ const router = createBrowserRouter([
       {
         path: "outfit/:id",
         element: <OutfitDetailPage />,
+        loader: outfitDetailLoader,
       },
       {
         path: "edit-outfit/:id",

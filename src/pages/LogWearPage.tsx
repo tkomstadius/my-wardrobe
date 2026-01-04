@@ -13,7 +13,6 @@ import { differenceInDays } from "date-fns";
 import { useOptimistic, useState } from "react";
 import { useLoaderData, useNavigate } from "react-router";
 import { CategoryItemsAccordion } from "../components/common/CategoryItemsAccordion";
-import { useOutfit } from "../contexts/OutfitContext";
 import { useWeather } from "../contexts/WeatherContext";
 import { useImageUpload } from "../hooks/useImageUpload";
 import {
@@ -24,7 +23,11 @@ import {
 } from "../utils/aiLearning";
 import { findMatchingItems, type ItemMatch } from "../utils/aiMatching";
 import styles from "./LogWearPage.module.css";
-import { incrementWearCount, loadItems } from "../utils/storageCommands";
+import {
+  addOutfit,
+  incrementWearCount,
+  loadItems,
+} from "../utils/storageCommands";
 
 export async function loader() {
   const items = await loadItems();
@@ -34,7 +37,6 @@ export async function loader() {
 export function LogWearPage() {
   const navigate = useNavigate();
   const { items } = useLoaderData<typeof loader>();
-  const { addOutfit } = useOutfit();
   const { weatherData } = useWeather();
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
   const [error, setError] = useState<string>("");

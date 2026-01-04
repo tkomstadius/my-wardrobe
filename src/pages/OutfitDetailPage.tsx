@@ -1,39 +1,40 @@
 import { TrashIcon, Pencil1Icon } from "@radix-ui/react-icons";
 import { Button, Heading, Text } from "@radix-ui/themes";
-import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router";
-import { useOutfit } from "../contexts/OutfitContext";
+import { useState } from "react";
+import { LoaderFunctionArgs, useLoaderData, useNavigate } from "react-router";
 import { DeleteConfirmDialog } from "../components/common/DeleteConfirmDialog";
 import { formatDate } from "../utils/dateFormatter";
 import styles from "./OutfitDetailPage.module.css";
 import { BackLink } from "../components/common/BackLink";
 import { RATING_OPTIONS } from "../components/common/form/constants";
-import { getItemsByIds, removeOutfit } from "../utils/storageCommands";
-import { WardrobeItem } from "../types/wardrobe";
+import {
+  getOutfitById,
+  loadItems,
+  removeOutfit,
+} from "../utils/storageCommands";
+
+export async function loader({ params }: LoaderFunctionArgs) {
+  const { id } = params;
+  if (!id) {
+    return { outfit: null, outfitItems: [] };
+  }
+
+  const [outfit, items] = await Promise.all([getOutfitById(id), loadItems()]);
+
+  if (!outfit) {
+    return { outfit: null, outfitItems: [] };
+  }
+
+  const outfitItems = items.filter((item) => outfit.itemIds.includes(item.id));
+
+  return { outfit, outfitItems };
+}
 
 export function OutfitDetailPage() {
-  const { id } = useParams<{ id: string }>();
+  const { outfit, outfitItems } = useLoaderData<typeof loader>();
   const navigate = useNavigate();
-  const { getOutfitById } = useOutfit();
+
   const [isDeleting, setIsDeleting] = useState(false);
-  const [outfitItems, setOutfitItems] = useState<WardrobeItem[]>([]);
-
-  const outfit = id ? getOutfitById(id) : null;
-
-  useEffect(() => {
-    const fetchOutfitItems = async () => {
-      if (!outfit) return;
-
-      try {
-        const items = await getItemsByIds(outfit.itemIds);
-        setOutfitItems(items);
-      } catch (error) {
-        console.error("Failed to fetch outfit items:", error);
-      }
-    };
-
-    fetchOutfitItems();
-  }, [outfit, getItemsByIds]);
 
   if (!outfit) {
     return (
