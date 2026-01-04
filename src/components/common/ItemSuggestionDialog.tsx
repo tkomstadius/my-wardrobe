@@ -1,4 +1,4 @@
-import { Dialog, Button, Text, Flex, Heading } from "@radix-ui/themes";
+import { Dialog, Button, Flex, Heading } from "@radix-ui/themes";
 import { ItemCard } from "./ItemCard";
 import type { WardrobeItem } from "../../types/wardrobe";
 
@@ -27,28 +27,21 @@ export function ItemSuggestionDialog({
         </Dialog.Title>
 
         <Dialog.Description size="2" color="gray" mb="4">
-          Here's a suggestion based on your wardrobe, wear history, and today's weather.
+          Here's a suggestion based on your wardrobe, wear history, and today's
+          weather.
         </Dialog.Description>
 
         <Flex direction="column" gap="4">
           <ItemCard item={suggestedItem} />
 
           <Flex gap="3" justify="end">
-            <Button
-              variant="soft"
-              onClick={onTryAnother}
-            >
+            <Button variant="soft" onClick={onTryAnother}>
               Try Another
             </Button>
-            <Button
-              onClick={() => onOpenChange(false)}
-            >
-              Close
-            </Button>
+            <Button onClick={() => onOpenChange(false)}>Close</Button>
           </Flex>
         </Flex>
       </Dialog.Content>
     </Dialog.Root>
   );
 }
-
