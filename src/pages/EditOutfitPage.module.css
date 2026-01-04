@@ -1,0 +1,28 @@
+.container {
+  padding-bottom: 5rem;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.divider {
+}
+
+.itemsSection {
+  border-top: 1px solid var(--complimentary-color);
+  margin-top: 16px;
+  padding-top: 32px;
+}

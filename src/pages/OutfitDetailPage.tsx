@@ -8,13 +8,13 @@ import { formatDate } from "../utils/dateFormatter";
 import styles from "./OutfitDetailPage.module.css";
 import { BackLink } from "../components/common/BackLink";
 import { RATING_OPTIONS } from "../components/common/form/constants";
-import { getItemsByIds } from "../utils/storageCommands";
+import { getItemsByIds, removeOutfit } from "../utils/storageCommands";
 import { WardrobeItem } from "../types/wardrobe";
 
 export function OutfitDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { getOutfitById, deleteOutfit } = useOutfit();
+  const { getOutfitById } = useOutfit();
   const [isDeleting, setIsDeleting] = useState(false);
   const [outfitItems, setOutfitItems] = useState<WardrobeItem[]>([]);
 
@@ -49,7 +49,7 @@ export function OutfitDetailPage() {
   const handleDelete = async () => {
     setIsDeleting(true);
     try {
-      await deleteOutfit(outfit.id);
+      await removeOutfit(outfit.id);
       navigate("/outfits");
     } catch (error) {
       console.error("Failed to delete outfit:", error);

@@ -3,7 +3,7 @@ import { useLoaderData } from "react-router";
 import { useEffect, useMemo, useState } from "react";
 import { ItemCard } from "../components/common/ItemCard";
 import { getDaysAgo } from "../utils/dateFormatter";
-import { loadItems } from "../utils/storageCommands";
+import { loadItems, updateOutfit } from "../utils/storageCommands";
 import {
   getItemsWornToday,
   getItemsWornInPeriod,
@@ -34,7 +34,7 @@ export async function loader() {
 
 export function HomePage() {
   const { items, error } = useLoaderData<typeof loader>();
-  const { outfits, updateOutfit } = useOutfit();
+  const { outfits } = useOutfit();
   const hasItems = items.length > 0;
   const [unratedOutfits, setUnratedOutfits] = useState<Outfit[]>([]);
   const [currentOutfitIndex, setCurrentOutfitIndex] = useState(0);

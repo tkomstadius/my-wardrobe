@@ -6,17 +6,12 @@ import {
   useState,
 } from "react";
 import type { NewOutfit, Outfit } from "../types/outfit";
-import {
-  generateId,
-  loadOutfits,
-  removeOutfit,
-} from "../utils/storageCommands";
+import { generateId, loadOutfits } from "../utils/storageCommands";
 
 interface OutfitContextValue {
   outfits: Outfit[];
   addOutfit: (newOutfit: NewOutfit) => Promise<Outfit>;
   updateOutfit: (id: string, updates: Partial<Outfit>) => Promise<void>;
-  deleteOutfit: (id: string) => Promise<void>;
   getOutfitById: (id: string) => Outfit | undefined;
   getRecentOutfits: (limit?: number) => Outfit[];
   getOutfitsByItemId: (itemId: string) => Outfit[];
@@ -90,14 +85,6 @@ export function OutfitProvider({ children }: OutfitProviderProps) {
     );
   };
 
-  const deleteOutfit = async (id: string): Promise<void> => {
-    // Delete from IndexedDB first
-    await removeOutfit(id);
-
-    // Then update state
-    setOutfits((prev) => prev.filter((outfit) => outfit.id !== id));
-  };
-
   const getOutfitById = (id: string): Outfit | undefined => {
     return outfits.find((outfit) => outfit.id === id);
   };
@@ -118,7 +105,6 @@ export function OutfitProvider({ children }: OutfitProviderProps) {
     outfits,
     addOutfit,
     updateOutfit,
-    deleteOutfit,
     getOutfitById,
     getRecentOutfits,
     getOutfitsByItemId,

@@ -78,18 +78,6 @@ export async function clientAction({ request, params }: ActionFunctionArgs) {
   }
 
   const formData = await request.formData();
-  const intent = formData.get("intent") as string;
-
-  // Handle delete action
-  if (intent === "delete") {
-    try {
-      await removeItem(id);
-      return redirect("/");
-    } catch (err) {
-      console.error("Failed to delete item:", err);
-      return { error: "Failed to delete item. Please try again." };
-    }
-  }
 
   // Handle update action
   const imageUrl = formData.get(IMAGE_URL_NAME) as string;
@@ -168,6 +156,8 @@ export async function clientAction({ request, params }: ActionFunctionArgs) {
     return { error: "Failed to save changes. Please try again." };
   }
 }
+
+// TODO maybe handle delete differently using a form action instead
 
 export function EditItemPage() {
   const navigate = useNavigate();
@@ -314,6 +304,7 @@ export function EditItemPage() {
               placeholder="e.g., favorite jeans, scratched"
               rows={2}
               defaultValue={item.notes || ""}
+              size="3"
             />
           </Flex>
 

@@ -6,7 +6,7 @@ import {
   TextArea,
   TextField,
 } from "@radix-ui/themes";
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo } from "react";
 import {
   ActionFunctionArgs,
   Form,
@@ -78,7 +78,7 @@ export function CreateOutfitPage() {
   const isSubmitting = navigation.state === "submitting";
   const isLoading = navigation.state === "loading";
 
-  const toggleItemSelection = useCallback((itemId: string) => {
+  const toggleItemSelection = (itemId: string) => {
     setSelectedItems((prev) => {
       const newSet = new Set(prev);
       if (newSet.has(itemId)) {
@@ -88,7 +88,7 @@ export function CreateOutfitPage() {
       }
       return newSet;
     });
-  }, []);
+  };
 
   // Memoize the JSON string to avoid unnecessary re-renders
   const itemIdsJson = useMemo(

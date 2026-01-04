@@ -1,63 +1,104 @@
-import { CameraIcon, TrashIcon, ArrowLeftIcon } from "@radix-ui/react-icons";
-import { Button, Heading, Text, TextArea } from "@radix-ui/themes";
-import { useEffect, useState } from "react";
-import { useLoaderData, useNavigate, useParams } from "react-router";
-import { useOutfit } from "../contexts/OutfitContext";
-import { useImageUpload } from "../hooks/useImageUpload";
+import { TrashIcon } from "@radix-ui/react-icons";
+import {
+  Button,
+  Flex,
+  Heading,
+  Text,
+  TextArea,
+  TextField,
+} from "@radix-ui/themes";
+import { useMemo, useState } from "react";
+import {
+  ActionFunctionArgs,
+  Form,
+  LoaderFunctionArgs,
+  redirect,
+  useLoaderData,
+  useNavigate,
+  useNavigation,
+} from "react-router";
 import { DeleteConfirmDialog } from "../components/common/DeleteConfirmDialog";
-import { ItemSelector } from "../components/common/ItemSelector";
 import { RatingButtons } from "../components/common/form/RatingButtons";
-import type { OutfitRating } from "../types/outfit";
-import styles from "./CreateOutfitPage.module.css";
 import { BackLink } from "../components/common/BackLink";
-import { loadItems } from "../utils/storageCommands";
+import {
+  getOutfitById,
+  loadItems,
+  removeOutfit,
+  updateOutfit,
+} from "../utils/storageCommands";
 import { formatDate } from "../utils/dateFormatter";
+import styles from "./EditOutfitPage.module.css";
+import { ImageInput } from "../components/common/form/ImageInput";
+import {
+  CREATED_DATE_NAME,
+  IMAGE_URL_NAME,
+  ITEM_IDS_NAME,
+  NOTES_NAME,
+  RATING_NAME,
+} from "../components/common/form/constants";
+import { SearchBar } from "../components/common/SearchBar";
+import { CategoryItemsAccordion } from "../components/common/CategoryItemsAccordion";
+import { useItemSearch } from "../hooks/useItemSearch";
+import { OutfitRating } from "../types/outfit";
 
-export async function loader() {
-  const items = await loadItems();
-  return { items };
+export async function loader({ params }: LoaderFunctionArgs) {
+  const { id } = params;
+  if (!id) {
+    return { outfit: null, items: [] };
+  }
+
+  const [outfit, items] = await Promise.all([getOutfitById(id), loadItems()]);
+
+  return { outfit, items };
 }
 
-export function EditOutfitPage() {
-  const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
-  const { updateOutfit, getOutfitById, deleteOutfit } = useOutfit();
-  const { items } = useLoaderData<typeof loader>();
-  const { imagePreview, setImagePreview, handleImageUpload, clearImage } =
-    useImageUpload();
+export async function action({ request, params }: ActionFunctionArgs) {
+  const { id } = params;
+  if (!id) {
+    return { error: "Outfit ID is required" };
+  }
 
-  const [formData, setFormData] = useState({
-    createdDate: formatDate(new Date()),
-    notes: "",
-    rating: undefined as OutfitRating | undefined,
-  });
-  const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
-  const [isSaving, setIsSaving] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [outfitNotFound, setOutfitNotFound] = useState(false);
+  const formData = await request.formData();
+  const imageUrl = formData.get(IMAGE_URL_NAME) as string;
+  const createdDate = formData.get(CREATED_DATE_NAME) as string;
+  const notes = formData.get(NOTES_NAME) as string;
+  const rating = formData.get(RATING_NAME) as string;
+  const itemIds = formData.get(ITEM_IDS_NAME) as string;
 
-  // Load outfit data
-  useEffect(() => {
-    if (!id) {
-      setOutfitNotFound(true);
-      return;
-    }
-
-    const outfit = getOutfitById(id);
-    if (!outfit) {
-      setOutfitNotFound(true);
-      return;
-    }
-
-    // Pre-fill form with existing data
-    setFormData({
-      createdDate: formatDate(outfit.createdAt),
-      notes: outfit.notes || "",
-      rating: outfit.rating,
+  try {
+    await updateOutfit(id, {
+      photo: imageUrl,
+      createdAt: new Date(createdDate),
+      notes: notes.trim() || undefined,
+      rating: rating
+        ? (Number.parseInt(rating, 10) as OutfitRating)
+        : undefined,
+      itemIds: JSON.parse(itemIds),
     });
-    setImagePreview(outfit.photo || "");
-    setSelectedItems(new Set(outfit.itemIds));
-  }, [id, getOutfitById, setImagePreview]);
+
+    return redirect(`/outfit/${id}`);
+  } catch (error) {
+    console.error("Failed to update outfit:", error);
+    return { error: "Failed to update outfit. Please try again." };
+  }
+}
+
+// TODO maybe handle delete differently using a form action instead
+
+export function EditOutfitPage() {
+  const navigate = useNavigate();
+  const navigation = useNavigation();
+  const { outfit, items } = useLoaderData<typeof loader>();
+  const { searchQuery, setSearchQuery, clearSearch, filteredItems } =
+    useItemSearch(items);
+
+  const [selectedItems, setSelectedItems] = useState<Set<string>>(
+    new Set(outfit?.itemIds || [])
+  );
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const isSubmitting = navigation.state === "submitting";
+  const isLoading = navigation.state === "loading";
 
   const toggleItemSelection = (itemId: string) => {
     setSelectedItems((prev) => {
@@ -71,43 +112,18 @@ export function EditOutfitPage() {
     });
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (selectedItems.size === 0) {
-      alert("Please select at least one item for this outfit");
-      return;
-    }
-
-    if (!id) return;
-
-    setIsSaving(true);
-
-    try {
-      await updateOutfit(id, {
-        photo: imagePreview || undefined,
-        itemIds: Array.from(selectedItems),
-        createdAt: new Date(formData.createdDate),
-        notes: formData.notes.trim() || undefined,
-        rating: formData.rating,
-      });
-
-      // Navigate to outfit detail page
-      navigate(`/outfit/${id}`);
-    } catch (error) {
-      console.error("Failed to update outfit:", error);
-      alert("Failed to update outfit. Please try again.");
-    } finally {
-      setIsSaving(false);
-    }
-  };
+  // Memoize the JSON string to avoid unnecessary re-renders
+  const itemIdsJson = useMemo(
+    () => JSON.stringify(Array.from(selectedItems)),
+    [selectedItems]
+  );
 
   const handleDelete = async () => {
-    if (!id) return;
+    if (!outfit?.id) return;
 
     setIsDeleting(true);
     try {
-      await deleteOutfit(id);
+      await removeOutfit(outfit.id);
       navigate("/outfits");
     } catch (error) {
       console.error("Failed to delete outfit:", error);
@@ -116,7 +132,7 @@ export function EditOutfitPage() {
     }
   };
 
-  if (outfitNotFound) {
+  if (!outfit) {
     return (
       <div className={styles.container}>
         <div className={styles.emptyState}>
@@ -130,11 +146,9 @@ export function EditOutfitPage() {
   }
 
   return (
-    <div className={styles.container}>
+    <section className={styles.container}>
       <header className={styles.header}>
-        <Button variant="ghost" onClick={() => navigate(`/outfit/${id}`)}>
-          <ArrowLeftIcon /> Back
-        </Button>
+        <BackLink to={`/outfit/${outfit.id}`} />
         <Heading size="6">Edit Outfit</Heading>
         <DeleteConfirmDialog
           title="Delete Outfit"
@@ -149,121 +163,69 @@ export function EditOutfitPage() {
         />
       </header>
 
-      <form onSubmit={handleSubmit} className={styles.form}>
-        {/* Outfit Photo */}
-        <section className={styles.section}>
-          <Text weight="bold" size="2">
-            Outfit Photo (Optional)
+      <Form method="post" className={styles.form}>
+        <ImageInput originalImageUrl={outfit.photo} />
+
+        <Flex direction="column" gap="1">
+          <Text as="label" size="2" weight="bold">
+            Purchase Date
           </Text>
-
-          <div className={styles.imageSection}>
-            <div className={styles.imageContainer}>
-              {imagePreview ? (
-                <>
-                  <img
-                    src={imagePreview}
-                    alt="Outfit preview"
-                    className={styles.previewImage}
-                  />
-                  <Button
-                    type="button"
-                    variant="soft"
-                    color="red"
-                    size="1"
-                    onClick={clearImage}
-                    className={styles.removeButton}
-                  >
-                    <TrashIcon /> Remove
-                  </Button>
-                </>
-              ) : (
-                <div className={styles.imagePlaceholder}>
-                  <p>No image selected</p>
-                </div>
-              )}
-
-              <label
-                htmlFor="outfit-image-upload"
-                className={styles.cameraButton}
-              >
-                <CameraIcon width={24} height={24} />
-              </label>
-              <input
-                id="outfit-image-upload"
-                type="file"
-                accept="image/*"
-                onChange={handleImageUpload}
-                className={styles.fileInput}
-              />
-            </div>
-          </div>
-        </section>
-
-        {/* Outfit Details */}
-        <section className={styles.section}>
-          <label className={styles.label}>
-            <Text weight="bold" size="2">
-              Created
-            </Text>
-            <input
-              type="date"
-              value={formData.createdDate}
-              onChange={(e) =>
-                setFormData({ ...formData, createdDate: e.target.value })
-              }
-              className={styles.dateInput}
-              required
-            />
-          </label>
-
-          <label className={styles.label}>
-            <Text weight="bold" size="2">
-              Notes (Optional)
-            </Text>
-            <TextArea
-              placeholder="Add any notes about this outfit..."
-              value={formData.notes}
-              onChange={(e) =>
-                setFormData({ ...formData, notes: e.target.value })
-              }
-              rows={3}
-              size="3"
-            />
-          </label>
-        </section>
-
-        {/* Rating Scales */}
-        <section className={styles.section}>
-          <Text weight="bold" size="2" className={styles.ratingHeader}>
-            Rate This Outfit (Optional)
-          </Text>
-
-          <RatingButtons
-            value={formData.rating}
-            onChange={(value) => setFormData({ ...formData, rating: value })}
+          <TextField.Root
+            variant="soft"
+            name={CREATED_DATE_NAME}
+            type="date"
+            defaultValue={outfit.createdAt ? formatDate(outfit.createdAt) : ""}
+            size="3"
           />
-        </section>
+        </Flex>
 
-        {/* Item Selection */}
-        <section>
-          <ItemSelector
-            items={items}
+        <Flex direction="column" gap="1">
+          <Text as="label" size="2" weight="bold">
+            Notes
+          </Text>
+          <TextArea
+            variant="soft"
+            name={NOTES_NAME}
+            placeholder="e.g., too warm, uncomfortable"
+            rows={2}
+            defaultValue={outfit.notes || ""}
+            size="3"
+          />
+        </Flex>
+
+        <Flex direction="column" gap="2">
+          <Text size="2" weight="bold">
+            Rating
+          </Text>
+          <RatingButtons name={RATING_NAME} defaultValue={outfit.rating} />
+        </Flex>
+
+        <div className={styles.itemsSection}>
+          <SearchBar
+            value={searchQuery}
+            onChange={setSearchQuery}
+            onClear={clearSearch}
+            resultCount={filteredItems.length}
+          />
+
+          <CategoryItemsAccordion
+            items={filteredItems}
             selectedItems={selectedItems}
             onToggleSelection={toggleItemSelection}
-            emptyMessage="No items in your wardrobe yet"
-            actionButtons={
-              <Button
-                type="submit"
-                size="3"
-                disabled={isSaving || selectedItems.size === 0}
-                className={styles.submitButton}
-              >
-                {isSaving ? "Saving..." : "Save Changes"}
-              </Button>
-            }
           />
-        </section>
-      </form>
-    </div>
+        </div>
+
+        {/* Hidden input to include selected items in form submission */}
+        <input type="hidden" name={ITEM_IDS_NAME} value={itemIdsJson} />
+
+        <Button
+          type="submit"
+          size="3"
+          disabled={isSubmitting || isLoading || selectedItems.size === 0}
+        >
+          {isSubmitting ? "Saving..." : "Save changes"}
+        </Button>
+      </Form>
+    </section>
   );
 }

@@ -30,7 +30,10 @@ import {
   action as createOutfitAction,
 } from "./pages/CreateOutfitPage";
 import { OutfitDetailPage } from "./pages/OutfitDetailPage";
-import { EditOutfitPage } from "./pages/EditOutfitPage";
+import {
+  EditOutfitPage,
+  action as editOutfitAction,
+} from "./pages/EditOutfitPage";
 import { SettingsPage } from "./pages/SettingsPage";
 import { StatsPage, loader as statsLoader } from "./pages/StatsPage";
 
@@ -79,6 +82,7 @@ const router = createBrowserRouter([
         path: "edit-outfit/:id",
         element: <EditOutfitPage />,
         loader: editOutfitLoader,
+        action: editOutfitAction,
       },
       { path: "stats", element: <StatsPage />, loader: statsLoader },
       { path: "settings", element: <SettingsPage />, loader: settingsLoader },

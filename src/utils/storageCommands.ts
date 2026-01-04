@@ -9,6 +9,7 @@ import {
   deleteOutfit,
   loadItemsByCategory,
   loadItemById,
+  loadOutfitById,
 } from "./indexedDB";
 import { compareAsc } from "date-fns";
 
@@ -184,6 +185,15 @@ export async function loadOutfits(): Promise<Outfit[]> {
   }
 }
 
+export async function getOutfitById(id: string): Promise<Outfit | null> {
+  try {
+    return await loadOutfitById(id);
+  } catch (error) {
+    console.error("Failed to load outfit by id from IndexedDB:", error);
+    return null;
+  }
+}
+
 export async function getOutfitsWithItemId(itemId: string): Promise<Outfit[]> {
   try {
     const allOutfits = await loadAllOutfits();
@@ -210,4 +220,23 @@ export async function addOutfit(outfit: NewOutfit): Promise<void> {
     console.error("Failed to save outfit to IndexedDB:", error);
     throw new Error("Failed to save outfit. Storage may be full.");
   }
+}
+
+export async function updateOutfit(
+  id: string,
+  updates: Partial<Outfit>
+): Promise<void> {
+  const outfit = await getOutfitById(id);
+
+  if (!outfit) {
+    throw new Error("Outfit not found");
+  }
+
+  const updatedOutfit = {
+    ...outfit,
+    ...updates,
+    updatedAt: new Date(),
+  };
+
+  await saveOutfit(updatedOutfit);
 }
