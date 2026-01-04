@@ -1,4 +1,4 @@
-import { Text, Tabs, Flex } from "@radix-ui/themes";
+import { Text, Tabs, Flex, Button } from "@radix-ui/themes";
 import { useLoaderData } from "react-router";
 import { useEffect, useMemo, useState } from "react";
 import { ItemCard } from "../components/common/ItemCard";
@@ -20,6 +20,10 @@ import { CategoryItemsAccordion } from "../components/common/CategoryItemsAccord
 import { OutfitRatingPrompt } from "../components/common/OutfitRatingPrompt";
 import { findUnratedOutfits } from "../utils/outfitRatingPrompt";
 import type { Outfit, OutfitRating } from "../types/outfit";
+import { useWeather } from "../contexts/WeatherContext";
+import { suggestItem } from "../utils/itemSuggestion";
+import { ItemSuggestionDialog } from "../components/common/ItemSuggestionDialog";
+import type { WardrobeItem } from "../types/wardrobe";
 
 export async function loader() {
   try {
@@ -34,9 +38,12 @@ export async function loader() {
 
 export function HomePage() {
   const { items, outfits, error } = useLoaderData<typeof loader>();
+  const { weatherData } = useWeather();
   const hasItems = items.length > 0;
   const [unratedOutfits, setUnratedOutfits] = useState<Outfit[]>([]);
   const [currentOutfitIndex, setCurrentOutfitIndex] = useState(0);
+  const [suggestionDialogOpen, setSuggestionDialogOpen] = useState(false);
+  const [suggestedItem, setSuggestedItem] = useState<WardrobeItem | null>(null);
 
   const todayItems = useMemo(() => getItemsWornToday(items), [items]);
   const weekItems = useMemo(
@@ -76,6 +83,17 @@ export function HomePage() {
     }
   };
 
+  const handleSuggestItem = () => {
+    const suggestion = suggestItem(items, weatherData);
+    setSuggestedItem(suggestion);
+    setSuggestionDialogOpen(true);
+  };
+
+  const handleTryAnother = () => {
+    const suggestion = suggestItem(items, weatherData);
+    setSuggestedItem(suggestion);
+  };
+
   const currentOutfit = unratedOutfits[currentOutfitIndex];
 
   if (error) {
@@ -97,6 +115,12 @@ export function HomePage() {
           totalCount={unratedOutfits.length}
         />
       )}
+      <ItemSuggestionDialog
+        open={suggestionDialogOpen}
+        onOpenChange={setSuggestionDialogOpen}
+        suggestedItem={suggestedItem}
+        onTryAnother={handleTryAnother}
+      />
       <Flex direction="column" gap="4">
         {!hasItems ? (
           <Text size="2" className={styles.info}>
@@ -104,10 +128,17 @@ export function HomePage() {
           </Text>
         ) : (
           <>
-            <Flex justify="between" align="center">
+            <Flex justify="between" align="center" wrap="wrap" gap="2">
               <Text size="2" className={styles.info}>
                 {items.length} {items.length === 1 ? "item" : "items"} total
               </Text>
+              <Button
+                size="3"
+                onClick={handleSuggestItem}
+                style={{ flexShrink: 0 }}
+              >
+                ✨ What Should I Wear?
+              </Button>
             </Flex>
 
             <Flex direction="column" gap="4">
