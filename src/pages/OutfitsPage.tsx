@@ -1,5 +1,5 @@
-import { PlusIcon, MixIcon } from "@radix-ui/react-icons";
-import { Button, Heading, Text, Select } from "@radix-ui/themes";
+import { MixIcon } from "@radix-ui/react-icons";
+import { Heading, Text, Select, Flex } from "@radix-ui/themes";
 import { useState } from "react";
 import { useLoaderData, useNavigate } from "react-router";
 import styles from "./OutfitsPage.module.css";
@@ -9,11 +9,6 @@ import { loadOutfits } from "../utils/storageCommands";
 import { Outfit } from "../types/outfit";
 
 type SortOption = "date" | "score";
-
-export async function loader() {
-  const outfits = await loadOutfits();
-  return { outfits };
-}
 
 const getSortedOutfits = (outfits: Outfit[], sortBy: SortOption) => {
   return [...outfits].sort((a, b) => {
@@ -33,6 +28,11 @@ const getSortedOutfits = (outfits: Outfit[], sortBy: SortOption) => {
   });
 };
 
+export async function loader() {
+  const outfits = await loadOutfits();
+  return { outfits };
+}
+
 export function OutfitsPage() {
   const navigate = useNavigate();
   const { outfits } = useLoaderData<typeof loader>();
@@ -41,44 +41,38 @@ export function OutfitsPage() {
   const sortedOutfits = getSortedOutfits(outfits, sortBy);
 
   return (
-    <div className={styles.container}>
+    <>
       <header className={styles.header}>
         <Heading size="6">My Outfits</Heading>
         {sortedOutfits.length > 0 && (
-          <div className={styles.sortControl}>
-            <Text size="2" color="gray">
-              Sort by:
-            </Text>
-            <Select.Root
-              value={sortBy}
-              onValueChange={(value) => setSortBy(value as SortOption)}
-              size="2"
-            >
-              <Select.Trigger variant="soft" className={styles.sortTrigger} />
-              <Select.Content>
-                <Select.Item value="date">Date (Newest)</Select.Item>
-                <Select.Item value="score">Score (Highest)</Select.Item>
-              </Select.Content>
-            </Select.Root>
-          </div>
+          <Select.Root
+            value={sortBy}
+            onValueChange={(value) => setSortBy(value as SortOption)}
+            size="2"
+          >
+            <Select.Trigger variant="soft" className={styles.sortTrigger} />
+            <Select.Content>
+              <Select.Item value="date">Date (Newest)</Select.Item>
+              <Select.Item value="score">Score (Highest)</Select.Item>
+            </Select.Content>
+          </Select.Root>
         )}
       </header>
 
       {sortedOutfits.length === 0 ? (
-        <div className={styles.emptyState}>
+        <Flex
+          direction="column"
+          align="center"
+          justify="center"
+          gap="2"
+          className={styles.emptyState}
+        >
           <MixIcon className={styles.emptyIcon} />
           <Heading size="4">No outfits yet</Heading>
           <Text color="gray">
             Create outfit combinations for inspiration and planning
           </Text>
-          <Button
-            onClick={() => navigate("/create-outfit")}
-            size="3"
-            className={styles.emptyButton}
-          >
-            <PlusIcon /> Create Your First Outfit
-          </Button>
-        </div>
+        </Flex>
       ) : (
         <div className={styles.outfitsGrid}>
           {sortedOutfits.map((outfit) => (
@@ -95,24 +89,24 @@ export function OutfitsPage() {
                     <MixIcon width="32" height="32" />
                   </div>
                 )}
-                <div className={styles.itemCount}>
+              </div>
+
+              <Flex direction="column" gap="1">
+                <Flex justify="between">
+                  {outfit.rating != undefined && (
+                    <Text size="2" weight="bold" color="blue">
+                      {
+                        RATING_OPTIONS.find(
+                          (rating) => rating.value === outfit.rating
+                        )?.emoji
+                      }
+                    </Text>
+                  )}
                   <Text size="1" weight="bold">
                     {outfit.itemIds.length}{" "}
                     {outfit.itemIds.length === 1 ? "item" : "items"}
                   </Text>
-                </div>
-              </div>
-
-              <div className={styles.outfitInfo}>
-                {outfit.rating != undefined && (
-                  <Text size="2" weight="bold" color="blue">
-                    {
-                      RATING_OPTIONS.find(
-                        (rating) => rating.value === outfit.rating
-                      )?.emoji
-                    }
-                  </Text>
-                )}
+                </Flex>
                 {outfit.notes && (
                   <Text size="1" color="gray" className={styles.outfitNotes}>
                     {outfit.notes.length > 40
@@ -120,13 +114,13 @@ export function OutfitsPage() {
                       : outfit.notes}
                   </Text>
                 )}
-              </div>
+              </Flex>
             </div>
           ))}
         </div>
       )}
 
       <Fab path="/create-outfit" />
-    </div>
+    </>
   );
 }
