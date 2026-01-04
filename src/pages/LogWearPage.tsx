@@ -304,13 +304,10 @@ export function LogWearPage() {
   const isPending = optimisticLoggedItems.size > 0;
 
   return (
-    <div className={styles.container}>
-      <div className={styles.header}>
-        <h1 className={styles.title}>Log Today's Outfit</h1>
-        <Text size="2" color="gray">
-          Select items you wore today
-        </Text>
-      </div>
+    <Flex direction="column" gap="2">
+      <Heading size="6" align="center">
+        Log Today's Outfit
+      </Heading>
 
       {error && (
         <Callout.Root color="red" size="1" className={styles.callout}>
@@ -327,7 +324,6 @@ export function LogWearPage() {
         </Callout.Root>
       )}
 
-      {/* Mode Toggle */}
       <Tabs.Root
         value={isAIMode ? "ai" : "manual"}
         onValueChange={(value) => {
@@ -348,7 +344,6 @@ export function LogWearPage() {
         </Tabs.List>
       </Tabs.Root>
 
-      {/* AI Mode */}
       {isAIMode && (
         <div className={styles.aiMode}>
           <Heading size="4">Upload Outfit Photo</Heading>
@@ -510,7 +505,7 @@ export function LogWearPage() {
                                     Match: {match.percentage}%
                                   </Text>
                                 </div>
-                                <div className={styles.matchActions}>
+                                <Flex gap="1" align="center">
                                   <Button
                                     size="2"
                                     variant={isAccepted ? "solid" : "soft"}
@@ -533,7 +528,7 @@ export function LogWearPage() {
                                   >
                                     ✗
                                   </Button>
-                                </div>
+                                </Flex>
                               </div>
                             );
                           })}
@@ -608,7 +603,6 @@ export function LogWearPage() {
         </div>
       )}
 
-      {/* Manual Mode */}
       {!isAIMode && (
         <div className={styles.manualMode}>
           {items.length === 0 ? (
@@ -626,8 +620,8 @@ export function LogWearPage() {
               <div className={styles.actionButtons}>
                 <Button
                   size="3"
-                  variant="soft"
-                  color="gray"
+                  variant="outline"
+                  color="red"
                   onClick={() => navigate(-1)}
                   disabled={isPending}
                 >
@@ -649,6 +643,6 @@ export function LogWearPage() {
           )}
         </div>
       )}
-    </div>
+    </Flex>
   );
 }
