@@ -16,6 +16,13 @@
   gap: 8px;
 }
 
+.selectionMode {
+  padding: 8px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
 .chevron {
   transition: transform 0.2s ease;
 }
@@ -27,17 +34,20 @@
 /* Selection mode styles */
 .selectableItem {
   display: flex;
+  flex-direction: column;
   align-items: center;
   gap: 12px;
-  padding: 12px;
-  border-radius: var(--radius-3);
+  padding: 4px;
+  border-radius: var(--border-radius);
   cursor: pointer;
-  transition: background-color 0.2s;
+  background-color: var(--accent-a3);
   border: 1px solid transparent;
+  position: relative;
 }
 
 .selectableItem:hover:not(.disabled) {
-  background-color: var(--accent-a2);
+  background-color: var(--text-color);
+  color: var(--accent-a3);
 }
 
 .selectableItem.selected {
@@ -50,23 +60,29 @@
   cursor: not-allowed;
 }
 
-.itemPreview {
+.checkIcon {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 50px;
+  height: 50px;
+  background-color: var(--text-color);
+  border-radius: 50%;
   display: flex;
   align-items: center;
-  gap: 12px;
-  flex: 1;
+  justify-content: center;
+  color: var(--accent-action-color);
+
+  & svg {
+    width: 20px;
+    height: 20px;
+  }
 }
 
 .itemImage {
-  width: 60px;
-  height: 60px;
+  width: 90px;
+  height: 90px;
   object-fit: cover;
-  border-radius: var(--radius-2);
-}
-
-.itemInfo {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  flex: 1;
+  border-radius: 50%;
 }

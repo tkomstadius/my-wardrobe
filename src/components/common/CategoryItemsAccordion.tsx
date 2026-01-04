@@ -1,10 +1,11 @@
 import { Accordion } from "radix-ui";
-import { ChevronDownIcon, Text, Checkbox } from "@radix-ui/themes";
+import { ChevronDownIcon, Text, Flex } from "@radix-ui/themes";
 import { useMemo } from "react";
 import { WardrobeItem } from "../../types/wardrobe";
 import { CATEGORIES } from "../../utils/categories";
 import { ItemCard } from "./ItemCard";
 import styles from "./CategoryItemsAccordion.module.css";
+import { CheckIcon } from "@radix-ui/react-icons";
 
 interface CategoryItemsAccordionProps {
   items: WardrobeItem[];
@@ -48,17 +49,15 @@ export function CategoryItemsAccordion({
             <ChevronDownIcon className={styles.chevron} />
           </Accordion.Trigger>
 
-          <Accordion.Content className={styles.accordionContent}>
+          <Accordion.Content
+            className={`${
+              isSelectionMode ? styles.selectionMode : styles.accordionContent
+            }`}
+          >
             {isSelectionMode
               ? categoryItems.map((item) => {
                   const isSelected = selectedItems!.has(item.id);
                   const isDisabled = disabledItems?.has(item.id) ?? false;
-
-                  const handleCheckboxChange = () => {
-                    if (!isDisabled) {
-                      onToggleSelection!(item.id);
-                    }
-                  };
 
                   return (
                     <div
@@ -66,30 +65,25 @@ export function CategoryItemsAccordion({
                       className={`${styles.selectableItem} ${
                         isSelected ? styles.selected : ""
                       } ${isDisabled ? styles.disabled : ""}`}
+                      onClick={() => onToggleSelection!(item.id)}
                     >
-                      <div onClick={(e) => e.stopPropagation()}>
-                        <Checkbox
-                          checked={isSelected}
-                          disabled={isDisabled}
-                          onCheckedChange={handleCheckboxChange}
-                        />
-                      </div>
-                      <div className={styles.itemPreview}>
-                        <img
-                          src={item.imageUrl}
-                          alt={item.brand || item.category}
-                          className={styles.itemImage}
-                        />
-                        <div className={styles.itemInfo}>
-                          <Text size="2" weight="bold">
-                            {item.brand || item.category}
-                          </Text>
-                          <Text size="1" color="gray">
-                            {item.category}
-                            {item.wearCount > 0 && ` • Worn ${item.wearCount}×`}
-                          </Text>
+                      {isSelected && (
+                        <div className={styles.checkIcon}>
+                          <CheckIcon />
                         </div>
-                      </div>
+                      )}
+
+                      <img
+                        src={item.imageUrl}
+                        alt={item.brand}
+                        className={styles.itemImage}
+                      />
+                      <Flex direction="column" gap="1" align="center">
+                        <Text size="2" weight="bold">
+                          {item.brand || item.subCategory}
+                        </Text>
+                        <Text size="1">{`Worn ${item.wearCount}×`}</Text>
+                      </Flex>
                     </div>
                   );
                 })

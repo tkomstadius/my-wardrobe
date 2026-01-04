@@ -145,18 +145,20 @@ export function CreateOutfitPage() {
 
         <div className={styles.divider} />
 
-        <SearchBar
-          value={searchQuery}
-          onChange={setSearchQuery}
-          onClear={clearSearch}
-          resultCount={filteredItems.length}
-        />
+        <div>
+          <SearchBar
+            value={searchQuery}
+            onChange={setSearchQuery}
+            onClear={clearSearch}
+            resultCount={filteredItems.length}
+          />
 
-        <CategoryItemsAccordion
-          items={filteredItems}
-          selectedItems={selectedItems}
-          onToggleSelection={toggleItemSelection}
-        />
+          <CategoryItemsAccordion
+            items={filteredItems}
+            selectedItems={selectedItems}
+            onToggleSelection={toggleItemSelection}
+          />
+        </div>
 
         {/* Hidden input to include selected items in form submission */}
         <input type="hidden" name={ITEM_IDS_NAME} value={itemIdsJson} />
