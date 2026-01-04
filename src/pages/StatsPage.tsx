@@ -196,10 +196,6 @@ export function StatsPage() {
               title="Second-Hand"
               value={stats.secondHandPercentage.toFixed(0)}
             />
-            <StatsCard
-              title="Second-Hand"
-              value={stats.secondHandPercentage.toFixed(0)}
-            />
           </div>
 
           {stats.bestValue.length > 0 && (

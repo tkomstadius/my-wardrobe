@@ -5,7 +5,11 @@ import {
 } from "@radix-ui/react-icons";
 import { Button, Callout, Card, Text } from "@radix-ui/themes";
 import { useEffect, useRef, useState } from "react";
-import { getImageEmbedding } from "../utils/aiEmbedding";
+import {
+  getImageEmbedding,
+  clearModelStorage,
+  getModelCacheSize,
+} from "../utils/aiEmbedding";
 import {
   clearAllFeedback,
   getFeedbackStats,
@@ -62,12 +66,16 @@ export function SettingsPage() {
   } | null>(null);
   const [isUpdatingPreferences, setIsUpdatingPreferences] = useState(false);
   const [isResettingLearning, setIsResettingLearning] = useState(false);
+  const [isClearingCache, setIsClearingCache] = useState(false);
+  const [cacheSize, setCacheSize] = useState<number | null>(null);
 
   // Count items without embeddings
   const itemsNeedingEmbeddings = items.filter((item) => !item.embedding);
   const hasEmbeddingGap = itemsNeedingEmbeddings.length > 0;
+  const hasAllEmbeddings =
+    items.length > 0 && itemsNeedingEmbeddings.length === 0;
 
-  // Load feedback stats on mount
+  // Load feedback stats and cache size on mount
   useEffect(() => {
     async function loadStats() {
       try {
@@ -78,6 +86,17 @@ export function SettingsPage() {
       }
     }
     loadStats();
+
+    // Load cache size
+    async function loadCacheSize() {
+      try {
+        const size = await getModelCacheSize();
+        setCacheSize(size);
+      } catch (error) {
+        console.error("Failed to load cache size:", error);
+      }
+    }
+    loadCacheSize();
   }, []);
 
   const handleExport = async () => {
@@ -275,18 +294,51 @@ export function SettingsPage() {
     }
   };
 
-  const handleGenerateEmbeddings = async () => {
+  const handleClearModelCache = async () => {
+    if (
+      !confirm(
+        "Clear AI model cache? This will free up storage space (~200-500MB) but models will need to be re-downloaded on next use. Your item embeddings will not be affected."
+      )
+    ) {
+      return;
+    }
+
+    setIsClearingCache(true);
+    setMessage(null);
+
+    try {
+      await clearModelStorage();
+      setCacheSize(0);
+      setMessage({
+        type: "success",
+        text: "✅ AI model cache cleared! Models will be re-downloaded when needed.",
+      });
+    } catch (error) {
+      console.error("Failed to clear cache:", error);
+      setMessage({
+        type: "error",
+        text: "Failed to clear model cache. Please try again.",
+      });
+    } finally {
+      setIsClearingCache(false);
+    }
+  };
+
+  const handleGenerateEmbeddings = async (regenerateAll = false) => {
     setIsGeneratingEmbeddings(true);
     setMessage(null);
-    const total = itemsNeedingEmbeddings.length;
+
+    // If regenerating all, process all items; otherwise only items without embeddings
+    const itemsToProcess = regenerateAll ? items : itemsNeedingEmbeddings;
+    const total = itemsToProcess.length;
     setEmbeddingProgress({ current: 0, total });
 
     let successCount = 0;
     let errorCount = 0;
 
     try {
-      for (let i = 0; i < itemsNeedingEmbeddings.length; i++) {
-        const item = itemsNeedingEmbeddings[i];
+      for (let i = 0; i < itemsToProcess.length; i++) {
+        const item = itemsToProcess[i];
         if (!item) continue;
 
         try {
@@ -307,12 +359,16 @@ export function SettingsPage() {
       if (errorCount === 0) {
         setMessage({
           type: "success",
-          text: `✅ Successfully generated embeddings for all ${successCount} items!`,
+          text: `✅ Successfully ${
+            regenerateAll ? "regenerated" : "generated"
+          } embeddings for all ${successCount} items!`,
         });
       } else {
         setMessage({
           type: "info",
-          text: `Generated embeddings for ${successCount} items. ${errorCount} items failed (check console for details).`,
+          text: `${
+            regenerateAll ? "Regenerated" : "Generated"
+          } embeddings for ${successCount} items. ${errorCount} items failed (check console for details).`,
         });
       }
     } catch (error) {
@@ -502,7 +558,7 @@ export function SettingsPage() {
               <div className={styles.buttonGroup}>
                 <Button
                   size="3"
-                  onClick={handleGenerateEmbeddings}
+                  onClick={() => handleGenerateEmbeddings(false)}
                   disabled={isGeneratingEmbeddings || !hasEmbeddingGap}
                   className={styles.primaryButton}
                 >
@@ -510,6 +566,24 @@ export function SettingsPage() {
                     ? `Generating... ${embeddingProgress.current}/${embeddingProgress.total}`
                     : `Generate Embeddings (${itemsNeedingEmbeddings.length} items)`}
                 </Button>
+                {hasAllEmbeddings && (
+                  <Button
+                    size="3"
+                    variant="soft"
+                    onClick={() => {
+                      if (
+                        confirm(
+                          "Regenerate all embeddings? This will update all items to use the latest fashion recognition model. This may take a while."
+                        )
+                      ) {
+                        handleGenerateEmbeddings(true);
+                      }
+                    }}
+                    disabled={isGeneratingEmbeddings}
+                  >
+                    Regenerate All Embeddings
+                  </Button>
+                )}
               </div>
 
               {isGeneratingEmbeddings && (
@@ -536,11 +610,49 @@ export function SettingsPage() {
               <div className={styles.helpText}>
                 <Text size="2" color="gray">
                   <strong>What are embeddings?</strong> AI "fingerprints" of
-                  your items that enable photo-based wear logging.
+                  your items that enable photo-based wear logging. Uses
+                  FashionCLIP for fashion-specific recognition.
                 </Text>
                 <Text size="2" color="gray">
-                  <strong>When to regenerate:</strong> If you've imported a
-                  backup or added items while AI was offline.
+                  <strong>When to generate:</strong> For new items that don't
+                  have embeddings yet.
+                </Text>
+                <Text size="2" color="gray">
+                  <strong>When to regenerate all:</strong> After updating to a
+                  new AI model, or if you've imported items with old embeddings.
+                </Text>
+                <Text size="2" color="gray">
+                  <strong>How matching works:</strong> Uses cosine similarity to
+                  compare outfit photos with item embeddings. Higher similarity
+                  = better match.
+                </Text>
+              </div>
+
+              {/* Model Cache Management */}
+              <div
+                className={styles.buttonGroup}
+                style={{ marginTop: "1.5rem" }}
+              >
+                <Button
+                  size="3"
+                  variant="soft"
+                  color="orange"
+                  onClick={handleClearModelCache}
+                  disabled={isClearingCache}
+                >
+                  {isClearingCache
+                    ? "Clearing Cache..."
+                    : `Clear Model Cache${
+                        cacheSize !== null ? ` (~${cacheSize}MB)` : ""
+                      }`}
+                </Button>
+              </div>
+              <div className={styles.helpText} style={{ marginTop: "0.5rem" }}>
+                <Text size="2" color="gray">
+                  <strong>Clear cache:</strong> Free up storage space by
+                  removing cached AI models (~200-500MB). Models will be
+                  re-downloaded automatically when needed. Your item embeddings
+                  are not affected.
                 </Text>
               </div>
             </div>
