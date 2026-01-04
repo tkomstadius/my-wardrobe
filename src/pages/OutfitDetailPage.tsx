@@ -1,5 +1,5 @@
 import { TrashIcon, Pencil1Icon } from "@radix-ui/react-icons";
-import { Button, Heading, Text } from "@radix-ui/themes";
+import { Button, Flex, Heading, Text } from "@radix-ui/themes";
 import { useState } from "react";
 import { LoaderFunctionArgs, useLoaderData, useNavigate } from "react-router";
 import { DeleteConfirmDialog } from "../components/common/DeleteConfirmDialog";
@@ -12,6 +12,7 @@ import {
   loadItems,
   removeOutfit,
 } from "../utils/storageCommands";
+import { ItemCard } from "../components/common/ItemCard";
 
 export async function loader({ params }: LoaderFunctionArgs) {
   const { id } = params;
@@ -60,109 +61,50 @@ export function OutfitDetailPage() {
   };
 
   return (
-    <div className={styles.container}>
+    <>
       <header className={styles.header}>
         <BackLink to="/outfits" />
       </header>
 
-      <div className={styles.content}>
-        {/* Outfit Photo */}
+      <Flex direction="column" gap="3">
         {outfit.photo && (
           <div className={styles.outfitPhoto}>
             <img src={outfit.photo} alt="Outfit" />
           </div>
         )}
 
-        {/* Outfit Info */}
-        <section className={styles.infoSection}>
-          <Heading size="6">Outfit</Heading>
+        <Flex justify="between" gap="1" align="center">
+          <Text size="4" weight="bold" color="blue">
+            {
+              RATING_OPTIONS.find((rating) => rating.value === outfit.rating)
+                ?.emoji
+            }
+          </Text>
+          <Text size="3" weight="bold">
+            {formatDate(outfit.createdAt)}
+          </Text>
+        </Flex>
 
-          <div className={styles.metadata}>
-            <div className={styles.metadataItem}>
-              <Text size="2" color="gray">
-                Created
-              </Text>
-              <Text size="3" weight="bold">
-                {formatDate(outfit.createdAt)}
-              </Text>
-            </div>
+        {outfit.notes && <Text size="2">{outfit.notes}</Text>}
 
-            <div className={styles.metadataItem}>
-              <Text size="2" color="gray">
-                Items
-              </Text>
-              <Text size="3" weight="bold">
-                {outfit.itemIds.length}
-              </Text>
-            </div>
-          </div>
+        <div className={styles.divider} />
 
-          {outfit.notes && (
-            <div className={styles.notes}>
-              <Text size="2" color="gray">
-                Notes
-              </Text>
-              <Text size="2">{outfit.notes}</Text>
-            </div>
-          )}
-
-          {/* Ratings */}
-          {outfit.rating != undefined && (
-            <div className={styles.rating}>
-              <Text size="2" color="gray">
-                Rating
-              </Text>
-              <Text size="4" weight="bold" color="blue">
-                {
-                  RATING_OPTIONS.find(
-                    (rating) => rating.value === outfit.rating
-                  )?.emoji
-                }
-              </Text>
-            </div>
-          )}
-        </section>
-
-        {/* Items in Outfit */}
         <section className={styles.itemsSection}>
-          <Heading size="4">Items in this Outfit</Heading>
+          <Heading size="4">{`${outfitItems.length} items in this outfit`}</Heading>
 
           {outfitItems.length === 0 ? (
             <div className={styles.emptyState}>
               <Text color="gray">No items found in this outfit</Text>
             </div>
           ) : (
-            <div className={styles.itemsGrid}>
+            <>
               {outfitItems.map((item) => (
-                <div
-                  key={item.id}
-                  className={styles.itemCard}
-                  onClick={() => navigate(`/item/${item.id}`)}
-                >
-                  <div className={styles.itemImage}>
-                    <img src={item.imageUrl} alt={item.notes || "Item"} />
-                  </div>
-                  <div className={styles.itemInfo}>
-                    <Text size="2" weight="bold">
-                      {item.notes || item.brand || "Unnamed"}
-                    </Text>
-                    {item.brand && item.notes && (
-                      <Text size="1" color="gray">
-                        {item.brand}
-                      </Text>
-                    )}
-                    <Text size="1" color="gray">
-                      {item.category.charAt(0).toUpperCase() +
-                        item.category.slice(1)}
-                    </Text>
-                  </div>
-                </div>
+                <ItemCard item={item} />
               ))}
-            </div>
+            </>
           )}
         </section>
 
-        {/* Edit and Delete Actions */}
         <section className={styles.bottomActions}>
           <DeleteConfirmDialog
             title="Delete Outfit"
@@ -191,7 +133,7 @@ export function OutfitDetailPage() {
             <Pencil1Icon /> Edit Outfit
           </Button>
         </section>
-      </div>
-    </div>
+      </Flex>
+    </>
   );
 }

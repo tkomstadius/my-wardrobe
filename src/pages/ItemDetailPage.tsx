@@ -193,6 +193,7 @@ export function ItemDetailPage() {
               )}
             </Flex>
           </Grid>
+
           <div className={styles.divider} />
 
           <Flex direction="column" gap="1" mb="3">
