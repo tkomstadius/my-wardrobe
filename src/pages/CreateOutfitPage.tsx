@@ -1,36 +1,84 @@
-import { CameraIcon, TrashIcon } from "@radix-ui/react-icons";
-import { Button, Heading, Text, TextArea } from "@radix-ui/themes";
-import { useState } from "react";
-import { useLoaderData, useNavigate } from "react-router";
-import { useOutfit } from "../contexts/OutfitContext";
-import { useImageUpload } from "../hooks/useImageUpload";
-import { ItemSelector } from "../components/common/ItemSelector";
+import {
+  Button,
+  Flex,
+  Heading,
+  Text,
+  TextArea,
+  TextField,
+} from "@radix-ui/themes";
+import { useState, useMemo, useCallback } from "react";
+import {
+  ActionFunctionArgs,
+  Form,
+  redirect,
+  useLoaderData,
+  useNavigation,
+} from "react-router";
 import { RatingButtons } from "../components/common/form/RatingButtons";
 import type { OutfitRating } from "../types/outfit";
 import styles from "./CreateOutfitPage.module.css";
 import { BackLink } from "../components/common/BackLink";
-import { loadItems } from "../utils/storageCommands";
+import { addOutfit, loadItems } from "../utils/storageCommands";
+import { formatDate } from "../utils/dateFormatter";
+import { ImageInput } from "../components/common/form/ImageInput";
+import {
+  CREATED_DATE_NAME,
+  IMAGE_URL_NAME,
+  ITEM_IDS_NAME,
+  NOTES_NAME,
+  RATING_NAME,
+} from "../components/common/form/constants";
+import { CategoryItemsAccordion } from "../components/common/CategoryItemsAccordion";
+import { SearchBar } from "../components/common/SearchBar";
+import { useItemSearch } from "../hooks/useItemSearch";
 
 export async function loader() {
   const items = await loadItems();
   return { items };
 }
 
+export async function action({ request }: ActionFunctionArgs) {
+  const formData = await request.formData();
+  const imageUrl = formData.get(IMAGE_URL_NAME) as string;
+  const createdDate = formData.get(CREATED_DATE_NAME) as string;
+  const notes = formData.get(NOTES_NAME) as string;
+  const rating = formData.get(RATING_NAME) as string;
+  const itemIdsJson = formData.get(ITEM_IDS_NAME) as string;
+
+  // Parse the JSON array of item IDs
+  const itemIds: string[] = itemIdsJson
+    ? (JSON.parse(itemIdsJson) as string[])
+    : [];
+
+  try {
+    await addOutfit({
+      photo: imageUrl || undefined,
+      createdAt: new Date(createdDate),
+      notes: notes.trim() || undefined,
+      rating: rating
+        ? (Number.parseInt(rating, 10) as OutfitRating)
+        : undefined,
+      itemIds,
+    });
+
+    return redirect("/outfits");
+  } catch (error) {
+    console.error("Failed to save outfit:", error);
+    alert("Failed to save outfit. Please try again.");
+  }
+}
+
 export function CreateOutfitPage() {
-  const navigate = useNavigate();
-  const { addOutfit } = useOutfit();
   const { items } = useLoaderData<typeof loader>();
-  const { imagePreview, handleImageUpload, clearImage } = useImageUpload();
-
-  const [formData, setFormData] = useState({
-    createdDate: new Date().toISOString().split("T")[0] as string, // Default to today
-    notes: "",
-    rating: undefined as OutfitRating | undefined,
-  });
+  const navigation = useNavigation();
+  const { searchQuery, setSearchQuery, clearSearch, filteredItems } =
+    useItemSearch(items);
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
-  const [isSaving, setIsSaving] = useState(false);
 
-  const toggleItemSelection = (itemId: string) => {
+  const isSubmitting = navigation.state === "submitting";
+  const isLoading = navigation.state === "loading";
+
+  const toggleItemSelection = useCallback((itemId: string) => {
     setSelectedItems((prev) => {
       const newSet = new Set(prev);
       if (newSet.has(itemId)) {
@@ -40,156 +88,87 @@ export function CreateOutfitPage() {
       }
       return newSet;
     });
-  };
+  }, []);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (selectedItems.size === 0) {
-      alert("Please select at least one item for this outfit");
-      return;
-    }
-
-    setIsSaving(true);
-
-    try {
-      await addOutfit({
-        photo: imagePreview || undefined,
-        itemIds: Array.from(selectedItems),
-        createdAt: new Date(formData.createdDate),
-        notes: formData.notes.trim() || undefined,
-        rating: formData.rating,
-      });
-
-      // Navigate to outfits page
-      navigate("/outfits");
-    } catch (error) {
-      console.error("Failed to save outfit:", error);
-      alert("Failed to save outfit. Please try again.");
-    } finally {
-      setIsSaving(false);
-    }
-  };
+  // Memoize the JSON string to avoid unnecessary re-renders
+  const itemIdsJson = useMemo(
+    () => JSON.stringify(Array.from(selectedItems)),
+    [selectedItems]
+  );
 
   return (
-    <div className={styles.container}>
+    <section className={styles.container}>
       <header className={styles.header}>
         <BackLink to={"/outfits"} />
         <Heading size="6">Create Outfit</Heading>
       </header>
 
-      <form onSubmit={handleSubmit} className={styles.form}>
-        {/* Outfit Photo */}
-        <section className={styles.section}>
-          <div className={styles.imageSection}>
-            <div className={styles.imageContainer}>
-              {imagePreview ? (
-                <>
-                  <img
-                    src={imagePreview}
-                    alt="Outfit preview"
-                    className={styles.previewImage}
-                  />
-                  <Button
-                    type="button"
-                    variant="soft"
-                    color="red"
-                    size="1"
-                    onClick={clearImage}
-                    className={styles.removeButton}
-                  >
-                    <TrashIcon /> Remove
-                  </Button>
-                </>
-              ) : (
-                <div className={styles.imagePlaceholder}>
-                  <p>No image selected</p>
-                </div>
-              )}
+      <Form method="post" className={styles.form}>
+        <ImageInput />
 
-              <label
-                htmlFor="outfit-image-upload"
-                className={styles.cameraButton}
-              >
-                <CameraIcon width={24} height={24} />
-              </label>
-              <input
-                id="outfit-image-upload"
-                type="file"
-                accept="image/*"
-                onChange={handleImageUpload}
-                className={styles.fileInput}
-              />
-            </div>
-          </div>
-        </section>
-
-        {/* Outfit Details */}
-        <section className={styles.section}>
-          <label className={styles.label}>
-            <Text weight="bold" size="2">
-              Date
-            </Text>
-            <input
-              type="date"
-              value={formData.createdDate}
-              onChange={(e) =>
-                setFormData({ ...formData, createdDate: e.target.value })
-              }
-              className={styles.dateInput}
-              required
-            />
-          </label>
-
-          <label className={styles.label}>
-            <Text weight="bold" size="2">
-              Notes
-            </Text>
-            <TextArea
-              variant="soft"
-              placeholder="Add any notes about this outfit..."
-              value={formData.notes}
-              onChange={(e) =>
-                setFormData({ ...formData, notes: e.target.value })
-              }
-              rows={3}
-              size="3"
-            />
-          </label>
-        </section>
-
-        {/* Rating Scales */}
-        <section className={styles.section}>
-          <Text weight="bold" size="2" className={styles.ratingHeader}>
-            Rate This Outfit
+        <Flex direction="column" gap="1">
+          <Text as="label" size="2" weight="bold">
+            Created Date
           </Text>
-
-          <RatingButtons
-            value={formData.rating}
-            onChange={(value) => setFormData({ ...formData, rating: value })}
+          <TextField.Root
+            defaultValue={formatDate(new Date())}
+            variant="soft"
+            name="createdDate"
+            type="date"
+            size="3"
           />
-        </section>
+        </Flex>
 
-        {/* Item Selection */}
-        <section>
-          <ItemSelector
-            items={items}
-            selectedItems={selectedItems}
-            onToggleSelection={toggleItemSelection}
-            emptyMessage="No items in your wardrobe yet"
-            actionButtons={
-              <Button
-                type="submit"
-                size="3"
-                disabled={isSaving || selectedItems.size === 0}
-                className={styles.submitButton}
-              >
-                {isSaving ? "Creating..." : "Create Outfit"}
-              </Button>
-            }
+        <Flex direction="column" gap="1">
+          <Text as="label" size="2" weight="bold">
+            Notes
+          </Text>
+          <TextArea
+            variant="soft"
+            name={NOTES_NAME}
+            placeholder="e.g., favorite jeans, scratched"
+            rows={2}
+            size="3"
           />
-        </section>
-      </form>
-    </div>
+        </Flex>
+
+        <Text weight="bold" size="2" className={styles.ratingHeader}>
+          Rate This Outfit
+        </Text>
+
+        <Flex direction="column" gap="2">
+          <Text size="2" weight="bold">
+            Rating
+          </Text>
+          <RatingButtons name={RATING_NAME} />
+        </Flex>
+
+        <div className={styles.divider} />
+
+        <SearchBar
+          value={searchQuery}
+          onChange={setSearchQuery}
+          onClear={clearSearch}
+          resultCount={filteredItems.length}
+        />
+
+        <CategoryItemsAccordion
+          items={filteredItems}
+          selectedItems={selectedItems}
+          onToggleSelection={toggleItemSelection}
+        />
+
+        {/* Hidden input to include selected items in form submission */}
+        <input type="hidden" name={ITEM_IDS_NAME} value={itemIdsJson} />
+
+        <Button
+          type="submit"
+          size="3"
+          disabled={isSubmitting || isLoading || selectedItems.size === 0}
+        >
+          {isSubmitting ? "Creating..." : "Create Outfit"}
+        </Button>
+      </Form>
+    </section>
   );
 }

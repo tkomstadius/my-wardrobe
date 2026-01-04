@@ -25,7 +25,10 @@ import { HomePage, loader as homeLoader } from "./pages/HomePage";
 import { ItemsPage, loader as itemsLoader } from "./pages/ItemsPage";
 import { LogWearPage, loader as logWearLoader } from "./pages/LogWearPage";
 import { OutfitsPage } from "./pages/OutfitsPage";
-import { CreateOutfitPage } from "./pages/CreateOutfitPage";
+import {
+  CreateOutfitPage,
+  action as createOutfitAction,
+} from "./pages/CreateOutfitPage";
 import { OutfitDetailPage } from "./pages/OutfitDetailPage";
 import { EditOutfitPage } from "./pages/EditOutfitPage";
 import { SettingsPage } from "./pages/SettingsPage";
@@ -66,6 +69,7 @@ const router = createBrowserRouter([
         path: "create-outfit",
         element: <CreateOutfitPage />,
         loader: createOutfitLoader,
+        action: createOutfitAction,
       },
       {
         path: "outfit/:id",

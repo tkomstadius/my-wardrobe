@@ -1,5 +1,5 @@
 import type { ItemCategory, WardrobeItem } from "../types/wardrobe";
-import type { Outfit } from "../types/outfit";
+import type { NewOutfit, Outfit } from "../types/outfit";
 import {
   deleteItem,
   loadAllItems,
@@ -11,6 +11,11 @@ import {
   loadItemById,
 } from "./indexedDB";
 import { compareAsc } from "date-fns";
+
+export function generateId(): string {
+  // Generate a unique ID using timestamp + random string
+  return `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+}
 
 export async function saveItems(items: WardrobeItem[]): Promise<void> {
   try {
@@ -168,11 +173,6 @@ export async function updateItemEmbedding(
   await saveItem(updatedItem);
 }
 
-export function generateId(): string {
-  // Generate a unique ID using timestamp + random string
-  return `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
-}
-
 // ========== Outfit Storage Functions ==========
 
 export async function loadOutfits(): Promise<Outfit[]> {
@@ -203,9 +203,9 @@ export async function removeOutfit(id: string): Promise<void> {
   }
 }
 
-export async function saveOutfitToStorage(outfit: Outfit): Promise<void> {
+export async function addOutfit(outfit: NewOutfit): Promise<void> {
   try {
-    await saveOutfit(outfit);
+    await saveOutfit({ ...outfit, id: generateId(), updatedAt: new Date() });
   } catch (error) {
     console.error("Failed to save outfit to IndexedDB:", error);
     throw new Error("Failed to save outfit. Storage may be full.");

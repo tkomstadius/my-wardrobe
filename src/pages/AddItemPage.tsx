@@ -125,6 +125,7 @@ export async function clientAction({ request }: ActionFunctionArgs) {
       updatedAt: now,
     };
 
+    // TODO go trough storage commands
     await saveItem(item);
 
     return redirect(`/items/${category}`);

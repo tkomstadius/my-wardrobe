@@ -102,6 +102,15 @@ export function formatLastWorn(wearHistory: Date[]): string {
   } ago`;
 }
 
+// Get badge text for recently worn items (e.g., "Worn today", "Worn this week")
+export function getRecentWearBadge(wearHistory?: Date[]): string | null {
+  const days = getDaysSinceLastWorn(wearHistory || []);
+  if (days === undefined) return null;
+  if (days === 0) return "Worn today";
+  if (days <= 7) return "Worn this week";
+  return null;
+}
+
 // Calculate the age of an item from purchase date
 export function calculateItemAge(purchaseDate: Date): {
   years: number;

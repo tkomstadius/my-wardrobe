@@ -10,7 +10,6 @@ import {
   generateId,
   loadOutfits,
   removeOutfit,
-  saveOutfitToStorage,
 } from "../utils/storageCommands";
 
 interface OutfitContextValue {
@@ -60,7 +59,7 @@ export function OutfitProvider({ children }: OutfitProviderProps) {
     };
 
     // Save to IndexedDB first
-    await saveOutfitToStorage(outfit);
+    await addOutfit(outfit);
 
     // Then update state
     setOutfits((prev) => [outfit, ...prev]);
@@ -83,7 +82,7 @@ export function OutfitProvider({ children }: OutfitProviderProps) {
     };
 
     // Save to IndexedDB first
-    await saveOutfitToStorage(updatedOutfit);
+    await addOutfit(updatedOutfit);
 
     // Then update state
     setOutfits((prev) =>

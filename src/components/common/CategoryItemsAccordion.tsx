@@ -1,5 +1,6 @@
 import { Accordion } from "radix-ui";
 import { ChevronDownIcon, Text, Checkbox } from "@radix-ui/themes";
+import { useMemo } from "react";
 import { WardrobeItem } from "../../types/wardrobe";
 import { CATEGORIES } from "../../utils/categories";
 import { ItemCard } from "./ItemCard";
@@ -21,17 +22,23 @@ export function CategoryItemsAccordion({
   const isSelectionMode =
     selectedItems !== undefined && onToggleSelection !== undefined;
 
-  const itemsByCategory = CATEGORIES.map((category) => ({
-    category: category.id,
-    title: category.title,
-    items: items.filter((item) => item.category === category.id),
-  })).filter((group) => group.items.length > 0);
+  const itemsByCategory = useMemo(
+    () =>
+      CATEGORIES.map((category) => ({
+        category: category.id,
+        title: category.title,
+        items: items.filter((item) => item.category === category.id),
+      })).filter((group) => group.items.length > 0),
+    [items]
+  );
+
+  const defaultValues = useMemo(
+    () => itemsByCategory.map(({ category }) => category),
+    [itemsByCategory]
+  );
 
   return (
-    <Accordion.Root
-      type="multiple"
-      defaultValue={itemsByCategory.map(({ category }) => category)}
-    >
+    <Accordion.Root type="multiple" defaultValue={defaultValues}>
       {itemsByCategory.map(({ category, title, items: categoryItems }) => (
         <Accordion.Item value={category} key={category}>
           <Accordion.Trigger className={styles.accordionTrigger}>
@@ -47,27 +54,26 @@ export function CategoryItemsAccordion({
                   const isSelected = selectedItems!.has(item.id);
                   const isDisabled = disabledItems?.has(item.id) ?? false;
 
+                  const handleCheckboxChange = () => {
+                    if (!isDisabled) {
+                      onToggleSelection!(item.id);
+                    }
+                  };
+
                   return (
                     <div
                       key={item.id}
                       className={`${styles.selectableItem} ${
                         isSelected ? styles.selected : ""
                       } ${isDisabled ? styles.disabled : ""}`}
-                      onClick={() => {
-                        if (!isDisabled) {
-                          onToggleSelection!(item.id);
-                        }
-                      }}
                     >
-                      <Checkbox
-                        checked={isSelected}
-                        disabled={isDisabled}
-                        onCheckedChange={() => {
-                          if (!isDisabled) {
-                            onToggleSelection!(item.id);
-                          }
-                        }}
-                      />
+                      <div onClick={(e) => e.stopPropagation()}>
+                        <Checkbox
+                          checked={isSelected}
+                          disabled={isDisabled}
+                          onCheckedChange={handleCheckboxChange}
+                        />
+                      </div>
                       <div className={styles.itemPreview}>
                         <img
                           src={item.imageUrl}

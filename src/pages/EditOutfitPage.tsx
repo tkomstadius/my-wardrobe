@@ -11,6 +11,7 @@ import type { OutfitRating } from "../types/outfit";
 import styles from "./CreateOutfitPage.module.css";
 import { BackLink } from "../components/common/BackLink";
 import { loadItems } from "../utils/storageCommands";
+import { formatDate } from "../utils/dateFormatter";
 
 export async function loader() {
   const items = await loadItems();
@@ -26,7 +27,7 @@ export function EditOutfitPage() {
     useImageUpload();
 
   const [formData, setFormData] = useState({
-    createdDate: new Date().toISOString().split("T")[0] as string,
+    createdDate: formatDate(new Date()),
     notes: "",
     rating: undefined as OutfitRating | undefined,
   });
@@ -50,7 +51,7 @@ export function EditOutfitPage() {
 
     // Pre-fill form with existing data
     setFormData({
-      createdDate: new Date(outfit.createdAt).toISOString().split("T")[0] ?? "",
+      createdDate: formatDate(outfit.createdAt),
       notes: outfit.notes || "",
       rating: outfit.rating,
     });
