@@ -22,6 +22,7 @@ export const SUBCATEGORIES: Record<ItemCategory, readonly string[]> = {
   tops: [
     "T-Shirt",
     "Tank top",
+    "West",
     "Long sleeve",
     "Shirt",
     "Sweatshirt",
@@ -29,14 +30,15 @@ export const SUBCATEGORIES: Record<ItemCategory, readonly string[]> = {
     "Sweater",
     "Cardigan",
     "Jacket",
+    "Jeans jacket",
   ] as const,
   bottoms: ["Jeans", "Slacks", "Shorts", "Skirt"] as const,
   dresses: ["Dress", "Jumpsuit"] as const,
   outerwear: ["Jacket", "Coat"] as const,
-  shoes: ["Sneakers", "Boots", "Heels"] as const,
+  shoes: ["Sneakers", "Boots", "Sandals", "Heels"] as const,
   bags: ["Handbag", "Backpack"] as const,
   jewelry: ["Necklace", "Earrings", "Bracelet", "Ring"] as const,
-  accessories: ["Hat", "Belt", "Sunglasses"] as const,
+  accessories: ["Hat", "Belt", "Glasses", "Sunglasses"] as const,
 } as const;
 
 export function getSubCategoriesForCategory(
