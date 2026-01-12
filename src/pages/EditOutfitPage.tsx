@@ -1,12 +1,10 @@
-import { TrashIcon } from "@radix-ui/react-icons";
-import {
-  Button,
-  Flex,
-  Heading,
-  Text,
-  TextArea,
-  TextField,
-} from "@radix-ui/themes";
+import { IoTrashOutline } from "react-icons/io5";
+import { Button } from "../components/common/ui/Button";
+import { Flex } from "../components/common/ui/Flex";
+import { Heading } from "../components/common/ui/Heading";
+import { Text } from "../components/common/ui/Text";
+import { TextField } from "../components/common/ui/TextField";
+import { TextArea } from "../components/common/ui/TextArea";
 import { useMemo, useState } from "react";
 import {
   ActionFunctionArgs,
@@ -157,7 +155,7 @@ export function EditOutfitPage() {
           isDeleting={isDeleting}
           triggerButton={
             <Button variant="soft" color="red">
-              <TrashIcon />
+              <IoTrashOutline />
             </Button>
           }
         />

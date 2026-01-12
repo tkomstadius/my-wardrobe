@@ -13,22 +13,23 @@
 
   /* Mobile-first viewport setup */
   color-scheme: dark;
+
+  /* Theme colors */
+  --accent-color: #6366f1;
+  --accent-hover: #4f46e5;
   --accent-action-color: #243342;
   --background-color: #161616;
+  --surface-color: #1e1e1e;
   --text-color: #fff;
+  --text-secondary: #9ca3af;
   --complimentary-color: #aad3f1;
+  --border-color: #374151;
   --border-radius: 16px;
-}
 
-.radix-themes {
-  --accent-8: #34495e;
-  --accent-a3: #34495e;
-  --accent-a5: #34495e;
-  --accent-9: #34495e;
-  --accent-a11: #aad3f1;
-  --accent-indicator: #aad3f1;
-  --gray-a3: #243342;
-  --color-surface: var(--accent-9);
+  /* Semantic colors */
+  --error-color: #ef4444;
+  --success-color: #10b981;
+  --warning-color: #f59e0b;
 }
 
 body {

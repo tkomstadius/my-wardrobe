@@ -1,5 +1,7 @@
-import { TrashIcon } from "@radix-ui/react-icons";
-import { AlertDialog, Button, Flex } from "@radix-ui/themes";
+import { IoTrashOutline } from "react-icons/io5";
+import { AlertDialog } from "./ui/AlertDialog";
+import { Button } from "./ui/Button";
+import { Flex } from "./ui/Flex";
 import type { ReactNode } from "react";
 
 interface DeleteConfirmDialogProps {
@@ -24,7 +26,7 @@ export function DeleteConfirmDialog({
       <AlertDialog.Trigger>
         {triggerButton || (
           <Button size="3" variant="soft" color="red">
-            <TrashIcon /> Delete
+            <IoTrashOutline /> Delete
           </Button>
         )}
       </AlertDialog.Trigger>
@@ -33,7 +35,7 @@ export function DeleteConfirmDialog({
         <AlertDialog.Description size="2">
           {description}
         </AlertDialog.Description>
-        <Flex gap="3" mt="4" justify="end">
+        <Flex gap="3" style={{ marginTop: "1rem" }} justify="end">
           <AlertDialog.Cancel>
             <Button variant="soft" color="gray">
               Cancel

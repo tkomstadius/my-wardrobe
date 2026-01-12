@@ -1,5 +1,6 @@
 import { Link, useLoaderData } from "react-router";
-import { Grid, Text } from "@radix-ui/themes";
+import { Grid } from "../components/common/ui/Grid";
+import { Text } from "../components/common/ui/Text";
 import { loadItems } from "../utils/storageCommands";
 import { CATEGORIES } from "../utils/categories";
 import { Fab } from "../components/common/Fab";

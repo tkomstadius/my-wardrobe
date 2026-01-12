@@ -1,11 +1,9 @@
-import {
-  Button,
-  Callout,
-  Flex,
-  Text,
-  TextArea,
-  TextField,
-} from "@radix-ui/themes";
+import { Button } from "../components/common/ui/Button";
+import { Callout } from "../components/common/ui/Callout";
+import { Flex } from "../components/common/ui/Flex";
+import { Text } from "../components/common/ui/Text";
+import { TextField } from "../components/common/ui/TextField";
+import { TextArea } from "../components/common/ui/TextArea";
 import {
   Form,
   useNavigation,

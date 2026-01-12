@@ -1,5 +1,8 @@
-import { TextField, IconButton, Text, Flex } from "@radix-ui/themes";
-import { Cross2Icon, MagnifyingGlassIcon } from "@radix-ui/react-icons";
+import { TextField } from "./ui/TextField";
+import { IconButton } from "./ui/IconButton";
+import { Text } from "./ui/Text";
+import { Flex } from "./ui/Flex";
+import { IoClose, IoSearchOutline } from "react-icons/io5";
 import styles from "./SearchBar.module.css";
 
 interface SearchBarProps {
@@ -19,26 +22,23 @@ export function SearchBar({
 }: SearchBarProps) {
   return (
     <Flex direction="column" gap="1">
-      <TextField.Root
-        variant="soft"
-        placeholder={placeholder}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        size="3"
-      >
+      <TextField.Root size="3">
         <TextField.Slot>
-          <MagnifyingGlassIcon />
+          <IoSearchOutline />
         </TextField.Slot>
+        <TextField.Input
+          placeholder={placeholder}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+        />
         {value && (
           <TextField.Slot>
             <IconButton
               size="1"
-              variant="ghost"
               onClick={onClear}
               type="button"
-              aria-label="Clear search"
             >
-              <Cross2Icon />
+              <IoClose />
             </IconButton>
           </TextField.Slot>
         )}

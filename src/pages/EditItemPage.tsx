@@ -1,12 +1,10 @@
-import { TrashIcon } from "@radix-ui/react-icons";
-import {
-  Button,
-  Callout,
-  Flex,
-  Text,
-  TextArea,
-  TextField,
-} from "@radix-ui/themes";
+import { IoTrashOutline } from "react-icons/io5";
+import { Button } from "../components/common/ui/Button";
+import { Callout } from "../components/common/ui/Callout";
+import { Flex } from "../components/common/ui/Flex";
+import { Text } from "../components/common/ui/Text";
+import { TextField } from "../components/common/ui/TextField";
+import { TextArea } from "../components/common/ui/TextArea";
 import { useState, useEffect } from "react";
 import {
   Form,
@@ -356,7 +354,7 @@ export function EditItemPage() {
               isDeleting={isDeleting}
               triggerButton={
                 <Button type="button" color="red" variant="soft" size="3">
-                  <TrashIcon />
+                  <IoTrashOutline />
                   Delete
                 </Button>
               }

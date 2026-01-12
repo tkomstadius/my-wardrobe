@@ -1,9 +1,9 @@
 import {
-  HomeIcon,
-  PlusCircledIcon,
-  MixerVerticalIcon,
-  ArchiveIcon,
-} from "@radix-ui/react-icons";
+  IoHomeOutline,
+  IoAddCircleOutline,
+  IoOptionsOutline,
+  IoArchiveOutline,
+} from "react-icons/io5";
 import { Link, useLocation } from "react-router";
 import styles from "./BottomNav.module.css";
 
@@ -21,7 +21,7 @@ export function BottomNav() {
           currentPath === "/" ? styles.active : ""
         }`}
       >
-        <HomeIcon className={styles.icon} />
+        <IoHomeOutline className={styles.icon} />
         <span className={styles.label}>Home</span>
       </Link>
 
@@ -31,7 +31,7 @@ export function BottomNav() {
           isOnItemsOrCategoryPage ? styles.active : ""
         }`}
       >
-        <ArchiveIcon className={styles.icon} />
+        <IoArchiveOutline className={styles.icon} />
         <span className={styles.label}>Items</span>
       </Link>
 
@@ -43,7 +43,7 @@ export function BottomNav() {
             : ""
         }`}
       >
-        <MixerVerticalIcon className={styles.icon} />
+        <IoOptionsOutline className={styles.icon} />
         <span className={styles.label}>Outfits</span>
       </Link>
 
@@ -53,7 +53,7 @@ export function BottomNav() {
           currentPath === "/log-wear" ? styles.active : ""
         }`}
       >
-        <PlusCircledIcon className={styles.icon} />
+        <IoAddCircleOutline className={styles.icon} />
         <span className={styles.label}>Log Wear</span>
       </Link>
     </nav>

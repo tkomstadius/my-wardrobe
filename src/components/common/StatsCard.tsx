@@ -1,4 +1,4 @@
-import { Text } from "@radix-ui/themes";
+import { Text } from "./ui/Text";
 import styles from "./StatsCard.module.css";
 
 interface StatsCardProps {

@@ -1,9 +1,9 @@
-import { CameraIcon, Pencil1Icon } from "@radix-ui/react-icons";
+import { IoCameraOutline, IoPencilOutline } from "react-icons/io5";
 import { useImageUpload } from "../../../hooks/useImageUpload";
 import styles from "./ImageInput.module.css";
 import { useEffect } from "react";
 import { IMAGE_URL_NAME, ORIGINAL_IMAGE_URL_NAME } from "./constants";
-import { Spinner } from "@radix-ui/themes";
+import { Spinner } from "../ui/Spinner";
 
 type ImageInputProps = {
   originalImageUrl?: string;
@@ -36,9 +36,9 @@ export function ImageInput({ originalImageUrl }: ImageInputProps) {
 
       <label htmlFor="image-upload" className={styles.button}>
         {imagePreview ? (
-          <Pencil1Icon width={24} height={24} />
+          <IoPencilOutline size={24} />
         ) : (
-          <CameraIcon width={24} height={24} />
+          <IoCameraOutline size={24} />
         )}
       </label>
       <input

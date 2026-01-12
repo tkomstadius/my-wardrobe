@@ -1,14 +1,12 @@
-import { CameraIcon } from "@radix-ui/react-icons";
-import {
-  Button,
-  Callout,
-  Dialog,
-  Flex,
-  Heading,
-  Spinner,
-  Text,
-  Tabs,
-} from "@radix-ui/themes";
+import { IoCameraOutline } from "react-icons/io5";
+import { Button } from "../components/common/ui/Button";
+import { Callout } from "../components/common/ui/Callout";
+import { Dialog } from "../components/common/ui/Dialog";
+import { Flex } from "../components/common/ui/Flex";
+import { Heading } from "../components/common/ui/Heading";
+import { Spinner } from "../components/common/ui/Spinner";
+import { Text } from "../components/common/ui/Text";
+import { Tabs } from "../components/common/ui/Tabs";
 import { differenceInDays } from "date-fns";
 import { useOptimistic, useState } from "react";
 import { useLoaderData, useNavigate } from "react-router";
@@ -370,7 +368,7 @@ export function LogWearPage() {
                     document.getElementById("outfit-upload")?.click()
                   }
                 >
-                  <CameraIcon /> Upload Photo
+                  <IoCameraOutline /> Upload Photo
                 </Button>
               )}
               <input

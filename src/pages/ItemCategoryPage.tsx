@@ -1,4 +1,5 @@
-import { Button, Text } from "@radix-ui/themes";
+import { Button } from "../components/common/ui/Button";
+import { Text } from "../components/common/ui/Text";
 import { useState, useMemo } from "react";
 import { Link, useLoaderData, type LoaderFunctionArgs } from "react-router";
 import { ItemCard } from "../components/common/ItemCard";

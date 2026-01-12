@@ -1,4 +1,4 @@
-import { Flex } from "@radix-ui/themes";
+import { Flex } from "./ui/Flex";
 import type { ItemCategory } from "../../types/wardrobe";
 import { getSubCategoriesForCategory } from "../../utils/categories";
 import styles from "./QuickFilters.module.css";
@@ -30,7 +30,7 @@ export function QuickFilters({
   const availableSubCategories = getSubCategoriesForCategory(category);
 
   return (
-    <Flex direction="column" gap="2" mb="3">
+    <Flex direction="column" gap="2" style={{ marginBottom: "0.75rem" }}>
       <Flex gap="1">
         <button
           type="button"
