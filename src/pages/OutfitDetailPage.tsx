@@ -65,9 +65,9 @@ export function OutfitDetailPage() {
 
   return (
     <>
-      <header className={styles.header}>
+      <div className={styles.header}>
         <BackLink to="/outfits" />
-      </header>
+      </div>
 
       <Flex direction="column" gap="3">
         {outfit.photo && (

@@ -45,7 +45,7 @@ export function OutfitsPage() {
 
   return (
     <>
-      <header className={styles.header}>
+      <div className={styles.header}>
         <Heading size="6">My Outfits</Heading>
         {sortedOutfits.length > 0 && (
           <Select.Root
@@ -60,7 +60,7 @@ export function OutfitsPage() {
             </Select.Content>
           </Select.Root>
         )}
-      </header>
+      </div>
 
       {sortedOutfits.length === 0 ? (
         <Flex
