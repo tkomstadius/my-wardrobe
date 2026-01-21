@@ -1,4 +1,7 @@
-import { Dialog, Button, Flex, Heading } from "@radix-ui/themes";
+import { Dialog } from "./ui/Dialog";
+import { Button } from "./ui/Button";
+import { Flex } from "./ui/Flex";
+import { Heading } from "./ui/Heading";
 import { ItemCard } from "./ItemCard";
 import type { WardrobeItem } from "../../types/wardrobe";
 
@@ -26,7 +29,7 @@ export function ItemSuggestionDialog({
           <Heading size="5">What Should I Wear Today?</Heading>
         </Dialog.Title>
 
-        <Dialog.Description size="2" color="gray" mb="4">
+        <Dialog.Description size="2" color="var(--text-secondary)" mb="1rem">
           Here's a suggestion based on your wardrobe, wear history, and today's
           weather.
         </Dialog.Description>

@@ -1,0 +1,41 @@
+.callout {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  border: 1px solid;
+  background-color: var(--surface-color);
+}
+
+.icon {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 0.125rem;
+}
+
+.content {
+  flex: 1;
+}
+
+.info {
+  border-color: var(--accent-color);
+  background-color: rgba(99, 102, 241, 0.1);
+}
+
+.warning {
+  border-color: var(--warning-color);
+  background-color: rgba(245, 158, 11, 0.1);
+}
+
+.error {
+  border-color: var(--error-color);
+  background-color: rgba(239, 68, 68, 0.1);
+}
+
+.success {
+  border-color: var(--success-color);
+  background-color: rgba(16, 185, 129, 0.1);
+}

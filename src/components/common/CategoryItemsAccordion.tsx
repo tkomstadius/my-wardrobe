@@ -1,11 +1,12 @@
-import { Accordion } from "radix-ui";
-import { ChevronDownIcon, Text, Flex } from "@radix-ui/themes";
+import { Accordion } from "./ui/Accordion";
+import { Text } from "./ui/Text";
+import { Flex } from "./ui/Flex";
+import { IoChevronDown, IoCheckmark } from "react-icons/io5";
 import { useMemo } from "react";
 import { WardrobeItem } from "../../types/wardrobe";
 import { CATEGORIES } from "../../utils/categories";
 import { ItemCard } from "./ItemCard";
 import styles from "./CategoryItemsAccordion.module.css";
-import { CheckIcon } from "@radix-ui/react-icons";
 
 interface CategoryItemsAccordionProps {
   items: WardrobeItem[];
@@ -46,7 +47,7 @@ export function CategoryItemsAccordion({
             <Text size="2" as="p">
               {title}
             </Text>
-            <ChevronDownIcon className={styles.chevron} />
+            <IoChevronDown className={styles.chevron} />
           </Accordion.Trigger>
 
           <Accordion.Content
@@ -69,7 +70,7 @@ export function CategoryItemsAccordion({
                     >
                       {isSelected && (
                         <div className={styles.checkIcon}>
-                          <CheckIcon />
+                          <IoCheckmark />
                         </div>
                       )}
 

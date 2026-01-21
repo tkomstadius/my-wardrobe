@@ -1,11 +1,9 @@
-import {
-  Button,
-  Callout,
-  Flex,
-  Text,
-  TextArea,
-  TextField,
-} from "@radix-ui/themes";
+import { Button } from "../components/common/ui/Button";
+import { Callout } from "../components/common/ui/Callout";
+import { Flex } from "../components/common/ui/Flex";
+import { Text } from "../components/common/ui/Text";
+import { TextField } from "../components/common/ui/TextField";
+import { TextArea } from "../components/common/ui/TextArea";
 import {
   Form,
   useNavigation,
@@ -16,7 +14,6 @@ import {
 } from "react-router";
 import { useState } from "react";
 import { CheckboxField } from "../components/common/CheckboxField";
-import { getImageEmbedding } from "../utils/aiEmbedding";
 import { saveItem } from "../utils/indexedDB";
 import { generateId, getAllBrands } from "../utils/storageCommands";
 import type {
@@ -42,6 +39,7 @@ import {
   SECOND_HAND_NAME,
   SUBCATEGORY_NAME,
 } from "../components/common/form/constants";
+import { consumePendingEmbedding } from "../utils/pendingEmbedding";
 import { SelectInput } from "../components/common/form/SelectInput";
 import { RatingButtons } from "../components/common/form/RatingButtons";
 import type { OutfitRating } from "../types/outfit";
@@ -82,15 +80,8 @@ export async function clientAction({ request }: ActionFunctionArgs) {
   }
 
   try {
-    // Generate embedding for AI wear logging
-    let embedding: number[] | undefined;
-
-    try {
-      embedding = await getImageEmbedding(imageUrl);
-    } catch (error) {
-      console.error("Failed to generate embedding:", error);
-      // Continue without embedding - user can generate later in Settings
-    }
+    // Get embedding from pending store (calculated during image upload on high-quality image)
+    const embedding = consumePendingEmbedding() ?? undefined;
 
     const now = new Date();
     const initialCount = initialWearCount
@@ -194,25 +185,25 @@ export function AddItemPage() {
           <Text as="label" size="2" weight="bold">
             Purchase Date
           </Text>
-          <TextField.Root
-            variant="soft"
-            name="purchaseDate"
-            type="date"
-            size="3"
-          />
+          <TextField.Root size="3">
+            <TextField.Input
+              name="purchaseDate"
+              type="date"
+            />
+          </TextField.Root>
         </Flex>
 
         <Flex direction="column" gap="1">
           <Text as="label" size="2" weight="bold">
             Initial Wear Count
           </Text>
-          <TextField.Root
-            variant="soft"
-            name="initialWearCount"
-            type="number"
-            placeholder="0"
-            size="3"
-          />
+          <TextField.Root size="3">
+            <TextField.Input
+              name="initialWearCount"
+              type="number"
+              placeholder="0"
+            />
+          </TextField.Root>
         </Flex>
 
         <Flex direction="column" gap="1">

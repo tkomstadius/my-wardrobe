@@ -1,4 +1,5 @@
-import { Text, Heading } from "@radix-ui/themes";
+import { Text } from "../components/common/ui/Text";
+import { Heading } from "../components/common/ui/Heading";
 import { useMemo } from "react";
 import { useLoaderData } from "react-router";
 import { loadItems } from "../utils/storageCommands";

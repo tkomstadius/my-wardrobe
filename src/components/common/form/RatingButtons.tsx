@@ -1,4 +1,4 @@
-import { RadioCards } from "@radix-ui/themes";
+import { RadioCards } from "../ui/RadioCards";
 import type { OutfitRating } from "../../../types/outfit";
 import { RATING_OPTIONS } from "./constants";
 
@@ -44,11 +44,7 @@ export function RatingButtons({
       };
 
   return (
-    <RadioCards.Root
-      {...radioProps}
-      columns={{ initial: "3", sm: "3" }}
-      size="2"
-    >
+    <RadioCards.Root {...radioProps}>
       {RATING_OPTIONS.map((rating) => (
         <RadioCards.Item key={rating.value} value={rating.value.toString()}>
           {rating.emoji}

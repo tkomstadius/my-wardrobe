@@ -1,0 +1,30 @@
+.checkbox {
+  width: 1.25rem;
+  height: 1.25rem;
+  border: 2px solid var(--border-color);
+  border-radius: 0.25rem;
+  background-color: var(--surface-color);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.checkbox:hover {
+  border-color: var(--accent-color);
+}
+
+.checkbox[data-checked] {
+  background-color: var(--accent-color);
+  border-color: var(--accent-color);
+}
+
+.checkIcon {
+  color: white;
+  display: none;
+}
+
+.checkbox[data-checked] .checkIcon {
+  display: block;
+}

@@ -1,4 +1,7 @@
-import { Text, Tabs, Flex, Button } from "@radix-ui/themes";
+import { Text } from "../components/common/ui/Text";
+import { Tabs } from "../components/common/ui/Tabs";
+import { Flex } from "../components/common/ui/Flex";
+import { Button } from "../components/common/ui/Button";
 import { useLoaderData } from "react-router";
 import { useEffect, useMemo, useState } from "react";
 import { ItemCard } from "../components/common/ItemCard";
@@ -137,7 +140,7 @@ export function HomePage() {
                 onClick={handleSuggestItem}
                 style={{ flexShrink: 0 }}
               >
-                ✨ What Should I Wear?
+                ✨
               </Button>
             </Flex>
 
@@ -145,7 +148,7 @@ export function HomePage() {
               <section>
                 <div className={styles.quickStatsGrid}>
                   <StatsCard
-                    title="Total Items"
+                    title="Total Wears"
                     value={quickStats.totalWears}
                   />
                   <StatsCard

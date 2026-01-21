@@ -1,9 +1,12 @@
 import {
-  CheckCircledIcon,
-  CrossCircledIcon,
-  InfoCircledIcon,
-} from "@radix-ui/react-icons";
-import { Button, Callout, Card, Text } from "@radix-ui/themes";
+  IoCheckmarkCircleOutline,
+  IoCloseCircleOutline,
+  IoInformationCircleOutline,
+} from "react-icons/io5";
+import { Button } from "../components/common/ui/Button";
+import { Callout } from "../components/common/ui/Callout";
+import { Card } from "../components/common/ui/Card";
+import { Text } from "../components/common/ui/Text";
 import { useEffect, useRef, useState } from "react";
 import {
   getImageEmbedding,
@@ -418,7 +421,7 @@ export function SettingsPage() {
               <div className={styles.infoBox}>
                 <Callout.Root size="1">
                   <Callout.Icon>
-                    <InfoCircledIcon />
+                    <IoInformationCircleOutline />
                   </Callout.Icon>
                   <Callout.Text>
                     {isShareSupported()
@@ -470,11 +473,11 @@ export function SettingsPage() {
                   >
                     <Callout.Icon>
                       {message.type === "success" ? (
-                        <CheckCircledIcon />
+                        <IoCheckmarkCircleOutline />
                       ) : message.type === "error" ? (
-                        <CrossCircledIcon />
+                        <IoCloseCircleOutline />
                       ) : (
-                        <InfoCircledIcon />
+                        <IoInformationCircleOutline />
                       )}
                     </Callout.Icon>
                     <Callout.Text>{message.text}</Callout.Text>
@@ -520,7 +523,7 @@ export function SettingsPage() {
               <div className={styles.infoBox}>
                 <Callout.Root size="1" color="blue">
                   <Callout.Icon>
-                    <InfoCircledIcon />
+                    <IoInformationCircleOutline />
                   </Callout.Icon>
                   <Callout.Text>
                     Enable AI-powered wear logging by generating embeddings for
@@ -668,7 +671,7 @@ export function SettingsPage() {
               <div className={styles.infoBox}>
                 <Callout.Root size="1" color="purple">
                   <Callout.Icon>
-                    <InfoCircledIcon />
+                    <IoInformationCircleOutline />
                   </Callout.Icon>
                   <Callout.Text>
                     The AI learns from your accept/reject feedback to improve
@@ -811,7 +814,7 @@ export function SettingsPage() {
               <div className={styles.infoBox}>
                 <Callout.Root size="1" color="orange">
                   <Callout.Icon>
-                    <InfoCircledIcon />
+                    <IoInformationCircleOutline />
                   </Callout.Icon>
                   <Callout.Text>
                     If you're experiencing issues like items disappearing or

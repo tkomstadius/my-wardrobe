@@ -1,5 +1,10 @@
-import { Pencil1Icon, TrashIcon } from "@radix-ui/react-icons";
-import { Button, Flex, Grid, Heading, Text, TextField } from "@radix-ui/themes";
+import { IoPencilOutline, IoTrashOutline } from "react-icons/io5";
+import { Button } from "../components/common/ui/Button";
+import { Flex } from "../components/common/ui/Flex";
+import { Grid } from "../components/common/ui/Grid";
+import { Heading } from "../components/common/ui/Heading";
+import { Text } from "../components/common/ui/Text";
+import { TextField } from "../components/common/ui/TextField";
 import { useState } from "react";
 import {
   Link,
@@ -243,14 +248,14 @@ export function ItemDetailPage() {
                 <Text size="2" weight="medium">
                   Select the date you wore this item:
                 </Text>
-                <TextField.Root
-                  variant="soft"
-                  type="date"
-                  size="3"
-                  value={selectedDate}
-                  onChange={(e) => setSelectedDate(e.target.value)}
-                  max={formatDate(new Date())}
-                />
+                <TextField.Root size="3">
+                  <TextField.Input
+                    type="date"
+                    value={selectedDate}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSelectedDate(e.target.value)}
+                    max={formatDate(new Date())}
+                  />
+                </TextField.Root>
                 <Flex gap="2" justify="end">
                   <Button
                     size="2"
@@ -308,7 +313,7 @@ export function ItemDetailPage() {
                         {deletingWearIndex === actualIndex ? (
                           "Removing..."
                         ) : (
-                          <TrashIcon />
+                          <IoTrashOutline />
                         )}
                       </Button>
                     </div>
@@ -392,7 +397,7 @@ export function ItemDetailPage() {
                 color="red"
                 className={styles.deleteButton}
               >
-                <TrashIcon /> Delete
+                <IoTrashOutline /> Delete
               </Button>
             }
           />
@@ -403,7 +408,7 @@ export function ItemDetailPage() {
             onClick={() => navigate(`/edit-item/${item.id}`)}
             className={styles.editButton}
           >
-            <Pencil1Icon /> Edit Item
+            <IoPencilOutline /> Edit Item
           </Button>
         </section>
 

@@ -1,4 +1,4 @@
-import { PlusIcon } from "@radix-ui/react-icons";
+import { IoAddOutline } from "react-icons/io5";
 import styles from "./Fab.module.css";
 import { useNavigate } from "react-router";
 
@@ -15,7 +15,7 @@ export function Fab({ path }: FabProps) {
       className={styles.button}
       onClick={() => navigate(path)}
     >
-      <PlusIcon className={styles.icon} />
+      <IoAddOutline className={styles.icon} />
     </button>
   );
 }

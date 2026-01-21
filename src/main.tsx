@@ -1,7 +1,5 @@
-import "@radix-ui/themes/styles.css";
 import "./styles/global.css";
 
-import { Theme } from "@radix-ui/themes";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 
@@ -11,9 +9,7 @@ import { WeatherProvider } from "./contexts/WeatherContext";
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <WeatherProvider>
-      <Theme appearance="dark" accentColor="indigo" radius="medium">
-        <App />
-      </Theme>
+      <App />
     </WeatherProvider>
   </StrictMode>
 );

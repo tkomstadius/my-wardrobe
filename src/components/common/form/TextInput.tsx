@@ -1,4 +1,6 @@
-import { Flex, TextField, Text } from "@radix-ui/themes";
+import { Flex } from "../ui/Flex";
+import { Text } from "../ui/Text";
+import { TextField } from "../ui/TextField";
 
 type TextInputProps = {
   label: string;
@@ -20,15 +22,15 @@ export function TextInput({
       <Text as="label" size="2" weight="bold">
         {label}
       </Text>
-      <TextField.Root
-        type="text"
-        defaultValue={defaultValue}
-        variant="soft"
-        name={name}
-        size="3"
-        placeholder={placeholder}
-        list={suggestions ? `${name}-suggestions` : undefined}
-      />
+      <TextField.Root size="3">
+        <TextField.Input
+          type="text"
+          defaultValue={defaultValue}
+          name={name}
+          placeholder={placeholder}
+          list={suggestions ? `${name}-suggestions` : undefined}
+        />
+      </TextField.Root>
       {suggestions && (
         <datalist id={`${name}-suggestions`}>
           {suggestions.map((suggestion) => (

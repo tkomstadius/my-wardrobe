@@ -1,20 +1,20 @@
-import { CameraIcon } from "@radix-ui/react-icons";
-import {
-  Button,
-  Callout,
-  Dialog,
-  Flex,
-  Heading,
-  Spinner,
-  Text,
-  Tabs,
-} from "@radix-ui/themes";
+import { IoCameraOutline } from "react-icons/io5";
+import { Button } from "../components/common/ui/Button";
+import { Callout } from "../components/common/ui/Callout";
+import { Dialog } from "../components/common/ui/Dialog";
+import { Flex } from "../components/common/ui/Flex";
+import { Heading } from "../components/common/ui/Heading";
+import { Spinner } from "../components/common/ui/Spinner";
+import { Text } from "../components/common/ui/Text";
+import { Tabs } from "../components/common/ui/Tabs";
 import { differenceInDays } from "date-fns";
 import { useOptimistic, useState } from "react";
 import { useLoaderData, useNavigate } from "react-router";
 import { CategoryItemsAccordion } from "../components/common/CategoryItemsAccordion";
+import { SearchBar } from "../components/common/SearchBar";
 import { useWeather } from "../contexts/WeatherContext";
 import { useImageUpload } from "../hooks/useImageUpload";
+import { useItemSearch } from "../hooks/useItemSearch";
 import {
   hashImageData,
   type MatchFeedback,
@@ -56,6 +56,8 @@ export function LogWearPage() {
   });
   const { imagePreview, handleImageUpload, clearImage, isUploading } =
     useImageUpload();
+  const { searchQuery, setSearchQuery, clearSearch, filteredItems } =
+    useItemSearch(items);
   const [showSaveOutfitDialog, setShowSaveOutfitDialog] = useState(false);
   const [loggedItemIds, setLoggedItemIds] = useState<string[]>([]);
   const [isSavingOutfit, setIsSavingOutfit] = useState(false);
@@ -332,6 +334,7 @@ export function LogWearPage() {
           setSelectedItems(new Set());
           setAcceptedItems(new Set());
           setRejectedItems(new Set());
+          clearSearch();
           if (!newIsAIMode) {
             setAIMatches([]);
             clearImage();
@@ -370,7 +373,7 @@ export function LogWearPage() {
                     document.getElementById("outfit-upload")?.click()
                   }
                 >
-                  <CameraIcon /> Upload Photo
+                  <IoCameraOutline /> Upload Photo
                 </Button>
               )}
               <input
@@ -534,53 +537,6 @@ export function LogWearPage() {
                           })}
                         </div>
                       )}
-
-                      {/* Save Outfit Dialog */}
-                      <Dialog.Root
-                        open={showSaveOutfitDialog}
-                        onOpenChange={setShowSaveOutfitDialog}
-                      >
-                        <Dialog.Content maxWidth="450px">
-                          <Dialog.Title>Save Outfit Photo?</Dialog.Title>
-                          <Dialog.Description size="2">
-                            Would you like to save this outfit photo to your
-                            outfits collection?
-                          </Dialog.Description>
-                          {imagePreview && (
-                            <Flex justify="center" my="4">
-                              <img
-                                src={imagePreview}
-                                alt="Outfit preview"
-                                style={{
-                                  maxWidth: "100%",
-                                  maxHeight: "200px",
-                                  borderRadius: "var(--radius-3)",
-                                  objectFit: "contain",
-                                }}
-                              />
-                            </Flex>
-                          )}
-                          <Flex gap="3" mt="4" justify="end">
-                            <Dialog.Close>
-                              <Button
-                                variant="soft"
-                                color="gray"
-                                onClick={handleSkipSaveOutfit}
-                                disabled={isSavingOutfit}
-                              >
-                                Skip
-                              </Button>
-                            </Dialog.Close>
-                            <Button
-                              variant="solid"
-                              onClick={handleSaveOutfit}
-                              disabled={isSavingOutfit}
-                            >
-                              {isSavingOutfit ? "Saving..." : "Save Outfit"}
-                            </Button>
-                          </Flex>
-                        </Dialog.Content>
-                      </Dialog.Root>
                     </div>
                   );
                 })}
@@ -611,8 +567,14 @@ export function LogWearPage() {
             </Text>
           ) : (
             <>
+              <SearchBar
+                value={searchQuery}
+                onChange={setSearchQuery}
+                onClear={clearSearch}
+                resultCount={filteredItems.length}
+              />
               <CategoryItemsAccordion
-                items={items}
+                items={filteredItems}
                 selectedItems={selectedItems}
                 onToggleSelection={toggleItemSelection}
                 disabledItems={optimisticLoggedItems}
@@ -643,6 +605,52 @@ export function LogWearPage() {
           )}
         </div>
       )}
+
+      {/* Save Outfit Dialog - rendered at component level to avoid unmounting issues */}
+      <Dialog.Root
+        open={showSaveOutfitDialog}
+        onOpenChange={setShowSaveOutfitDialog}
+      >
+        <Dialog.Content maxWidth="450px">
+          <Dialog.Title>Save Outfit Photo?</Dialog.Title>
+          <Dialog.Description size="2">
+            Would you like to save this outfit photo to your outfits collection?
+          </Dialog.Description>
+          {imagePreview && (
+            <Flex justify="center" my="4">
+              <img
+                src={imagePreview}
+                alt="Outfit preview"
+                style={{
+                  maxWidth: "100%",
+                  maxHeight: "200px",
+                  borderRadius: "var(--radius-3)",
+                  objectFit: "contain",
+                }}
+              />
+            </Flex>
+          )}
+          <Flex gap="3" mt="4" justify="end">
+            <Dialog.Close>
+              <Button
+                variant="soft"
+                color="gray"
+                onClick={handleSkipSaveOutfit}
+                disabled={isSavingOutfit}
+              >
+                Skip
+              </Button>
+            </Dialog.Close>
+            <Button
+              variant="solid"
+              onClick={handleSaveOutfit}
+              disabled={isSavingOutfit}
+            >
+              {isSavingOutfit ? "Saving..." : "Save Outfit"}
+            </Button>
+          </Flex>
+        </Dialog.Content>
+      </Dialog.Root>
     </Flex>
   );
 }

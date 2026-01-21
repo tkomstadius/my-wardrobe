@@ -1,6 +1,12 @@
 import { useState } from "react";
 import { compressImage } from "../utils/imageCompression";
 import { removeImageBackground } from "../utils/backgroundRemoval";
+import { getImageEmbedding } from "../utils/aiEmbedding";
+import { ENABLE_BACKGROUND_REMOVAL } from "../utils/config";
+import {
+  setPendingEmbedding,
+  clearPendingEmbedding,
+} from "../utils/pendingEmbedding";
 
 interface UseImageUploadOptions {
   onError?: (error: string) => void;
@@ -18,22 +24,50 @@ export function useImageUpload(options: UseImageUploadOptions = {}) {
     if (!file) return;
 
     setIsUploading(true);
+    clearPendingEmbedding();
 
     try {
       const reader = new FileReader();
       reader.onloadend = async () => {
         try {
           const originalDataURL = reader.result as string;
-          // Step 1: Compress the image first
-          const compressedDataURL = await compressImage(originalDataURL);
-          
-          // Step 2: Remove background after compression
-          const processedDataURL = await removeImageBackground(compressedDataURL);
-          
-          setImagePreview(processedDataURL);
+
+          // Step 1: Remove background first on original high-quality image
+          let backgroundRemovedDataURL = originalDataURL;
+          if (ENABLE_BACKGROUND_REMOVAL) {
+            try {
+              backgroundRemovedDataURL =
+                await removeImageBackground(originalDataURL);
+            } catch (bgError) {
+              console.warn(
+                "Background removal failed, using original image:",
+                bgError
+              );
+              // Fall back to original image without background removal
+            }
+          }
+
+          // Step 2: Calculate embedding on background-removed high-quality image
+          try {
+            const newEmbedding = await getImageEmbedding(
+              backgroundRemovedDataURL
+            );
+            setPendingEmbedding(newEmbedding);
+          } catch (embeddingError) {
+            console.warn("Embedding calculation failed:", embeddingError);
+            // Continue without embedding - user can generate later in Settings
+          }
+
+          // Step 3: Compress the background-removed image for storage
+          const compressedDataURL = await compressImage(
+            backgroundRemovedDataURL
+          );
+
+          setImagePreview(compressedDataURL);
         } catch (error) {
           console.error("Failed to process image:", error);
-          const errorMessage = "Failed to process image. Please try another file.";
+          const errorMessage =
+            "Failed to process image. Please try another file.";
           if (onError) {
             onError(errorMessage);
           } else {
@@ -69,6 +103,7 @@ export function useImageUpload(options: UseImageUploadOptions = {}) {
 
   const clearImage = () => {
     setImagePreview("");
+    clearPendingEmbedding();
   };
 
   return {

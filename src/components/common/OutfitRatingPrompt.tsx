@@ -1,4 +1,7 @@
-import { Button, Dialog, Flex, Text } from "@radix-ui/themes";
+import { Button } from "./ui/Button";
+import { Dialog } from "./ui/Dialog";
+import { Flex } from "./ui/Flex";
+import { Text } from "./ui/Text";
 import { useState } from "react";
 import { RatingButtons } from "./form/RatingButtons";
 import type { Outfit, OutfitRating } from "../../types/outfit";
@@ -48,7 +51,7 @@ export function OutfitRatingPrompt({
         <Dialog.Title>
           Rate Outfit
           {totalCount > 1 && (
-            <Text size="2" color="gray" ml="2">
+            <Text size="2" color="gray" style={{ marginLeft: "0.5rem" }}>
               ({currentIndex + 1} of {totalCount})
             </Text>
           )}
@@ -58,30 +61,30 @@ export function OutfitRatingPrompt({
         </Dialog.Description>
 
         {outfit.photo && (
-          <Flex justify="center" my="4">
+          <Flex justify="center" style={{ margin: "1rem 0" }}>
             <img
               src={outfit.photo}
               alt="Outfit"
               style={{
                 maxWidth: "100%",
                 maxHeight: "200px",
-                borderRadius: "var(--radius-3)",
+                borderRadius: "0.5rem",
                 objectFit: "contain",
-                background: "var(--gray-2)",
+                background: "var(--surface-color)",
               }}
             />
           </Flex>
         )}
 
-        <Flex direction="column" gap="3" mt="4">
+        <Flex direction="column" gap="3" style={{ marginTop: "1rem" }}>
           <div>
-            <Text weight="bold" size="2" mb="2" as="div">
+            <Text weight="bold" size="2" style={{ marginBottom: "0.5rem", display: "block" }}>
               Rate This Outfit
             </Text>
             <RatingButtons value={rating} onChange={setRating} />
           </div>
 
-          <Flex gap="3" justify="end" mt="2">
+          <Flex gap="3" justify="end" style={{ marginTop: "0.5rem" }}>
             <Button
               variant="soft"
               color="gray"

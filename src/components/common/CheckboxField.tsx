@@ -1,4 +1,6 @@
-import { Checkbox, Flex, Text } from "@radix-ui/themes";
+import { Checkbox } from "./ui/Checkbox";
+import { Flex } from "./ui/Flex";
+import { Text } from "./ui/Text";
 
 interface CheckboxFieldProps {
   label: string;
@@ -19,15 +21,10 @@ export function CheckboxField({
     <Text as="label" size="2" weight="bold">
       <Flex gap="2" align="center">
         <Checkbox
-          variant="soft"
           name={name}
           checked={checked}
           defaultChecked={defaultChecked}
-          onCheckedChange={
-            onCheckedChange
-              ? (checked) => onCheckedChange(checked === true)
-              : undefined
-          }
+          onCheckedChange={onCheckedChange}
         />
         {label}
       </Flex>

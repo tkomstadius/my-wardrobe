@@ -1,5 +1,8 @@
-import { TrashIcon, Pencil1Icon } from "@radix-ui/react-icons";
-import { Button, Flex, Heading, Text } from "@radix-ui/themes";
+import { IoTrashOutline, IoPencilOutline } from "react-icons/io5";
+import { Button } from "../components/common/ui/Button";
+import { Flex } from "../components/common/ui/Flex";
+import { Heading } from "../components/common/ui/Heading";
+import { Text } from "../components/common/ui/Text";
 import { useState } from "react";
 import { LoaderFunctionArgs, useLoaderData, useNavigate } from "react-router";
 import { DeleteConfirmDialog } from "../components/common/DeleteConfirmDialog";
@@ -62,9 +65,9 @@ export function OutfitDetailPage() {
 
   return (
     <>
-      <header className={styles.header}>
+      <div className={styles.header}>
         <BackLink to="/outfits" />
-      </header>
+      </div>
 
       <Flex direction="column" gap="3">
         {outfit.photo && (
@@ -119,7 +122,7 @@ export function OutfitDetailPage() {
                 color="red"
                 className={styles.deleteButton}
               >
-                <TrashIcon /> Delete
+                <IoTrashOutline /> Delete
               </Button>
             }
           />
@@ -130,7 +133,7 @@ export function OutfitDetailPage() {
             onClick={() => navigate(`/edit-outfit/${outfit.id}`)}
             className={styles.editButton}
           >
-            <Pencil1Icon /> Edit Outfit
+            <IoPencilOutline /> Edit Outfit
           </Button>
         </section>
       </Flex>

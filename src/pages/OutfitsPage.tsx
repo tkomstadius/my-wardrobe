@@ -1,5 +1,8 @@
-import { MixIcon } from "@radix-ui/react-icons";
-import { Heading, Text, Select, Flex } from "@radix-ui/themes";
+import { IoOptionsOutline } from "react-icons/io5";
+import { Heading } from "../components/common/ui/Heading";
+import { Text } from "../components/common/ui/Text";
+import { Select } from "../components/common/ui/Select";
+import { Flex } from "../components/common/ui/Flex";
 import { useState } from "react";
 import { useLoaderData, useNavigate } from "react-router";
 import styles from "./OutfitsPage.module.css";
@@ -42,13 +45,12 @@ export function OutfitsPage() {
 
   return (
     <>
-      <header className={styles.header}>
+      <div className={styles.header}>
         <Heading size="6">My Outfits</Heading>
         {sortedOutfits.length > 0 && (
           <Select.Root
             value={sortBy}
             onValueChange={(value) => setSortBy(value as SortOption)}
-            size="2"
           >
             <Select.Trigger variant="soft" className={styles.sortTrigger} />
             <Select.Content>
@@ -57,7 +59,7 @@ export function OutfitsPage() {
             </Select.Content>
           </Select.Root>
         )}
-      </header>
+      </div>
 
       {sortedOutfits.length === 0 ? (
         <Flex
@@ -67,7 +69,7 @@ export function OutfitsPage() {
           gap="2"
           className={styles.emptyState}
         >
-          <MixIcon className={styles.emptyIcon} />
+          <IoOptionsOutline className={styles.emptyIcon} />
           <Heading size="4">No outfits yet</Heading>
           <Text color="gray">
             Create outfit combinations for inspiration and planning
@@ -86,7 +88,7 @@ export function OutfitsPage() {
                   <img src={outfit.photo} alt="Outfit" />
                 ) : (
                   <div className={styles.noImage}>
-                    <MixIcon width="32" height="32" />
+                    <IoOptionsOutline size={32} />
                   </div>
                 )}
               </div>

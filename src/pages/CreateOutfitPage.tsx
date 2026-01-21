@@ -1,11 +1,9 @@
-import {
-  Button,
-  Flex,
-  Heading,
-  Text,
-  TextArea,
-  TextField,
-} from "@radix-ui/themes";
+import { Button } from "../components/common/ui/Button";
+import { Flex } from "../components/common/ui/Flex";
+import { Heading } from "../components/common/ui/Heading";
+import { Text } from "../components/common/ui/Text";
+import { TextField } from "../components/common/ui/TextField";
+import { TextArea } from "../components/common/ui/TextArea";
 import { useState, useMemo } from "react";
 import {
   ActionFunctionArgs,
@@ -98,10 +96,10 @@ export function CreateOutfitPage() {
 
   return (
     <section className={styles.container}>
-      <header className={styles.header}>
+      <div className={styles.header}>
         <BackLink to={"/outfits"} />
         <Heading size="6">Create Outfit</Heading>
-      </header>
+      </div>
 
       <Form method="post" className={styles.form}>
         <ImageInput />
@@ -110,13 +108,13 @@ export function CreateOutfitPage() {
           <Text as="label" size="2" weight="bold">
             Created Date
           </Text>
-          <TextField.Root
-            defaultValue={formatDate(new Date())}
-            variant="soft"
-            name="createdDate"
-            type="date"
-            size="3"
-          />
+          <TextField.Root size="3">
+            <TextField.Input
+              defaultValue={formatDate(new Date())}
+              name="createdDate"
+              type="date"
+            />
+          </TextField.Root>
         </Flex>
 
         <Flex direction="column" gap="1">

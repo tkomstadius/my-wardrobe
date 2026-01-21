@@ -1,4 +1,4 @@
-import { Pencil1Icon, PlusIcon } from "@radix-ui/react-icons";
+import { IoPencilOutline, IoAddOutline } from "react-icons/io5";
 import { Link, useNavigate } from "react-router";
 import type { WardrobeItem } from "../../types/wardrobe";
 import { formatItemAge } from "../../utils/dateFormatter";
@@ -75,7 +75,7 @@ export function ItemCard({ item }: ItemCardProps) {
           onClick={handleQuickEdit}
           title={"Edit item"}
         >
-          <Pencil1Icon />
+          <IoPencilOutline />
         </button>
 
         <button
@@ -86,7 +86,7 @@ export function ItemCard({ item }: ItemCardProps) {
           disabled={!!newWearCount}
           title={wornToday ? "Already worn today" : "Mark as worn"}
         >
-          <PlusIcon />
+          <IoAddOutline />
         </button>
       </div>
     </Link>

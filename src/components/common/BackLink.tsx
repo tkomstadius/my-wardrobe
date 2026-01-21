@@ -1,6 +1,7 @@
-import { ArrowLeftIcon } from "@radix-ui/react-icons";
-import { Flex, Link as RadixLink, Text } from "@radix-ui/themes";
-import { Link } from "react-router-dom";
+import { IoArrowBackOutline } from "react-icons/io5";
+import { Flex } from "./ui/Flex";
+import { Link } from "./ui/Link";
+import { Text } from "./ui/Text";
 
 type BackButtonProps = {
   to: string;
@@ -8,13 +9,11 @@ type BackButtonProps = {
 
 export function BackLink({ to }: BackButtonProps) {
   return (
-    <RadixLink asChild>
-      <Link to={to}>
-        <Flex gap="2" align="center">
-          <ArrowLeftIcon />
-          <Text size="2">Back</Text>
-        </Flex>
-      </Link>
-    </RadixLink>
+    <Link to={to}>
+      <Flex gap="2" align="center">
+        <IoArrowBackOutline />
+        <Text size="2">Back</Text>
+      </Flex>
+    </Link>
   );
 }

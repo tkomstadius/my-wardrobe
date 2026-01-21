@@ -1,0 +1,50 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.item {
+  border: 1px solid var(--border-color);
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+.trigger {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem;
+  background-color: var(--surface-color);
+  border: none;
+  color: var(--text-color);
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.trigger:hover {
+  background-color: var(--accent-action-color);
+}
+
+.chevron {
+  transition: transform 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.trigger[data-open] .chevron {
+  transform: rotate(180deg);
+}
+
+.content {
+  overflow: hidden;
+  transition: height 0.2s ease;
+}
+
+.content[data-open] {
+  padding: 1rem;
+}

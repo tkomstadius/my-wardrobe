@@ -5,8 +5,9 @@
 }
 
 .card {
-  background-color: var(--accent-9);
+  background-color: var(--surface-color);
   border-radius: var(--border-radius);
+  border: 1px solid var(--border-color);
   overflow: hidden;
   cursor: pointer;
   width: 100%;
@@ -47,7 +48,7 @@
 
 .quickWearButton,
 .quickEditButton {
-  background: var(--accent-action-color);
+  background: var(--items-color);
   width: 32px;
   height: 32px;
   border-radius: 50%;
@@ -72,28 +73,6 @@
 .quickWearButton.disabled:hover {
   transform: none;
   background: var(--gray-8);
-}
-
-/* On desktop, hide button until hover */
-@media (min-width: 769px) and (hover: hover) {
-  .quickWearButton {
-    opacity: 0;
-    transition: opacity 0.2s ease, transform 0.2s ease;
-  }
-
-  .card:hover .quickWearButton {
-    opacity: 1;
-  }
-
-  .quickWearButton:hover {
-    transform: scale(1.1);
-    background: var(--accent-10);
-  }
-
-  .quickWearButton.disabled:hover {
-    transform: none;
-    background: var(--gray-8);
-  }
 }
 
 .content {

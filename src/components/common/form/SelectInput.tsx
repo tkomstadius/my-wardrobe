@@ -1,4 +1,6 @@
-import { Flex, Select, Text } from "@radix-ui/themes";
+import { Flex } from "../ui/Flex";
+import { Text } from "../ui/Text";
+import { Select } from "../ui/Select";
 
 type SelectInputProps = {
   label: string;
@@ -24,8 +26,7 @@ export function SelectInput({
       </Text>
       <Select.Root
         name={name}
-        size="3"
-        onValueChange={onValueChange}
+        onValueChange={(value) => onValueChange?.(value || "")}
         disabled={disabled}
         defaultValue={defaultValue}
       >

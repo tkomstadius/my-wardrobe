@@ -2,8 +2,10 @@ import { Outlet, useNavigate } from "react-router";
 import { BottomNav } from "./BottomNav";
 import { ScrollToTop } from "../common/ScrollToTop";
 import styles from "./MainLayout.module.css";
-import { BarChartIcon, GearIcon } from "@radix-ui/react-icons";
-import { Flex, IconButton, Text } from "@radix-ui/themes";
+import { IoBarChartOutline, IoSettingsOutline } from "react-icons/io5";
+import { Flex } from "../common/ui/Flex";
+import { IconButton } from "../common/ui/IconButton";
+import { Text } from "../common/ui/Text";
 import { useWeather } from "../../contexts/WeatherContext";
 
 export function MainLayout() {
@@ -18,22 +20,18 @@ export function MainLayout() {
           <h1 className={styles.name}>My Wardrobe</h1>
           <Flex align="center" gap="4">
             <IconButton
-              variant="ghost"
               size="3"
               onClick={() => navigate("/settings")}
-              aria-label="Settings"
               className={styles.iconButton}
             >
-              <GearIcon width="20" height="20" />
+              <IoSettingsOutline size={20} />
             </IconButton>
             <IconButton
-              variant="ghost"
               size="3"
               onClick={() => navigate("/stats")}
-              aria-label="Statistics"
               className={styles.iconButton}
             >
-              <BarChartIcon width="20" height="20" />
+              <IoBarChartOutline size={20} />
             </IconButton>
           </Flex>
         </Flex>
