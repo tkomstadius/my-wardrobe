@@ -18,7 +18,6 @@ import {
 } from "react-router";
 import { DeleteConfirmDialog } from "../components/common/DeleteConfirmDialog";
 import { CheckboxField } from "../components/common/CheckboxField";
-import { getImageEmbedding } from "../utils/aiEmbedding";
 import { loadItemById, saveItem } from "../utils/indexedDB";
 import type { ItemCategory, WardrobeItem } from "../types/wardrobe";
 import {
@@ -44,6 +43,7 @@ import {
   SECOND_HAND_NAME,
   SUBCATEGORY_NAME,
 } from "../components/common/form/constants";
+import { consumePendingEmbedding } from "../utils/pendingEmbedding";
 import { SelectInput } from "../components/common/form/SelectInput";
 import { RatingButtons } from "../components/common/form/RatingButtons";
 import type { OutfitRating } from "../types/outfit";
@@ -107,16 +107,13 @@ export async function clientAction({ request, params }: ActionFunctionArgs) {
       return { error: "Item not found" };
     }
 
-    // Regenerate embedding if image has changed
-    let embedding = existingItem.embedding;
-    if (originalImageUrl && imageUrl !== originalImageUrl) {
-      try {
-        embedding = await getImageEmbedding(imageUrl);
-      } catch (error) {
-        console.error("Failed to generate embedding:", error);
-        // Continue without updating embedding
-      }
-    }
+    // If image changed, use the new embedding from pending store
+    // Otherwise keep the existing embedding
+    const pendingEmbedding = consumePendingEmbedding();
+    const imageChanged = originalImageUrl && imageUrl !== originalImageUrl;
+    const embedding = imageChanged && pendingEmbedding
+      ? pendingEmbedding
+      : existingItem.embedding;
 
     const newInitialWearCount = initialWearCount
       ? Number.parseInt(initialWearCount, 10)

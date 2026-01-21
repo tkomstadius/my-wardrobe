@@ -7,7 +7,7 @@
   display: flex;
   justify-content: space-around;
   align-items: center;
-  background-color: var(--accent-color);
+  background-color: var(--base-color);
   padding: 0.75rem 1rem;
   padding-bottom: calc(0.75rem + env(safe-area-inset-bottom));
 }
@@ -27,7 +27,7 @@
 
 .navItem:hover,
 .navItem.active {
-  color: var(--complimentary-color);
+  color: var(--items-color);
 }
 
 .icon {

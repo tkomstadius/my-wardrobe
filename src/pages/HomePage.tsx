@@ -140,7 +140,7 @@ export function HomePage() {
                 onClick={handleSuggestItem}
                 style={{ flexShrink: 0 }}
               >
-                ✨ What Should I Wear?
+                ✨
               </Button>
             </Flex>
 

@@ -16,12 +16,13 @@ export function suggestItem(
     return null;
   }
 
-  // Filter to only tops, bottoms, or dresses
+  // Filter to only tops, bottoms, or dresses, excluding dog clothes
   const relevantItems = items.filter(
     (item) =>
-      item.category === "tops" ||
-      item.category === "bottoms" ||
-      item.category === "dresses"
+      (item.category === "tops" ||
+        item.category === "bottoms" ||
+        item.category === "dresses") &&
+      !item.isDogCasual
   );
 
   if (relevantItems.length === 0) {

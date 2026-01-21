@@ -1,6 +1,6 @@
 .layout {
   min-height: 100vh;
-  background-color: #161616;
+  background-color: var(--background-color);
 }
 
 @supports (min-height: 100dvh) {
@@ -13,7 +13,7 @@
   position: sticky;
   top: 0;
   z-index: 100;
-  background-color: var(--accent-color);
+  background-color: var(--base-color);
   padding: 1rem 1rem 0.25rem;
   color: var(--text-color);
 }

@@ -21,7 +21,7 @@
 
 /* Variants */
 .solid {
-  background-color: var(--accent-color);
+  background-color: var(--items-color);
   color: white;
 }
 

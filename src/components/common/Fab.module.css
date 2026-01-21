@@ -5,8 +5,8 @@
   width: 56px;
   height: 56px;
   border-radius: 50%;
-  background-color: var(--text-color);
-  color: var(--accent-9);
+  background-color: var(--items-color);
+  color: var(--text-color);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
   display: flex;
   align-items: center;
@@ -16,7 +16,7 @@
 }
 
 .button:hover {
-  background-color: var(--accent-action-color);
+  background-color: var(--surface-color);
   transform: scale(1.1);
 }
 
@@ -27,5 +27,5 @@
 .icon {
   width: 28px;
   height: 28px;
-  color: var(--accent-9);
+  color: var(--text-color);
 }

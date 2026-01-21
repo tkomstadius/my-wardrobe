@@ -14,7 +14,6 @@ import {
 } from "react-router";
 import { useState } from "react";
 import { CheckboxField } from "../components/common/CheckboxField";
-import { getImageEmbedding } from "../utils/aiEmbedding";
 import { saveItem } from "../utils/indexedDB";
 import { generateId, getAllBrands } from "../utils/storageCommands";
 import type {
@@ -40,6 +39,7 @@ import {
   SECOND_HAND_NAME,
   SUBCATEGORY_NAME,
 } from "../components/common/form/constants";
+import { consumePendingEmbedding } from "../utils/pendingEmbedding";
 import { SelectInput } from "../components/common/form/SelectInput";
 import { RatingButtons } from "../components/common/form/RatingButtons";
 import type { OutfitRating } from "../types/outfit";
@@ -80,15 +80,8 @@ export async function clientAction({ request }: ActionFunctionArgs) {
   }
 
   try {
-    // Generate embedding for AI wear logging
-    let embedding: number[] | undefined;
-
-    try {
-      embedding = await getImageEmbedding(imageUrl);
-    } catch (error) {
-      console.error("Failed to generate embedding:", error);
-      // Continue without embedding - user can generate later in Settings
-    }
+    // Get embedding from pending store (calculated during image upload on high-quality image)
+    const embedding = consumePendingEmbedding() ?? undefined;
 
     const now = new Date();
     const initialCount = initialWearCount
