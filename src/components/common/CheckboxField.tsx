@@ -21,7 +21,6 @@ export function CheckboxField({
     <Text as="label" size="2" weight="bold">
       <Flex gap="2" align="center">
         <Checkbox
-          variant="soft"
           name={name}
           checked={checked}
           defaultChecked={defaultChecked}

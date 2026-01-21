@@ -248,14 +248,14 @@ export function ItemDetailPage() {
                 <Text size="2" weight="medium">
                   Select the date you wore this item:
                 </Text>
-                <TextField.Root
-                  variant="soft"
-                  type="date"
-                  size="3"
-                  value={selectedDate}
-                  onChange={(e) => setSelectedDate(e.target.value)}
-                  max={formatDate(new Date())}
-                />
+                <TextField.Root size="3">
+                  <TextField.Input
+                    type="date"
+                    value={selectedDate}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSelectedDate(e.target.value)}
+                    max={formatDate(new Date())}
+                  />
+                </TextField.Root>
                 <Flex gap="2" justify="end">
                   <Button
                     size="2"

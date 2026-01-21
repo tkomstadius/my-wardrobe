@@ -14,11 +14,15 @@
   /* Mobile-first viewport setup */
   color-scheme: dark;
 
+  --background-color: rgb(10, 10, 10);
+  --base-color: rgb(15, 15, 15);
+
+  --home-accent-color: oklch(0.558 0.288 302.321014);
+
   /* Theme colors */
   --accent-color: #34495e;
   --accent-hover: #4f46e5;
   --accent-action-color: #243342;
-  --background-color: #161616;
   --surface-color: #1e1e1e;
   --text-color: #fff;
   --text-secondary: #9ca3af;

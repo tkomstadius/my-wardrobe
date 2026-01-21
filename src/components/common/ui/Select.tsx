@@ -10,7 +10,6 @@ interface SelectRootProps {
   disabled?: boolean;
   defaultValue?: string;
   value?: string;
-  size?: string;
 }
 
 function SelectRoot({
@@ -20,7 +19,6 @@ function SelectRoot({
   disabled,
   defaultValue,
   value,
-  size,
 }: SelectRootProps) {
   return (
     <BaseSelect.Root

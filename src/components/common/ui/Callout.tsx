@@ -1,10 +1,4 @@
 import type { ReactNode } from "react";
-import {
-  IoInformationCircle,
-  IoWarning,
-  IoCheckmarkCircle,
-  IoCloseCircle,
-} from "react-icons/io5";
 import styles from "./Callout.module.css";
 
 interface CalloutRootProps {
@@ -15,15 +9,15 @@ interface CalloutRootProps {
   className?: string;
 }
 
-function CalloutRoot({ children, color = "blue", variant, size, className }: CalloutRootProps) {
+function CalloutRoot({ children, color = "blue", className }: CalloutRootProps) {
   const colorMap: Record<string, string> = {
-    blue: styles.info,
-    yellow: styles.warning,
-    amber: styles.warning,
-    red: styles.error,
-    green: styles.success,
-    purple: styles.info,
-    orange: styles.warning,
+    blue: styles.info || "",
+    yellow: styles.warning || "",
+    amber: styles.warning || "",
+    red: styles.error || "",
+    green: styles.success || "",
+    purple: styles.info || "",
+    orange: styles.warning || "",
   };
 
   return <div className={`${styles.callout} ${colorMap[color] || styles.info} ${className || ""}`}>{children}</div>;

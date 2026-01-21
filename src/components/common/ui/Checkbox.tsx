@@ -7,7 +7,6 @@ interface CheckboxProps {
   checked?: boolean;
   defaultChecked?: boolean;
   onCheckedChange?: (checked: boolean) => void;
-  variant?: string;
 }
 
 export function Checkbox({
@@ -15,7 +14,6 @@ export function Checkbox({
   checked,
   defaultChecked,
   onCheckedChange,
-  variant,
 }: CheckboxProps) {
   return (
     <BaseCheckbox.Root

@@ -148,7 +148,7 @@ export function HomePage() {
               <section>
                 <div className={styles.quickStatsGrid}>
                   <StatsCard
-                    title="Total Items"
+                    title="Total Wears"
                     value={quickStats.totalWears}
                   />
                   <StatsCard

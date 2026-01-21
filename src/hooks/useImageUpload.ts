@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { compressImage } from "../utils/imageCompression";
 import { removeImageBackground } from "../utils/backgroundRemoval";
+import { ENABLE_BACKGROUND_REMOVAL } from "../utils/config";
 
 interface UseImageUploadOptions {
   onError?: (error: string) => void;
@@ -27,8 +28,17 @@ export function useImageUpload(options: UseImageUploadOptions = {}) {
           // Step 1: Compress the image first
           const compressedDataURL = await compressImage(originalDataURL);
           
-          // Step 2: Remove background after compression
-          const processedDataURL = await removeImageBackground(compressedDataURL);
+          let processedDataURL = compressedDataURL;
+          
+          // Step 2: Remove background after compression (optional)
+          if (ENABLE_BACKGROUND_REMOVAL) {
+            try {
+              processedDataURL = await removeImageBackground(compressedDataURL);
+            } catch (bgError) {
+              console.warn("Background removal failed, using compressed image:", bgError);
+              // Fall back to compressed image without background removal
+            }
+          }
           
           setImagePreview(processedDataURL);
         } catch (error) {

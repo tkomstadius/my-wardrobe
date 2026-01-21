@@ -51,7 +51,6 @@ export function OutfitsPage() {
           <Select.Root
             value={sortBy}
             onValueChange={(value) => setSortBy(value as SortOption)}
-            size="2"
           >
             <Select.Trigger variant="soft" className={styles.sortTrigger} />
             <Select.Content>

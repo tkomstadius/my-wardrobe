@@ -192,25 +192,25 @@ export function AddItemPage() {
           <Text as="label" size="2" weight="bold">
             Purchase Date
           </Text>
-          <TextField.Root
-            variant="soft"
-            name="purchaseDate"
-            type="date"
-            size="3"
-          />
+          <TextField.Root size="3">
+            <TextField.Input
+              name="purchaseDate"
+              type="date"
+            />
+          </TextField.Root>
         </Flex>
 
         <Flex direction="column" gap="1">
           <Text as="label" size="2" weight="bold">
             Initial Wear Count
           </Text>
-          <TextField.Root
-            variant="soft"
-            name="initialWearCount"
-            type="number"
-            placeholder="0"
-            size="3"
-          />
+          <TextField.Root size="3">
+            <TextField.Input
+              name="initialWearCount"
+              type="number"
+              placeholder="0"
+            />
+          </TextField.Root>
         </Flex>
 
         <Flex direction="column" gap="1">

@@ -265,31 +265,31 @@ export function EditItemPage() {
             <Text as="label" size="2" weight="bold">
               Purchase Date
             </Text>
-            <TextField.Root
-              variant="soft"
-              name={PURCHASE_DATE_NAME}
-              type="date"
-              defaultValue={
-                item.purchaseDate
-                  ? new Date(item.purchaseDate).toISOString().split("T")[0]
-                  : ""
-              }
-              size="3"
-            />
+            <TextField.Root size="3">
+              <TextField.Input
+                name={PURCHASE_DATE_NAME}
+                type="date"
+                defaultValue={
+                  item.purchaseDate
+                    ? new Date(item.purchaseDate).toISOString().split("T")[0]
+                    : ""
+                }
+              />
+            </TextField.Root>
           </Flex>
 
           <Flex direction="column" gap="1">
             <Text as="label" size="2" weight="bold">
               Initial Wear Count
             </Text>
-            <TextField.Root
-              variant="soft"
-              name={INITIAL_WEAR_COUNT_NAME}
-              type="number"
-              placeholder="0"
-              defaultValue={(item.initialWearCount ?? 0).toString()}
-              size="3"
-            />
+            <TextField.Root size="3">
+              <TextField.Input
+                name={INITIAL_WEAR_COUNT_NAME}
+                type="number"
+                placeholder="0"
+                defaultValue={(item.initialWearCount ?? 0).toString()}
+              />
+            </TextField.Root>
           </Flex>
 
           <Flex direction="column" gap="1">

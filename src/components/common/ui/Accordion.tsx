@@ -9,10 +9,14 @@ interface AccordionRootProps {
 }
 
 function AccordionRoot({ children, type = "single", defaultValue }: AccordionRootProps) {
+  const baseDefaultValue = type === "multiple" 
+    ? (Array.isArray(defaultValue) ? defaultValue : defaultValue ? [defaultValue] : [])
+    : (Array.isArray(defaultValue) ? defaultValue : defaultValue ? [defaultValue] : []);
+    
   return (
     <BaseAccordion.Root
-      openMultiple={type === "multiple"}
-      defaultValue={defaultValue}
+      multiple={type === "multiple"}
+      defaultValue={baseDefaultValue}
       className={styles.root}
     >
       {children}
