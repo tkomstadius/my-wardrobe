@@ -8,9 +8,9 @@ export interface CompressionOptions {
 }
 
 const DEFAULT_OPTIONS: Required<CompressionOptions> = {
-  maxWidth: 800,
-  maxHeight: 800,
-  quality: 0.85,
+  maxWidth: 1200,
+  maxHeight: 1200,
+  quality: 0.9,
 };
 
 /**
