@@ -163,7 +163,6 @@ export function CreateOutfitPage() {
 
         <Button
           type="submit"
-          size="3"
           disabled={isSubmitting || isLoading || selectedItems.size === 0}
         >
           {isSubmitting ? "Creating..." : "Create Outfit"}

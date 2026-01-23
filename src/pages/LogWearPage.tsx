@@ -368,7 +368,6 @@ export function LogWearPage() {
                 </Flex>
               ) : (
                 <Button
-                  size="3"
                   onClick={() =>
                     document.getElementById("outfit-upload")?.click()
                   }
@@ -397,8 +396,7 @@ export function LogWearPage() {
               </div>
               <div className={styles.photoActions}>
                 <Button
-                  variant="soft"
-                  color="red"
+                  variant="destructive"
                   onClick={() => {
                     clearImage();
                     setAIMatches([]);
@@ -407,7 +405,6 @@ export function LogWearPage() {
                   Remove Photo
                 </Button>
                 <Button
-                  size="3"
                   onClick={handleAnalyzeOutfit}
                   disabled={isAnalyzing}
                 >
@@ -445,8 +442,6 @@ export function LogWearPage() {
 
                         {!isExpanded && (
                           <Button
-                            size="1"
-                            variant="ghost"
                             onClick={() =>
                               setExpandedSections((prev) => ({
                                 ...prev,
@@ -460,8 +455,6 @@ export function LogWearPage() {
 
                         {isExpanded && confidenceLevel !== "high" && (
                           <Button
-                            size="1"
-                            variant="ghost"
                             onClick={() =>
                               setExpandedSections((prev) => ({
                                 ...prev,
@@ -484,7 +477,7 @@ export function LogWearPage() {
                               <div
                                 key={match.item.id}
                                 className={`${styles.matchRow} ${
-                                  isRejected ? styles.rejected : ""
+                                  isRejected || isAccepted ? styles.rejected : ""
                                 }`}
                               >
                                 <img
@@ -510,9 +503,6 @@ export function LogWearPage() {
                                 </div>
                                 <Flex gap="1" align="center">
                                   <Button
-                                    size="2"
-                                    variant={isAccepted ? "solid" : "soft"}
-                                    color="green"
                                     onClick={() =>
                                       handleAcceptItem(match.item.id)
                                     }
@@ -521,9 +511,7 @@ export function LogWearPage() {
                                     ✓
                                   </Button>
                                   <Button
-                                    size="2"
-                                    variant={isRejected ? "solid" : "soft"}
-                                    color="red"
+                                    variant="destructive"
                                     onClick={() =>
                                       handleRejectItem(match.item.id)
                                     }
@@ -543,7 +531,6 @@ export function LogWearPage() {
               </div>
 
               <Button
-                size="3"
                 onClick={handleSubmit}
                 disabled={selectedItems.size === 0 || isPending}
                 className={styles.submitButton}
@@ -581,16 +568,13 @@ export function LogWearPage() {
               />
               <div className={styles.actionButtons}>
                 <Button
-                  size="3"
-                  variant="outline"
-                  color="red"
+                  variant="destructive"
                   onClick={() => navigate(-1)}
                   disabled={isPending}
                 >
                   Cancel
                 </Button>
                 <Button
-                  size="3"
                   onClick={handleSubmit}
                   disabled={selectedItems.size === 0 || isPending}
                 >
@@ -633,8 +617,6 @@ export function LogWearPage() {
           <Flex gap="3" mt="4" justify="end">
             <Dialog.Close>
               <Button
-                variant="soft"
-                color="gray"
                 onClick={handleSkipSaveOutfit}
                 disabled={isSavingOutfit}
               >
@@ -642,7 +624,6 @@ export function LogWearPage() {
               </Button>
             </Dialog.Close>
             <Button
-              variant="solid"
               onClick={handleSaveOutfit}
               disabled={isSavingOutfit}
             >

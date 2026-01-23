@@ -340,7 +340,6 @@ export function EditItemPage() {
           <div className={styles.actions}>
             <Button
               type="submit"
-              size="3"
               disabled={isSubmitting}
               className={styles.saveButton}
             >
@@ -353,7 +352,7 @@ export function EditItemPage() {
               onConfirm={handleDelete}
               isDeleting={isDeleting}
               triggerButton={
-                <Button type="button" color="red" variant="soft" size="3">
+                <Button type="button" variant="destructive">
                   <IoTrashOutline />
                   Delete
                 </Button>

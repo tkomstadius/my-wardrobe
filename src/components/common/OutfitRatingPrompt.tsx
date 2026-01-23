@@ -86,15 +86,12 @@ export function OutfitRatingPrompt({
 
           <Flex gap="3" justify="end" style={{ marginTop: "0.5rem" }}>
             <Button
-              variant="soft"
-              color="gray"
               onClick={handleDismiss}
               disabled={isSaving}
             >
               Skip
             </Button>
             <Button
-              variant="solid"
               onClick={handleSave}
               disabled={rating === undefined || isSaving}
             >

@@ -154,7 +154,7 @@ export function EditOutfitPage() {
           onConfirm={handleDelete}
           isDeleting={isDeleting}
           triggerButton={
-            <Button variant="soft" color="red">
+            <Button variant="destructive">
               <IoTrashOutline />
             </Button>
           }
@@ -218,7 +218,6 @@ export function EditOutfitPage() {
 
         <Button
           type="submit"
-          size="3"
           disabled={isSubmitting || isLoading || selectedItems.size === 0}
         >
           {isSubmitting ? "Saving..." : "Save changes"}

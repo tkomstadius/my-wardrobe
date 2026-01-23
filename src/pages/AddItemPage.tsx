@@ -1,4 +1,3 @@
-import { Button } from "../components/common/ui/Button";
 import { Callout } from "../components/common/ui/Callout";
 import { Flex } from "../components/common/ui/Flex";
 import { Text } from "../components/common/ui/Text";
@@ -44,6 +43,7 @@ import { SelectInput } from "../components/common/form/SelectInput";
 import { RatingButtons } from "../components/common/form/RatingButtons";
 import type { OutfitRating } from "../types/outfit";
 import { BackLink } from "../components/common/BackLink";
+import { Button } from "../components/common/ui/Button";
 
 type ActionData = {
   error?: string;
@@ -247,7 +247,6 @@ export function AddItemPage() {
 
         <Button
           type="submit"
-          size="3"
           className={styles.saveButton}
           disabled={isSubmitting || isLoading}
         >

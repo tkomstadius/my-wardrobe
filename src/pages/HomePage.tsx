@@ -136,9 +136,7 @@ export function HomePage() {
                 {items.length} {items.length === 1 ? "item" : "items"} total
               </Text>
               <Button
-                size="3"
                 onClick={handleSuggestItem}
-                style={{ flexShrink: 0 }}
               >
                 ✨
               </Button>

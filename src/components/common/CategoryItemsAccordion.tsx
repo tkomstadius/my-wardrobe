@@ -1,4 +1,3 @@
-import { Accordion } from "./ui/Accordion";
 import { Text } from "./ui/Text";
 import { Flex } from "./ui/Flex";
 import { IoChevronDown, IoCheckmark } from "react-icons/io5";
@@ -7,6 +6,7 @@ import { WardrobeItem } from "../../types/wardrobe";
 import { CATEGORIES } from "../../utils/categories";
 import { ItemCard } from "./ItemCard";
 import styles from "./CategoryItemsAccordion.module.css";
+import { Accordion } from "@base-ui/react";
 
 interface CategoryItemsAccordionProps {
   items: WardrobeItem[];
@@ -40,7 +40,7 @@ export function CategoryItemsAccordion({
   );
 
   return (
-    <Accordion.Root type="multiple" defaultValue={defaultValues}>
+    <Accordion.Root multiple defaultValue={defaultValues}>
       {itemsByCategory.map(({ category, title, items: categoryItems }) => (
         <Accordion.Item value={category} key={category}>
           <Accordion.Trigger className={styles.accordionTrigger}>
@@ -50,7 +50,7 @@ export function CategoryItemsAccordion({
             <IoChevronDown className={styles.chevron} />
           </Accordion.Trigger>
 
-          <Accordion.Content
+          <Accordion.Panel
             className={`${
               isSelectionMode ? styles.selectionMode : styles.accordionContent
             }`}
@@ -91,7 +91,7 @@ export function CategoryItemsAccordion({
               : categoryItems.map((item) => (
                   <ItemCard key={item.id} item={item} />
                 ))}
-          </Accordion.Content>
+          </Accordion.Panel>
         </Accordion.Item>
       ))}
     </Accordion.Root>

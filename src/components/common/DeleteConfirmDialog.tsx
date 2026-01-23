@@ -25,7 +25,7 @@ export function DeleteConfirmDialog({
     <AlertDialog.Root>
       <AlertDialog.Trigger>
         {triggerButton || (
-          <Button size="3" variant="soft" color="red">
+          <Button variant="destructive">
             <IoTrashOutline /> Delete
           </Button>
         )}
@@ -37,14 +37,12 @@ export function DeleteConfirmDialog({
         </AlertDialog.Description>
         <Flex gap="3" style={{ marginTop: "1rem" }} justify="end">
           <AlertDialog.Cancel>
-            <Button variant="soft" color="gray">
+            <Button>
               Cancel
             </Button>
           </AlertDialog.Cancel>
           <AlertDialog.Action>
             <Button
-              variant="solid"
-              color="red"
               onClick={onConfirm}
               disabled={isDeleting}
             >

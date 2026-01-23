@@ -160,7 +160,7 @@ export function ItemCategoryPage() {
             No {title?.toLowerCase()} yet. Add your first item!
           </Text>
           <Link to="/add-item" className={styles.addItemLink}>
-            <Button size="2">Add Item</Button>
+            <Button>Add Item</Button>
           </Link>
         </div>
       )}

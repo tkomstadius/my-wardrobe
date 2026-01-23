@@ -117,9 +117,7 @@ export function OutfitDetailPage() {
             confirmText="Delete Outfit"
             triggerButton={
               <Button
-                size="3"
-                variant="soft"
-                color="red"
+                variant="destructive"
                 className={styles.deleteButton}
               >
                 <IoTrashOutline /> Delete
@@ -128,8 +126,6 @@ export function OutfitDetailPage() {
           />
 
           <Button
-            size="3"
-            variant="soft"
             onClick={() => navigate(`/edit-outfit/${outfit.id}`)}
             className={styles.editButton}
           >

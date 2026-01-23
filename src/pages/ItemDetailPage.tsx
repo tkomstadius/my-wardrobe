@@ -224,15 +224,12 @@ export function ItemDetailPage() {
             {!showDatePicker ? (
               <Flex gap="2" direction="column">
                 <Button
-                  size="3"
                   onClick={handleMarkAsWorn}
                   className={styles.wornButton}
                 >
                   Mark as Worn Today
                 </Button>
                 <Button
-                  size="3"
-                  variant="outline"
                   onClick={() => {
                     const dateStr = formatDate(new Date());
                     setSelectedDate(dateStr);
@@ -258,9 +255,6 @@ export function ItemDetailPage() {
                 </TextField.Root>
                 <Flex gap="2" justify="end">
                   <Button
-                    size="2"
-                    variant="soft"
-                    color="gray"
                     onClick={() => {
                       setShowDatePicker(false);
                       setSelectedDate("");
@@ -269,8 +263,6 @@ export function ItemDetailPage() {
                     Cancel
                   </Button>
                   <Button
-                    variant="soft"
-                    size="2"
                     onClick={handleLogWearOnDate}
                     disabled={!selectedDate}
                   >
@@ -304,9 +296,6 @@ export function ItemDetailPage() {
                         </Text>
                       </div>
                       <Button
-                        size="1"
-                        variant="ghost"
-                        color="red"
                         onClick={() => handleRemoveWear(actualIndex)}
                         disabled={deletingWearIndex === actualIndex}
                       >
@@ -323,8 +312,6 @@ export function ItemDetailPage() {
             {item.wearHistory.length > 2 && (
               <div className={styles.showMoreContainer}>
                 <Button
-                  variant="soft"
-                  size="2"
                   onClick={() => setShowAllWears(!showAllWears)}
                 >
                   {showAllWears
@@ -392,9 +379,7 @@ export function ItemDetailPage() {
             isDeleting={isDeleting}
             triggerButton={
               <Button
-                size="3"
-                variant="soft"
-                color="red"
+                variant="destructive"
                 className={styles.deleteButton}
               >
                 <IoTrashOutline /> Delete
@@ -403,8 +388,6 @@ export function ItemDetailPage() {
           />
 
           <Button
-            size="3"
-            variant="soft"
             onClick={() => navigate(`/edit-item/${item.id}`)}
             className={styles.editButton}
           >

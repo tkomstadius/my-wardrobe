@@ -11,7 +11,6 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 
-  /* Mobile-first viewport setup */
   color-scheme: dark;
 
   --background-color: rgb(10, 10, 10);
@@ -20,6 +19,10 @@
   --border-color: rgb(31, 31, 31);
 
   --items-color: oklch(0.558 0.288 302.321014);
+  --destructive-color: oklch(63.7% 0.237 25.331);
+
+  --border-radius: 16px;
+  --small-border-radius: 8px;
 
   /* Theme colors */
   --accent-color: #34495e;
@@ -29,7 +32,6 @@
   --text-secondary: #9ca3af;
   --complimentary-color: #aad3f1;
   --border-color: #374151;
-  --border-radius: 16px;
 
   /* Semantic colors */
   --error-color: #ef4444;

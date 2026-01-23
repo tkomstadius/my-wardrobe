@@ -1,52 +1,34 @@
 import type { ReactNode } from "react";
 import styles from "./Button.module.css";
+import { Button as BaseButton } from "@base-ui/react/button";
 
 interface ButtonProps {
   children: ReactNode;
   onClick?: () => void;
-  variant?: "solid" | "soft" | "ghost" | "outline";
-  color?: "default" | "red" | "gray" | "green" | "orange";
-  size?: "1" | "2" | "3" | "4";
+  variant?: "primary" | "destructive";
   disabled?: boolean;
-  type?: "button" | "submit" | "reset";
+  type?: "button" | "submit";
   className?: string;
-  style?: React.CSSProperties;
 }
 
 export function Button({
   children,
   onClick,
-  variant = "solid",
-  color = "default",
-  size = "3",
+  variant = "primary",
   disabled = false,
   type = "button",
   className = "",
-  style,
 }: ButtonProps) {
-  const colorClass =
-    color === "red"
-      ? styles.red
-      : color === "gray"
-      ? styles.gray
-      : color === "green"
-      ? styles.green
-      : color === "orange"
-      ? styles.warning
-      : "";
-  const sizeClass = styles[`size${size}`];
-  const variantClass =
-    variant === "outline" ? styles.soft : styles[variant] || styles.solid;
-
+  
   return (
-    <button
+    <BaseButton
       type={type}
-      className={`${styles.button} ${variantClass} ${colorClass} ${sizeClass} ${className}`}
+      className={`${styles.button} ${styles[variant]} ${className}`}
       onClick={onClick}
       disabled={disabled}
-      style={style}
+      aria-disabled={disabled}
     >
       {children}
-    </button>
+    </BaseButton>
   );
 }

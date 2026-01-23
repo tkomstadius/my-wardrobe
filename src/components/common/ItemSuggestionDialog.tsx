@@ -35,7 +35,7 @@ export function ItemSuggestionDialog({
           <ItemCard item={suggestedItem} />
 
           <Flex gap="3" justify="end">
-            <Button variant="soft" onClick={onTryAnother}>
+            <Button onClick={onTryAnother}>
               Try Another
             </Button>
             <Button onClick={() => onOpenChange(false)}>Close</Button>

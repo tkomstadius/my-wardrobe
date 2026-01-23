@@ -433,7 +433,6 @@ export function SettingsPage() {
 
               <div className={styles.buttonGroup}>
                 <Button
-                  size="3"
                   onClick={handleExport}
                   disabled={isExporting || items.length === 0}
                   className={styles.primaryButton}
@@ -442,8 +441,6 @@ export function SettingsPage() {
                 </Button>
 
                 <Button
-                  size="3"
-                  variant="outline"
                   onClick={handleImportClick}
                   disabled={isImporting}
                   className={styles.secondaryButton}
@@ -560,7 +557,6 @@ export function SettingsPage() {
 
               <div className={styles.buttonGroup}>
                 <Button
-                  size="3"
                   onClick={() => handleGenerateEmbeddings(false)}
                   disabled={isGeneratingEmbeddings || !hasEmbeddingGap}
                   className={styles.primaryButton}
@@ -571,8 +567,6 @@ export function SettingsPage() {
                 </Button>
                 {hasAllEmbeddings && (
                   <Button
-                    size="3"
-                    variant="soft"
                     onClick={() => {
                       if (
                         confirm(
@@ -637,9 +631,6 @@ export function SettingsPage() {
                 style={{ marginTop: "1.5rem" }}
               >
                 <Button
-                  size="3"
-                  variant="soft"
-                  color="orange"
                   onClick={handleClearModelCache}
                   disabled={isClearingCache}
                 >
@@ -758,7 +749,6 @@ export function SettingsPage() {
 
               <div className={styles.buttonGroup}>
                 <Button
-                  size="3"
                   onClick={handleUpdatePreferences}
                   disabled={
                     isUpdatingPreferences ||
@@ -771,9 +761,7 @@ export function SettingsPage() {
                 </Button>
 
                 <Button
-                  size="3"
-                  variant="outline"
-                  color="red"
+                  variant="destructive"
                   onClick={handleResetLearning}
                   disabled={
                     isResettingLearning ||
@@ -826,8 +814,6 @@ export function SettingsPage() {
 
               <div className={styles.buttonGroup}>
                 <Button
-                  size="3"
-                  variant="outline"
                   onClick={handleRepairData}
                   disabled={isRepairing}
                   className={styles.flexButton}
@@ -836,9 +822,6 @@ export function SettingsPage() {
                 </Button>
 
                 <Button
-                  size="3"
-                  variant="soft"
-                  color="gray"
                   onClick={async () => {
                     await diagnoseAllItems();
                     setMessage({
