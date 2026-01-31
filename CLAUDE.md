@@ -18,6 +18,17 @@ pnpm format           # Biome format
 pnpm test             # Playwright tests
 ```
 
+## After Making Changes
+
+Always run these checks before considering work complete:
+
+1. **Lint**: `pnpm lint` — runs Biome check on the entire project
+2. **TypeScript**: `pnpm exec tsc --noEmit` — full type check in strict mode
+3. **Build verification**: `pnpm build` — ensures the production build succeeds (runs both tsc and Vite)
+4. **Visual check**: run the dev server with `pnpm dev` and verify the change works in the browser
+
+Fix any errors from steps 1-3 before committing. There are no automated tests yet (Playwright is installed but unconfigured).
+
 ## Tech Stack
 
 - **React 19** + **TypeScript 5.9** (strict mode) + **React Router 7** (loaders/actions pattern)
