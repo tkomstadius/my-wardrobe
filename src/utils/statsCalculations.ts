@@ -1,5 +1,5 @@
-import type { WardrobeItem } from "../types/wardrobe";
-import { CATEGORIES } from "./categories";
+import type { WardrobeItem } from '../types/wardrobe';
+import { CATEGORIES } from './categories';
 
 /**
  * Get the number of wears tracked in the app (excluding initial wear count)
@@ -36,21 +36,17 @@ export interface FullStats extends QuickStats {
  */
 export function calculateQuickStats(items: WardrobeItem[]): QuickStats {
   const totalItems = items.length;
-  const totalWears = items.reduce(
-    (sum, item) => sum + getAppTrackedWears(item),
-    0
-  );
+  const totalWears = items.reduce((sum, item) => sum + getAppTrackedWears(item), 0);
   const averageWears = totalItems > 0 ? totalWears / totalItems : 0;
 
   const itemsWithPrice = items.filter(
-    (item) =>
-      item.price !== undefined && item.price > 0 && getAppTrackedWears(item) > 0
+    (item) => item.price !== undefined && item.price > 0 && getAppTrackedWears(item) > 0,
   );
   const avgCostPerWear =
     itemsWithPrice.length > 0
       ? itemsWithPrice.reduce(
           (sum, item) => sum + (item.price || 0) / getAppTrackedWears(item),
-          0
+          0,
         ) / itemsWithPrice.length
       : null;
 
@@ -71,17 +67,13 @@ export function calculateFullStats(items: WardrobeItem[]): FullStats {
   // Category distribution
   const categoryWears = CATEGORIES.map((cat) => {
     const categoryItems = items.filter((item) => item.category === cat.id);
-    const wears = categoryItems.reduce(
-      (sum, item) => sum + getAppTrackedWears(item),
-      0
-    );
+    const wears = categoryItems.reduce((sum, item) => sum + getAppTrackedWears(item), 0);
     return {
       category: cat.title,
       count: categoryItems.length,
       wears,
     };
   }).sort((a, b) => b.wears - a.wears);
-
 
   // Most worn items (by app-tracked wears)
   const mostWorn = [...items]
@@ -99,22 +91,15 @@ export function calculateFullStats(items: WardrobeItem[]): FullStats {
   const neverWorn = items.filter((item) => getAppTrackedWears(item) === 0);
 
   // Financial stats
-  const itemsWithPrice = items.filter(
-    (item) => item.price !== undefined && item.price > 0
-  );
-  const totalValue = itemsWithPrice.reduce(
-    (sum, item) => sum + (item.price || 0),
-    0
-  );
+  const itemsWithPrice = items.filter((item) => item.price !== undefined && item.price > 0);
+  const totalValue = itemsWithPrice.reduce((sum, item) => sum + (item.price || 0), 0);
 
-  const itemsWithCostPerWear = itemsWithPrice.filter(
-    (item) => getAppTrackedWears(item) > 0
-  );
+  const itemsWithCostPerWear = itemsWithPrice.filter((item) => getAppTrackedWears(item) > 0);
   const avgCostPerWear =
     itemsWithCostPerWear.length > 0
       ? itemsWithCostPerWear.reduce(
           (sum, item) => sum + (item.price || 0) / getAppTrackedWears(item),
-          0
+          0,
         ) / itemsWithCostPerWear.length
       : 0;
 
@@ -128,9 +113,7 @@ export function calculateFullStats(items: WardrobeItem[]): FullStats {
 
   const secondHandCount = items.filter((item) => item.isSecondHand).length;
   const secondHandPercentage =
-    quickStats.totalItems > 0
-      ? (secondHandCount / quickStats.totalItems) * 100
-      : 0;
+    quickStats.totalItems > 0 ? (secondHandCount / quickStats.totalItems) * 100 : 0;
 
   return {
     ...quickStats,

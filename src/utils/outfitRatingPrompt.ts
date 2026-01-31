@@ -3,10 +3,10 @@
  * Finds all unrated outfits that should be prompted
  */
 
-import { compareDesc } from "date-fns";
-import type { Outfit } from "../types/outfit";
+import { compareDesc } from 'date-fns';
+import type { Outfit } from '../types/outfit';
 
-const PROMPTED_OUTFITS_KEY = "outfitRatingPrompt_promptedOutfits";
+const PROMPTED_OUTFITS_KEY = 'outfitRatingPrompt_promptedOutfits';
 
 /**
  * Get list of outfit IDs that have been prompted (from localStorage)

@@ -1,17 +1,17 @@
-import { Link, useLoaderData } from "react-router";
-import { Grid } from "../components/common/ui/Grid";
-import { Text } from "../components/common/ui/Text";
-import { loadItems } from "../utils/storageCommands";
-import { CATEGORIES } from "../utils/categories";
-import { Fab } from "../components/common/Fab";
-import styles from "./ItemsPage.module.css";
+import { Link, useLoaderData } from 'react-router';
+import { Fab } from '../components/common/Fab';
+import { Grid } from '../components/common/ui/Grid';
+import { Text } from '../components/common/ui/Text';
+import { CATEGORIES } from '../utils/categories';
+import { loadItems } from '../utils/storageCommands';
+import styles from './ItemsPage.module.css';
 
 export async function loader() {
   try {
     const items = await loadItems();
     return { items, error: null };
   } catch (error) {
-    console.error("Failed to load items:", error);
+    console.error('Failed to load items:', error);
     return { items: [], error: error as string };
   }
 }
@@ -40,11 +40,7 @@ export function ItemsPage() {
             .slice(0, 4);
 
           return (
-            <Link
-              key={category.id}
-              to={`/items/${category.id}`}
-              className={styles.categoryCard}
-            >
+            <Link key={category.id} to={`/items/${category.id}`} className={styles.categoryCard}>
               <h2 className={styles.categoryTitle}>{category.title}</h2>
 
               <div className={styles.categoryPreview}>

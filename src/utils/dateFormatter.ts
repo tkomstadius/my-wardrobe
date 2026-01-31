@@ -1,26 +1,26 @@
 import {
+  differenceInCalendarDays,
+  differenceInMonths,
+  differenceInYears,
   format,
   set,
   startOfDay,
   subDays,
   subMonths,
   subYears,
-  differenceInCalendarDays,
-  differenceInMonths,
-  differenceInYears,
-} from "date-fns";
-import { sv } from "date-fns/locale";
+} from 'date-fns';
+import { sv } from 'date-fns/locale';
 
 // Format date according to ISO 8601 / Swedish standard (YYYY-MM-DD)
 export function formatDate(date: Date | undefined): string {
-  if (!date) return "";
-  return format(date, "yyyy-MM-dd");
+  if (!date) return '';
+  return format(date, 'yyyy-MM-dd');
 }
 
 // Format date for display with Swedish locale
 export function formatDateDisplay(date: Date | undefined): string {
-  if (!date) return "";
-  return format(date, "d MMM yyyy", { locale: sv });
+  if (!date) return '';
+  return format(date, 'd MMM yyyy', { locale: sv });
 }
 
 // Get date X days ago from now
@@ -50,17 +50,14 @@ export function normalizeToNoon(date: Date | string): Date {
 
 // Check if two dates are on the same day
 export function isSameDay(date1: Date, date2: Date): boolean {
-  return (
-    normalizeToStartOfDay(date1).getTime() ===
-    normalizeToStartOfDay(date2).getTime()
-  );
+  return normalizeToStartOfDay(date1).getTime() === normalizeToStartOfDay(date2).getTime();
 }
 
 // Count how many times an item was worn in a date range
 export function countWearsInRange(
   wearHistory: Date[],
   startDate: Date,
-  endDate: Date = new Date()
+  endDate: Date = new Date(),
 ): number {
   if (!wearHistory || wearHistory.length === 0) return 0;
 
@@ -88,26 +85,24 @@ export function getDaysSinceLastWorn(wearHistory: Date[]): number | undefined {
 export function formatLastWorn(wearHistory: Date[]): string {
   const days = getDaysSinceLastWorn(wearHistory);
 
-  if (days === undefined) return "Never worn";
-  if (days === 0) return "Today";
-  if (days === 1) return "Yesterday";
+  if (days === undefined) return 'Never worn';
+  if (days === 0) return 'Today';
+  if (days === 1) return 'Yesterday';
   if (days < 7) return `${days} days ago`;
-  if (days < 14) return "Last week";
+  if (days < 14) return 'Last week';
   if (days < 30) return `${Math.floor(days / 7)} weeks ago`;
-  if (days < 60) return "Last month";
+  if (days < 60) return 'Last month';
   if (days < 365) return `${Math.floor(days / 30)} months ago`;
 
-  return `${Math.floor(days / 365)} year${
-    Math.floor(days / 365) > 1 ? "s" : ""
-  } ago`;
+  return `${Math.floor(days / 365)} year${Math.floor(days / 365) > 1 ? 's' : ''} ago`;
 }
 
 // Get badge text for recently worn items (e.g., "Worn today", "Worn this week")
 export function getRecentWearBadge(wearHistory?: Date[]): string | null {
   const days = getDaysSinceLastWorn(wearHistory || []);
   if (days === undefined) return null;
-  if (days === 0) return "Worn today";
-  if (days <= 7) return "Worn this week";
+  if (days === 0) return 'Worn today';
+  if (days <= 7) return 'Worn this week';
   return null;
 }
 
@@ -130,7 +125,7 @@ export function calculateItemAge(purchaseDate: Date): {
 
 // Format item age as a compact string (e.g., "2y 3m", "6m 15d", "15d")
 export function formatItemAge(purchaseDate: Date | undefined): string {
-  if (!purchaseDate) return "";
+  if (!purchaseDate) return '';
 
   const { years, months, days } = calculateItemAge(purchaseDate);
 
@@ -152,7 +147,7 @@ export function formatItemAge(purchaseDate: Date | undefined): string {
 
   // Just show days for items less than a month old
   if (days === 0) {
-    return "New today";
+    return 'New today';
   }
   return `${days}d`;
 }

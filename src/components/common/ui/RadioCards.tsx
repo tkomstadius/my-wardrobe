@@ -1,7 +1,7 @@
-import { RadioGroup } from "@base-ui/react/radio-group";
-import { Radio } from "@base-ui/react/radio";
-import type { ReactNode } from "react";
-import styles from "./RadioCards.module.css";
+import { Radio } from '@base-ui/react/radio';
+import { RadioGroup } from '@base-ui/react/radio-group';
+import type { ReactNode } from 'react';
+import styles from './RadioCards.module.css';
 
 interface RadioCardsRootProps {
   children: ReactNode;
@@ -10,12 +10,7 @@ interface RadioCardsRootProps {
   name?: string;
 }
 
-function RadioCardsRoot({
-  children,
-  defaultValue,
-  onValueChange,
-  name,
-}: RadioCardsRootProps) {
+function RadioCardsRoot({ children, defaultValue, onValueChange, name }: RadioCardsRootProps) {
   return (
     <RadioGroup
       defaultValue={defaultValue}

@@ -1,9 +1,9 @@
-import { Flex } from "./ui/Flex";
-import type { ItemCategory } from "../../types/wardrobe";
-import { getSubCategoriesForCategory } from "../../utils/categories";
-import styles from "./QuickFilters.module.css";
+import type { ItemCategory } from '../../types/wardrobe';
+import { getSubCategoriesForCategory } from '../../utils/categories';
+import styles from './QuickFilters.module.css';
+import { Flex } from './ui/Flex';
 
-export type BooleanFilter = "secondhand" | "dogCasual" | "handmade";
+export type BooleanFilter = 'secondhand' | 'dogCasual' | 'handmade';
 
 interface QuickFiltersProps {
   category: ItemCategory;
@@ -30,17 +30,15 @@ export function QuickFilters({
   const availableSubCategories = getSubCategoriesForCategory(category);
 
   return (
-    <Flex direction="column" gap="2" style={{ marginBottom: "0.75rem" }}>
+    <Flex direction="column" gap="2" style={{ marginBottom: '0.75rem' }}>
       <Flex gap="1">
         <button
           type="button"
           className={`${styles.filterButton} ${
-            selectedBooleanFilters.has("secondhand")
-              ? styles.filterButtonActive
-              : ""
+            selectedBooleanFilters.has('secondhand') ? styles.filterButtonActive : ''
           }`}
-          onClick={() => onBooleanFilterToggle("secondhand")}
-          aria-pressed={selectedBooleanFilters.has("secondhand")}
+          onClick={() => onBooleanFilterToggle('secondhand')}
+          aria-pressed={selectedBooleanFilters.has('secondhand')}
         >
           <span>♻️</span>
           {itemCounts?.secondhand !== undefined && (
@@ -51,12 +49,10 @@ export function QuickFilters({
         <button
           type="button"
           className={`${styles.filterButton} ${
-            selectedBooleanFilters.has("dogCasual")
-              ? styles.filterButtonActive
-              : ""
+            selectedBooleanFilters.has('dogCasual') ? styles.filterButtonActive : ''
           }`}
-          onClick={() => onBooleanFilterToggle("dogCasual")}
-          aria-pressed={selectedBooleanFilters.has("dogCasual")}
+          onClick={() => onBooleanFilterToggle('dogCasual')}
+          aria-pressed={selectedBooleanFilters.has('dogCasual')}
         >
           <span>🐶</span>
           {itemCounts?.dogCasual !== undefined && (
@@ -67,12 +63,10 @@ export function QuickFilters({
         <button
           type="button"
           className={`${styles.filterButton} ${
-            selectedBooleanFilters.has("handmade")
-              ? styles.filterButtonActive
-              : ""
+            selectedBooleanFilters.has('handmade') ? styles.filterButtonActive : ''
           }`}
-          onClick={() => onBooleanFilterToggle("handmade")}
-          aria-pressed={selectedBooleanFilters.has("handmade")}
+          onClick={() => onBooleanFilterToggle('handmade')}
+          aria-pressed={selectedBooleanFilters.has('handmade')}
         >
           <span>🧶</span>
           {itemCounts?.handmade !== undefined && (
@@ -87,7 +81,7 @@ export function QuickFilters({
           <button
             type="button"
             className={`${styles.filterButton} ${
-              selectedSubCategory === null ? styles.filterButtonActive : ""
+              selectedSubCategory === null ? styles.filterButtonActive : ''
             }`}
             onClick={() => onSubCategoryFilterChange(null)}
             aria-pressed={selectedSubCategory === null}
@@ -101,17 +95,13 @@ export function QuickFilters({
                 key={subCategory}
                 type="button"
                 className={`${styles.filterButton} ${
-                  selectedSubCategory === subCategory
-                    ? styles.filterButtonActive
-                    : ""
+                  selectedSubCategory === subCategory ? styles.filterButtonActive : ''
                 }`}
                 onClick={() => onSubCategoryFilterChange(subCategory)}
                 aria-pressed={selectedSubCategory === subCategory}
               >
                 {subCategory}
-                {count !== undefined && (
-                  <span className={styles.count}>({count})</span>
-                )}
+                {count !== undefined && <span className={styles.count}>({count})</span>}
               </button>
             );
           })}

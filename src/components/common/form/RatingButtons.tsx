@@ -1,6 +1,6 @@
-import { RadioCards } from "../ui/RadioCards";
-import type { OutfitRating } from "../../../types/outfit";
-import { RATING_OPTIONS } from "./constants";
+import type { OutfitRating } from '../../../types/outfit';
+import { RadioCards } from '../ui/RadioCards';
+import { RATING_OPTIONS } from './constants';
 
 interface RatingButtonsProps {
   name?: string; // For uncontrolled (form submission)
@@ -9,12 +9,7 @@ interface RatingButtonsProps {
   onChange?: (value: OutfitRating | undefined) => void; // For controlled
 }
 
-export function RatingButtons({
-  name,
-  defaultValue,
-  value,
-  onChange,
-}: RatingButtonsProps) {
+export function RatingButtons({ name, defaultValue, value, onChange }: RatingButtonsProps) {
   const isControlled = value !== undefined || onChange !== undefined;
 
   const handleValueChange = (newValue: string) => {
@@ -35,7 +30,7 @@ export function RatingButtons({
   // For controlled mode, use value prop; for uncontrolled, use defaultValue
   const radioProps = isControlled
     ? {
-        value: value?.toString() || "",
+        value: value?.toString() || '',
         onValueChange: handleValueChange,
       }
     : {

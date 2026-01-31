@@ -1,7 +1,7 @@
-import { Dialog as BaseDialog } from "@base-ui/react/dialog";
-import type { ReactNode } from "react";
-import { IoClose } from "react-icons/io5";
-import styles from "./Dialog.module.css";
+import { Dialog as BaseDialog } from '@base-ui/react/dialog';
+import type { ReactNode } from 'react';
+import { IoClose } from 'react-icons/io5';
+import styles from './Dialog.module.css';
 
 interface DialogRootProps {
   open: boolean;
@@ -48,21 +48,21 @@ function DialogTitle({ children }: DialogTitleProps) {
 
 interface DialogDescriptionProps {
   children: ReactNode;
-  size?: "1" | "2" | "3";
+  size?: '1' | '2' | '3';
   color?: string;
   mb?: string;
   style?: React.CSSProperties;
 }
 
-function DialogDescription({ children, size = "2", color, mb, style }: DialogDescriptionProps) {
+function DialogDescription({ children, size = '2', color, mb, style }: DialogDescriptionProps) {
   return (
-    <BaseDialog.Description 
-      className={styles.description} 
-      style={{ 
-        fontSize: size === "1" ? "0.75rem" : size === "2" ? "0.875rem" : "1rem",
+    <BaseDialog.Description
+      className={styles.description}
+      style={{
+        fontSize: size === '1' ? '0.75rem' : size === '2' ? '0.875rem' : '1rem',
         color: color,
         marginBottom: mb,
-        ...style 
+        ...style,
       }}
     >
       {children}

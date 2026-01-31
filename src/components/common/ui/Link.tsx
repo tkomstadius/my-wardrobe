@@ -1,6 +1,6 @@
-import type { CSSProperties, ReactNode } from "react";
-import { Link as RouterLink } from "react-router";
-import styles from "./Link.module.css";
+import type { CSSProperties, ReactNode } from 'react';
+import { Link as RouterLink } from 'react-router';
+import styles from './Link.module.css';
 
 interface LinkProps {
   children: ReactNode;
@@ -9,7 +9,7 @@ interface LinkProps {
   className?: string;
 }
 
-export function Link({ children, to, style = {}, className = "" }: LinkProps) {
+export function Link({ children, to, style = {}, className = '' }: LinkProps) {
   return (
     <RouterLink to={to} className={`${styles.link} ${className}`} style={style}>
       {children}

@@ -1,21 +1,17 @@
-import { IoTrashOutline, IoPencilOutline } from "react-icons/io5";
-import { Button } from "../components/common/ui/Button";
-import { Flex } from "../components/common/ui/Flex";
-import { Heading } from "../components/common/ui/Heading";
-import { Text } from "../components/common/ui/Text";
-import { useState } from "react";
-import { LoaderFunctionArgs, useLoaderData, useNavigate } from "react-router";
-import { DeleteConfirmDialog } from "../components/common/DeleteConfirmDialog";
-import { formatDate } from "../utils/dateFormatter";
-import styles from "./OutfitDetailPage.module.css";
-import { BackLink } from "../components/common/BackLink";
-import { RATING_OPTIONS } from "../components/common/form/constants";
-import {
-  getOutfitById,
-  loadItems,
-  removeOutfit,
-} from "../utils/storageCommands";
-import { ItemCard } from "../components/common/ItemCard";
+import { useState } from 'react';
+import { IoPencilOutline, IoTrashOutline } from 'react-icons/io5';
+import { type LoaderFunctionArgs, useLoaderData, useNavigate } from 'react-router';
+import { BackLink } from '../components/common/BackLink';
+import { DeleteConfirmDialog } from '../components/common/DeleteConfirmDialog';
+import { RATING_OPTIONS } from '../components/common/form/constants';
+import { ItemCard } from '../components/common/ItemCard';
+import { Button } from '../components/common/ui/Button';
+import { Flex } from '../components/common/ui/Flex';
+import { Heading } from '../components/common/ui/Heading';
+import { Text } from '../components/common/ui/Text';
+import { formatDate } from '../utils/dateFormatter';
+import { getOutfitById, loadItems, removeOutfit } from '../utils/storageCommands';
+import styles from './OutfitDetailPage.module.css';
 
 export async function loader({ params }: LoaderFunctionArgs) {
   const { id } = params;
@@ -55,10 +51,10 @@ export function OutfitDetailPage() {
     setIsDeleting(true);
     try {
       await removeOutfit(outfit.id);
-      navigate("/outfits");
+      navigate('/outfits');
     } catch (error) {
-      console.error("Failed to delete outfit:", error);
-      alert("Failed to delete outfit. Please try again.");
+      console.error('Failed to delete outfit:', error);
+      alert('Failed to delete outfit. Please try again.');
       setIsDeleting(false);
     }
   };
@@ -78,10 +74,7 @@ export function OutfitDetailPage() {
 
         <Flex justify="between" gap="1" align="center">
           <Text size="4" weight="bold" color="blue">
-            {
-              RATING_OPTIONS.find((rating) => rating.value === outfit.rating)
-                ?.emoji
-            }
+            {RATING_OPTIONS.find((rating) => rating.value === outfit.rating)?.emoji}
           </Text>
           <Text size="3" weight="bold">
             {formatDate(outfit.createdAt)}
@@ -100,11 +93,7 @@ export function OutfitDetailPage() {
               <Text color="gray">No items found in this outfit</Text>
             </div>
           ) : (
-            <>
-              {outfitItems.map((item) => (
-                <ItemCard item={item} />
-              ))}
-            </>
+            outfitItems.map((item) => <ItemCard key={item.id} item={item} />)
           )}
         </section>
 
@@ -116,10 +105,7 @@ export function OutfitDetailPage() {
             isDeleting={isDeleting}
             confirmText="Delete Outfit"
             triggerButton={
-              <Button
-                variant="destructive"
-                className={styles.deleteButton}
-              >
+              <Button variant="destructive" className={styles.deleteButton}>
                 <IoTrashOutline /> Delete
               </Button>
             }

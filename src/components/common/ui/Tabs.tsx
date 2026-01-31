@@ -1,6 +1,6 @@
-import { Tabs as BaseTabs } from "@base-ui/react/tabs";
-import type { ReactNode } from "react";
-import styles from "./Tabs.module.css";
+import { Tabs as BaseTabs } from '@base-ui/react/tabs';
+import type { ReactNode } from 'react';
+import styles from './Tabs.module.css';
 
 interface TabsRootProps {
   children: ReactNode;
@@ -11,8 +11,8 @@ interface TabsRootProps {
 
 function TabsRoot({ children, defaultValue, value, onValueChange }: TabsRootProps) {
   return (
-    <BaseTabs.Root 
-      defaultValue={defaultValue} 
+    <BaseTabs.Root
+      defaultValue={defaultValue}
       value={value}
       onValueChange={onValueChange}
       className={styles.root}
@@ -28,7 +28,7 @@ interface TabsListProps {
 }
 
 function TabsList({ children, className }: TabsListProps) {
-  return <BaseTabs.List className={`${styles.list} ${className || ""}`}>{children}</BaseTabs.List>;
+  return <BaseTabs.List className={`${styles.list} ${className || ''}`}>{children}</BaseTabs.List>;
 }
 
 interface TabsTriggerProps {
@@ -39,7 +39,7 @@ interface TabsTriggerProps {
 
 function TabsTrigger({ value, children, className }: TabsTriggerProps) {
   return (
-    <BaseTabs.Tab value={value} className={`${styles.trigger} ${className || ""}`}>
+    <BaseTabs.Tab value={value} className={`${styles.trigger} ${className || ''}`}>
       {children}
     </BaseTabs.Tab>
   );
@@ -53,7 +53,7 @@ interface TabsContentProps {
 
 function TabsContent({ value, children, className }: TabsContentProps) {
   return (
-    <BaseTabs.Panel value={value} className={`${styles.content} ${className || ""}`}>
+    <BaseTabs.Panel value={value} className={`${styles.content} ${className || ''}`}>
       {children}
     </BaseTabs.Panel>
   );

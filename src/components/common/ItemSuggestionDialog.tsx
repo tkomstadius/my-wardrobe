@@ -1,8 +1,8 @@
-import { Dialog } from "./ui/Dialog";
-import { Button } from "./ui/Button";
-import { Flex } from "./ui/Flex";
-import { ItemCard } from "./ItemCard";
-import type { WardrobeItem } from "../../types/wardrobe";
+import type { WardrobeItem } from '../../types/wardrobe';
+import { ItemCard } from './ItemCard';
+import { Button } from './ui/Button';
+import { Dialog } from './ui/Dialog';
+import { Flex } from './ui/Flex';
 
 interface ItemSuggestionDialogProps {
   open: boolean;
@@ -23,21 +23,18 @@ export function ItemSuggestionDialog({
 
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
-      <Dialog.Content style={{ maxWidth: "90vw", width: "500px" }}>
+      <Dialog.Content style={{ maxWidth: '90vw', width: '500px' }}>
         <Dialog.Title>What Should I Wear Today?</Dialog.Title>
 
         <Dialog.Description size="2" color="var(--text-secondary)" mb="1rem">
-          Here's a suggestion based on your wardrobe, wear history, and today's
-          weather.
+          Here's a suggestion based on your wardrobe, wear history, and today's weather.
         </Dialog.Description>
 
         <Flex direction="column" gap="4">
           <ItemCard item={suggestedItem} />
 
           <Flex gap="3" justify="end">
-            <Button onClick={onTryAnother}>
-              Try Another
-            </Button>
+            <Button onClick={onTryAnother}>Try Another</Button>
             <Button onClick={() => onOpenChange(false)}>Close</Button>
           </Flex>
         </Flex>

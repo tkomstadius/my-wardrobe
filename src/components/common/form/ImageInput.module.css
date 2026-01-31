@@ -54,7 +54,8 @@
   transition: all 0.2s ease;
   color: white;
 
-  &:hover, &:active {
+  &:hover,
+  &:active {
     opacity: 0.8;
     transform: scale(1.05);
   }

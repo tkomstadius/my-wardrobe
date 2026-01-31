@@ -1,12 +1,12 @@
-import { Text } from "./ui/Text";
-import { Flex } from "./ui/Flex";
-import { IoChevronDown, IoCheckmark } from "react-icons/io5";
-import { useMemo } from "react";
-import { WardrobeItem } from "../../types/wardrobe";
-import { CATEGORIES } from "../../utils/categories";
-import { ItemCard } from "./ItemCard";
-import styles from "./CategoryItemsAccordion.module.css";
-import { Accordion } from "@base-ui/react";
+import { Accordion } from '@base-ui/react';
+import { useMemo } from 'react';
+import { IoCheckmark, IoChevronDown } from 'react-icons/io5';
+import type { WardrobeItem } from '../../types/wardrobe';
+import { CATEGORIES } from '../../utils/categories';
+import styles from './CategoryItemsAccordion.module.css';
+import { ItemCard } from './ItemCard';
+import { Flex } from './ui/Flex';
+import { Text } from './ui/Text';
 
 interface CategoryItemsAccordionProps {
   items: WardrobeItem[];
@@ -21,8 +21,7 @@ export function CategoryItemsAccordion({
   onToggleSelection,
   disabledItems,
 }: CategoryItemsAccordionProps) {
-  const isSelectionMode =
-    selectedItems !== undefined && onToggleSelection !== undefined;
+  const isSelectionMode = selectedItems !== undefined && onToggleSelection !== undefined;
 
   const itemsByCategory = useMemo(
     () =>
@@ -31,12 +30,12 @@ export function CategoryItemsAccordion({
         title: category.title,
         items: items.filter((item) => item.category === category.id),
       })).filter((group) => group.items.length > 0),
-    [items]
+    [items],
   );
 
   const defaultValues = useMemo(
     () => itemsByCategory.map(({ category }) => category),
-    [itemsByCategory]
+    [itemsByCategory],
   );
 
   return (
@@ -51,9 +50,7 @@ export function CategoryItemsAccordion({
           </Accordion.Trigger>
 
           <Accordion.Panel
-            className={`${
-              isSelectionMode ? styles.selectionMode : styles.accordionContent
-            }`}
+            className={`${isSelectionMode ? styles.selectionMode : styles.accordionContent}`}
           >
             {isSelectionMode
               ? categoryItems.map((item) => {
@@ -62,11 +59,19 @@ export function CategoryItemsAccordion({
 
                   return (
                     <div
+                      role="button"
+                      tabIndex={0}
                       key={item.id}
-                      className={`${styles.selectableItem} ${
-                        isSelected ? styles.selected : ""
-                      } ${isDisabled ? styles.disabled : ""}`}
+                      className={`${styles.selectableItem} ${isSelected ? styles.selected : ''} ${
+                        isDisabled ? styles.disabled : ''
+                      }`}
                       onClick={() => onToggleSelection!(item.id)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          onToggleSelection!(item.id);
+                        }
+                      }}
                     >
                       {isSelected && (
                         <div className={styles.checkIcon}>
@@ -74,11 +79,7 @@ export function CategoryItemsAccordion({
                         </div>
                       )}
 
-                      <img
-                        src={item.imageUrl}
-                        alt={item.brand}
-                        className={styles.itemImage}
-                      />
+                      <img src={item.imageUrl} alt={item.brand} className={styles.itemImage} />
                       <Flex direction="column" gap="1" align="center">
                         <Text size="2" weight="bold">
                           {item.brand || item.subCategory}
@@ -88,9 +89,7 @@ export function CategoryItemsAccordion({
                     </div>
                   );
                 })
-              : categoryItems.map((item) => (
-                  <ItemCard key={item.id} item={item} />
-                ))}
+              : categoryItems.map((item) => <ItemCard key={item.id} item={item} />)}
           </Accordion.Panel>
         </Accordion.Item>
       ))}

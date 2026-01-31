@@ -18,6 +18,6 @@ export interface Outfit {
 }
 
 // Omit auto-generated fields, but allow createdAt to be set
-export type NewOutfit = Omit<Outfit, "id" | "updatedAt"> & {
+export type NewOutfit = Omit<Outfit, 'id' | 'updatedAt'> & {
   createdAt?: Date;
 };

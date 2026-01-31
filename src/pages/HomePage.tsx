@@ -1,32 +1,29 @@
-import { Text } from "../components/common/ui/Text";
-import { Tabs } from "../components/common/ui/Tabs";
-import { Flex } from "../components/common/ui/Flex";
-import { Button } from "../components/common/ui/Button";
-import { useLoaderData } from "react-router";
-import { useEffect, useMemo, useState } from "react";
-import { ItemCard } from "../components/common/ItemCard";
-import { getDaysAgo } from "../utils/dateFormatter";
-import { loadItems, loadOutfits, updateOutfit } from "../utils/storageCommands";
+import { useEffect, useMemo, useState } from 'react';
+import { useLoaderData } from 'react-router';
+import { CategoryItemsAccordion } from '../components/common/CategoryItemsAccordion';
+import { ItemCard } from '../components/common/ItemCard';
+import { ItemSuggestionDialog } from '../components/common/ItemSuggestionDialog';
+import { OutfitRatingPrompt } from '../components/common/OutfitRatingPrompt';
+import { StatsCard } from '../components/common/StatsCard';
+import { Button } from '../components/common/ui/Button';
+import { Flex } from '../components/common/ui/Flex';
+import { Tabs } from '../components/common/ui/Tabs';
+import { Text } from '../components/common/ui/Text';
+import { useWeather } from '../contexts/WeatherContext';
+import type { Outfit, OutfitRating } from '../types/outfit';
+import type { WardrobeItem } from '../types/wardrobe';
+import { NEGLECTED_ITEMS_THRESHOLD_DAYS, THIS_WEEK_DAYS } from '../utils/config';
+import { getDaysAgo } from '../utils/dateFormatter';
+import { suggestItem } from '../utils/itemSuggestion';
+import { findUnratedOutfits } from '../utils/outfitRatingPrompt';
+import { calculateQuickStats } from '../utils/statsCalculations';
+import { loadItems, loadOutfits, updateOutfit } from '../utils/storageCommands';
 import {
-  getItemsWornToday,
   getItemsWornInPeriod,
+  getItemsWornToday,
   getNeglectedItems,
-} from "../utils/wardrobeFilters";
-import { calculateQuickStats } from "../utils/statsCalculations";
-import {
-  THIS_WEEK_DAYS,
-  NEGLECTED_ITEMS_THRESHOLD_DAYS,
-} from "../utils/config";
-import styles from "./HomePage.module.css";
-import { StatsCard } from "../components/common/StatsCard";
-import { CategoryItemsAccordion } from "../components/common/CategoryItemsAccordion";
-import { OutfitRatingPrompt } from "../components/common/OutfitRatingPrompt";
-import { findUnratedOutfits } from "../utils/outfitRatingPrompt";
-import type { Outfit, OutfitRating } from "../types/outfit";
-import { useWeather } from "../contexts/WeatherContext";
-import { suggestItem } from "../utils/itemSuggestion";
-import { ItemSuggestionDialog } from "../components/common/ItemSuggestionDialog";
-import type { WardrobeItem } from "../types/wardrobe";
+} from '../utils/wardrobeFilters';
+import styles from './HomePage.module.css';
 
 export async function loader() {
   try {
@@ -34,7 +31,7 @@ export async function loader() {
     const outfits = await loadOutfits();
     return { items, outfits, error: null };
   } catch (error) {
-    console.error("Failed to load items:", error);
+    console.error('Failed to load items:', error);
     return { items: [], error: error as string };
   }
 }
@@ -49,13 +46,10 @@ export function HomePage() {
   const [suggestedItem, setSuggestedItem] = useState<WardrobeItem | null>(null);
 
   const todayItems = useMemo(() => getItemsWornToday(items), [items]);
-  const weekItems = useMemo(
-    () => getItemsWornInPeriod(items, getDaysAgo(THIS_WEEK_DAYS)),
-    [items]
-  );
+  const weekItems = useMemo(() => getItemsWornInPeriod(items, getDaysAgo(THIS_WEEK_DAYS)), [items]);
   const neglectedItems = useMemo(
     () => getNeglectedItems(items, NEGLECTED_ITEMS_THRESHOLD_DAYS),
-    [items]
+    [items],
   );
 
   const quickStats = useMemo(() => calculateQuickStats(items), [items]);
@@ -133,31 +127,18 @@ export function HomePage() {
           <>
             <Flex justify="between" align="center" wrap="wrap" gap="2">
               <Text size="2" className={styles.info}>
-                {items.length} {items.length === 1 ? "item" : "items"} total
+                {items.length} {items.length === 1 ? 'item' : 'items'} total
               </Text>
-              <Button
-                onClick={handleSuggestItem}
-              >
-                ✨
-              </Button>
+              <Button onClick={handleSuggestItem}>✨</Button>
             </Flex>
 
             <Flex direction="column" gap="4">
               <section>
                 <div className={styles.quickStatsGrid}>
-                  <StatsCard
-                    title="Total Wears"
-                    value={quickStats.totalWears}
-                  />
-                  <StatsCard
-                    title="Avg per Item"
-                    value={quickStats.averageWears.toFixed(1)}
-                  />
+                  <StatsCard title="Total Wears" value={quickStats.totalWears} />
+                  <StatsCard title="Avg per Item" value={quickStats.averageWears.toFixed(1)} />
                   {quickStats.avgCostPerWear !== null && (
-                    <StatsCard
-                      title="Avg Cost/Wear"
-                      value={quickStats.avgCostPerWear.toFixed(2)}
-                    />
+                    <StatsCard title="Avg Cost/Wear" value={quickStats.avgCostPerWear.toFixed(2)} />
                   )}
                 </div>
               </section>
@@ -205,9 +186,7 @@ export function HomePage() {
                       </Text>
                     </div>
                   ) : (
-                    <CategoryItemsAccordion
-                      items={weekItems.map((entry) => entry.item)}
-                    />
+                    <CategoryItemsAccordion items={weekItems.map((entry) => entry.item)} />
                   )}
                 </Tabs.Content>
 

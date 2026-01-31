@@ -1,11 +1,11 @@
-import { Button } from "./ui/Button";
-import { Dialog } from "./ui/Dialog";
-import { Flex } from "./ui/Flex";
-import { Text } from "./ui/Text";
-import { useState } from "react";
-import { RatingButtons } from "./form/RatingButtons";
-import type { Outfit, OutfitRating } from "../../types/outfit";
-import { markOutfitAsPrompted } from "../../utils/outfitRatingPrompt";
+import { useState } from 'react';
+import type { Outfit, OutfitRating } from '../../types/outfit';
+import { markOutfitAsPrompted } from '../../utils/outfitRatingPrompt';
+import { RatingButtons } from './form/RatingButtons';
+import { Button } from './ui/Button';
+import { Dialog } from './ui/Dialog';
+import { Flex } from './ui/Flex';
+import { Text } from './ui/Text';
 
 interface OutfitRatingPromptProps {
   outfit: Outfit;
@@ -34,7 +34,7 @@ export function OutfitRatingPrompt({
       markOutfitAsPrompted(outfit.id);
       onDismiss();
     } catch (error) {
-      console.error("Failed to save rating:", error);
+      console.error('Failed to save rating:', error);
     } finally {
       setIsSaving(false);
     }
@@ -51,51 +51,43 @@ export function OutfitRatingPrompt({
         <Dialog.Title>
           Rate Outfit
           {totalCount > 1 && (
-            <Text size="2" color="gray" style={{ marginLeft: "0.5rem" }}>
+            <Text size="2" color="gray" style={{ marginLeft: '0.5rem' }}>
               ({currentIndex + 1} of {totalCount})
             </Text>
           )}
         </Dialog.Title>
-        <Dialog.Description size="2">
-          How did you feel about this outfit?
-        </Dialog.Description>
+        <Dialog.Description size="2">How did you feel about this outfit?</Dialog.Description>
 
         {outfit.photo && (
-          <Flex justify="center" style={{ margin: "1rem 0" }}>
+          <Flex justify="center" style={{ margin: '1rem 0' }}>
             <img
               src={outfit.photo}
               alt="Outfit"
               style={{
-                maxWidth: "100%",
-                maxHeight: "200px",
-                borderRadius: "0.5rem",
-                objectFit: "contain",
-                background: "var(--surface-color)",
+                maxWidth: '100%',
+                maxHeight: '200px',
+                borderRadius: '0.5rem',
+                objectFit: 'contain',
+                background: 'var(--surface-color)',
               }}
             />
           </Flex>
         )}
 
-        <Flex direction="column" gap="3" style={{ marginTop: "1rem" }}>
+        <Flex direction="column" gap="3" style={{ marginTop: '1rem' }}>
           <div>
-            <Text weight="bold" size="2" style={{ marginBottom: "0.5rem", display: "block" }}>
+            <Text weight="bold" size="2" style={{ marginBottom: '0.5rem', display: 'block' }}>
               Rate This Outfit
             </Text>
             <RatingButtons value={rating} onChange={setRating} />
           </div>
 
-          <Flex gap="3" justify="end" style={{ marginTop: "0.5rem" }}>
-            <Button
-              onClick={handleDismiss}
-              disabled={isSaving}
-            >
+          <Flex gap="3" justify="end" style={{ marginTop: '0.5rem' }}>
+            <Button onClick={handleDismiss} disabled={isSaving}>
               Skip
             </Button>
-            <Button
-              onClick={handleSave}
-              disabled={rating === undefined || isSaving}
-            >
-              {isSaving ? "Saving..." : "Save Rating"}
+            <Button onClick={handleSave} disabled={rating === undefined || isSaving}>
+              {isSaving ? 'Saving...' : 'Save Rating'}
             </Button>
           </Flex>
         </Flex>

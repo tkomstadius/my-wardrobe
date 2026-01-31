@@ -1,11 +1,11 @@
-import { Text } from "../components/common/ui/Text";
-import { Heading } from "../components/common/ui/Heading";
-import { useMemo } from "react";
-import { useLoaderData } from "react-router";
-import { loadItems } from "../utils/storageCommands";
-import { calculateFullStats } from "../utils/statsCalculations";
-import styles from "./StatsPage.module.css";
-import { StatsCard } from "../components/common/StatsCard";
+import { useMemo } from 'react';
+import { useLoaderData } from 'react-router';
+import { StatsCard } from '../components/common/StatsCard';
+import { Heading } from '../components/common/ui/Heading';
+import { Text } from '../components/common/ui/Text';
+import { calculateFullStats } from '../utils/statsCalculations';
+import { loadItems } from '../utils/storageCommands';
+import styles from './StatsPage.module.css';
 
 export async function loader() {
   const items = await loadItems();
@@ -45,10 +45,7 @@ export function StatsPage() {
           <div className={styles.statsGrid}>
             <StatsCard title="Total Items" value={stats.totalItems} />
             <StatsCard title="Total Wears" value={stats.totalWears} />
-            <StatsCard
-              title="Avg Wears/Item"
-              value={stats.averageWears.toFixed(1)}
-            />
+            <StatsCard title="Avg Wears/Item" value={stats.averageWears.toFixed(1)} />
             <StatsCard title="Never Worn" value={stats.neverWorn.length} />
           </div>
         </section>
@@ -71,7 +68,7 @@ export function StatsPage() {
                       {cat.category}
                     </Text>
                     <Text size="1" color="gray">
-                      {cat.count} {cat.count === 1 ? "item" : "items"}
+                      {cat.count} {cat.count === 1 ? 'item' : 'items'}
                     </Text>
                   </div>
                   <div className={styles.categoryWears}>
@@ -108,15 +105,14 @@ export function StatsPage() {
                       </Text>
                     </div>
                     <div className={styles.itemImage}>
-                      <img src={item.imageUrl} alt={item.brand || "Item"} />
+                      <img src={item.imageUrl} alt={item.brand || 'Item'} />
                     </div>
                     <div className={styles.itemInfo}>
                       <Text size="2" weight="medium">
-                        {item.brand || "Unnamed"}
+                        {item.brand || 'Unnamed'}
                       </Text>
                       <Text size="1" color="gray">
-                        {item.category.charAt(0).toUpperCase() +
-                          item.category.slice(1)}
+                        {item.category.charAt(0).toUpperCase() + item.category.slice(1)}
                       </Text>
                     </div>
                     <div className={styles.itemWears}>
@@ -139,15 +135,14 @@ export function StatsPage() {
                 {stats.leastWorn.map((item) => (
                   <div key={item.id} className={styles.itemRow}>
                     <div className={styles.itemImage}>
-                      <img src={item.imageUrl} alt={item.brand || "Item"} />
+                      <img src={item.imageUrl} alt={item.brand || 'Item'} />
                     </div>
                     <div className={styles.itemInfo}>
                       <Text size="2" weight="medium">
-                        {item.brand || "Unnamed"}
+                        {item.brand || 'Unnamed'}
                       </Text>
                       <Text size="1" color="gray">
-                        {item.category.charAt(0).toUpperCase() +
-                          item.category.slice(1)}
+                        {item.category.charAt(0).toUpperCase() + item.category.slice(1)}
                       </Text>
                     </div>
                     <div className={styles.itemWears}>
@@ -167,8 +162,7 @@ export function StatsPage() {
                 Never Worn ({stats.neverWorn.length})
               </Text>
               <Text size="2" color="gray">
-                You have {stats.neverWorn.length} items that haven't been worn
-                yet.
+                You have {stats.neverWorn.length} items that haven't been worn yet.
               </Text>
             </div>
           )}
@@ -181,22 +175,14 @@ export function StatsPage() {
           </Heading>
 
           <div className={styles.statsGrid}>
-            <StatsCard
-              title="Total Value"
-              value={stats.totalValue.toFixed(0)}
-            />
+            <StatsCard title="Total Value" value={stats.totalValue.toFixed(0)} />
             <StatsCard
               title="Avg Cost/Wear"
               value={
-                stats.avgCostPerWear !== null
-                  ? `${stats.avgCostPerWear.toFixed(2)} kr`
-                  : "N/A"
+                stats.avgCostPerWear !== null ? `${stats.avgCostPerWear.toFixed(2)} kr` : 'N/A'
               }
             />
-            <StatsCard
-              title="Second-Hand"
-              value={stats.secondHandPercentage.toFixed(0)}
-            />
+            <StatsCard title="Second-Hand" value={stats.secondHandPercentage.toFixed(0)} />
           </div>
 
           {stats.bestValue.length > 0 && (
@@ -208,11 +194,11 @@ export function StatsPage() {
                 {stats.bestValue.map(({ item, costPerWear }) => (
                   <div key={item.id} className={styles.itemRow}>
                     <div className={styles.itemImage}>
-                      <img src={item.imageUrl} alt={item.brand || "Item"} />
+                      <img src={item.imageUrl} alt={item.brand || 'Item'} />
                     </div>
                     <div className={styles.itemInfo}>
                       <Text size="2" weight="medium">
-                        {item.brand || "Unnamed"}
+                        {item.brand || 'Unnamed'}
                       </Text>
                       <Text size="1" color="gray">
                         {item.wearCount} wears

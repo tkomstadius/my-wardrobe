@@ -1,5 +1,5 @@
-import { useState, useMemo } from "react";
-import type { WardrobeItem } from "../types/wardrobe";
+import { useMemo, useState } from 'react';
+import type { WardrobeItem } from '../types/wardrobe';
 
 /**
  * Custom hook for searching wardrobe items
@@ -7,7 +7,7 @@ import type { WardrobeItem } from "../types/wardrobe";
  * Supports multi-keyword search (e.g., "tops nike blue")
  */
 export function useItemSearch(items: WardrobeItem[]) {
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState('');
 
   // Filter items based on search query
   const filteredItems = useMemo(() => {
@@ -24,12 +24,12 @@ export function useItemSearch(items: WardrobeItem[]) {
         item.category,
         item.brand,
         item.notes,
-        item.isSecondHand ? "thrifted secondhand" : "",
-        item.isDogCasual ? "casual dogcasual" : "",
-        item.isHandmade ? "handmade" : "",
+        item.isSecondHand ? 'thrifted secondhand' : '',
+        item.isDogCasual ? 'casual dogcasual' : '',
+        item.isHandmade ? 'handmade' : '',
       ]
         .filter(Boolean)
-        .join(" ")
+        .join(' ')
         .toLowerCase();
 
       // Item matches if ALL keywords are found in searchable text
@@ -37,7 +37,7 @@ export function useItemSearch(items: WardrobeItem[]) {
     });
   }, [items, searchQuery]);
 
-  const clearSearch = () => setSearchQuery("");
+  const clearSearch = () => setSearchQuery('');
 
   return {
     searchQuery,

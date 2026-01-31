@@ -1,5 +1,5 @@
-import { Text } from "./ui/Text";
-import styles from "./StatsCard.module.css";
+import styles from './StatsCard.module.css';
+import { Text } from './ui/Text';
 
 interface StatsCardProps {
   title: string;

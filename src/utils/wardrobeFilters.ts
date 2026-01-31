@@ -1,11 +1,8 @@
-import { isSameDay } from "date-fns";
-import type { WardrobeItem } from "../types/wardrobe";
-import { getDaysAgo, countWearsInRange } from "./dateFormatter";
+import { isSameDay } from 'date-fns';
+import type { WardrobeItem } from '../types/wardrobe';
+import { countWearsInRange, getDaysAgo } from './dateFormatter';
 
-export function getItemsWornOnDate(
-  items: WardrobeItem[],
-  targetDate: Date
-): WardrobeItem[] {
+export function getItemsWornOnDate(items: WardrobeItem[], targetDate: Date): WardrobeItem[] {
   return items.filter(({ wearHistory }) => {
     const lastWorn = wearHistory?.at(-1);
 
@@ -34,7 +31,7 @@ export function isWornToday(item: WardrobeItem): boolean {
 export function getItemsWornInPeriod(
   items: WardrobeItem[],
   startDate: Date,
-  endDate: Date = new Date()
+  endDate: Date = new Date(),
 ): Array<{ item: WardrobeItem; wearCount: number }> {
   return items
     .map((item) => ({
@@ -48,10 +45,7 @@ export function getItemsWornInPeriod(
 /**
  * Get items that haven't been worn in a specified number of days
  */
-export function getNeglectedItems(
-  items: WardrobeItem[],
-  daysThreshold = 30
-): WardrobeItem[] {
+export function getNeglectedItems(items: WardrobeItem[], daysThreshold = 30): WardrobeItem[] {
   const thresholdDate = getDaysAgo(daysThreshold);
 
   return items
@@ -88,18 +82,13 @@ export function getNeglectedItems(
  * Get items that have never been worn
  */
 export function getUnwornItems(items: WardrobeItem[]): WardrobeItem[] {
-  return items.filter(
-    (item) => !item.wearHistory || item.wearHistory.length === 0
-  );
+  return items.filter((item) => !item.wearHistory || item.wearHistory.length === 0);
 }
 
 /**
  * Get items that haven't been worn in a specified number of days (excluding never worn)
  */
-export function getUnwornItemsSince(
-  items: WardrobeItem[],
-  daysSince: number
-): WardrobeItem[] {
+export function getUnwornItemsSince(items: WardrobeItem[], daysSince: number): WardrobeItem[] {
   const thresholdDate = getDaysAgo(daysSince);
 
   return items.filter((item) => {

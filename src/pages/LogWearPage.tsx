@@ -1,33 +1,29 @@
-import { IoCameraOutline } from "react-icons/io5";
-import { Button } from "../components/common/ui/Button";
-import { Callout } from "../components/common/ui/Callout";
-import { Dialog } from "../components/common/ui/Dialog";
-import { Flex } from "../components/common/ui/Flex";
-import { Heading } from "../components/common/ui/Heading";
-import { Spinner } from "../components/common/ui/Spinner";
-import { Text } from "../components/common/ui/Text";
-import { Tabs } from "../components/common/ui/Tabs";
-import { differenceInDays } from "date-fns";
-import { useOptimistic, useState } from "react";
-import { useLoaderData, useNavigate } from "react-router";
-import { CategoryItemsAccordion } from "../components/common/CategoryItemsAccordion";
-import { SearchBar } from "../components/common/SearchBar";
-import { useWeather } from "../contexts/WeatherContext";
-import { useImageUpload } from "../hooks/useImageUpload";
-import { useItemSearch } from "../hooks/useItemSearch";
+import { differenceInDays } from 'date-fns';
+import { useOptimistic, useState } from 'react';
+import { IoCameraOutline } from 'react-icons/io5';
+import { useLoaderData, useNavigate } from 'react-router';
+import { CategoryItemsAccordion } from '../components/common/CategoryItemsAccordion';
+import { SearchBar } from '../components/common/SearchBar';
+import { Button } from '../components/common/ui/Button';
+import { Callout } from '../components/common/ui/Callout';
+import { Dialog } from '../components/common/ui/Dialog';
+import { Flex } from '../components/common/ui/Flex';
+import { Heading } from '../components/common/ui/Heading';
+import { Spinner } from '../components/common/ui/Spinner';
+import { Tabs } from '../components/common/ui/Tabs';
+import { Text } from '../components/common/ui/Text';
+import { useWeather } from '../contexts/WeatherContext';
+import { useImageUpload } from '../hooks/useImageUpload';
+import { useItemSearch } from '../hooks/useItemSearch';
 import {
   hashImageData,
   type MatchFeedback,
   saveFeedback,
   updatePreferencesFromFeedback,
-} from "../utils/aiLearning";
-import { findMatchingItems, type ItemMatch } from "../utils/aiMatching";
-import styles from "./LogWearPage.module.css";
-import {
-  addOutfit,
-  incrementWearCount,
-  loadItems,
-} from "../utils/storageCommands";
+} from '../utils/aiLearning';
+import { findMatchingItems, type ItemMatch } from '../utils/aiMatching';
+import { addOutfit, incrementWearCount, loadItems } from '../utils/storageCommands';
+import styles from './LogWearPage.module.css';
 
 export async function loader() {
   const items = await loadItems();
@@ -39,7 +35,7 @@ export function LogWearPage() {
   const { items } = useLoaderData<typeof loader>();
   const { weatherData } = useWeather();
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
-  const [error, setError] = useState<string>("");
+  const [error, setError] = useState<string>('');
   const [isAIMode, setIsAIMode] = useState(true);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [aiMatches, setAIMatches] = useState<ItemMatch[]>([]);
@@ -54,20 +50,15 @@ export function LogWearPage() {
     medium: false,
     low: false,
   });
-  const { imagePreview, handleImageUpload, clearImage, isUploading } =
-    useImageUpload();
-  const { searchQuery, setSearchQuery, clearSearch, filteredItems } =
-    useItemSearch(items);
+  const { imagePreview, handleImageUpload, clearImage, isUploading } = useImageUpload();
+  const { searchQuery, setSearchQuery, clearSearch, filteredItems } = useItemSearch(items);
   const [showSaveOutfitDialog, setShowSaveOutfitDialog] = useState(false);
   const [loggedItemIds, setLoggedItemIds] = useState<string[]>([]);
   const [isSavingOutfit, setIsSavingOutfit] = useState(false);
 
   // useOptimistic: Track items that are being logged optimistically
   // This lets us show instant UI feedback while the database updates happen
-  const [optimisticLoggedItems, addOptimisticLog] = useOptimistic<
-    Set<string>,
-    string[]
-  >(
+  const [optimisticLoggedItems, addOptimisticLog] = useOptimistic<Set<string>, string[]>(
     new Set(), // Initial state: no items logged yet
     (state, itemIds) => {
       // Updater function: add the items being logged to the set
@@ -76,7 +67,7 @@ export function LogWearPage() {
         newSet.add(id);
       }
       return newSet;
-    }
+    },
   );
 
   const toggleItemSelection = (itemId: string) => {
@@ -116,7 +107,7 @@ export function LogWearPage() {
           baseSimilarity: match.baseSimilarity,
           boostedSimilarity: match.similarity,
           confidence: match.confidence,
-          userAction: "accepted",
+          userAction: 'accepted',
           metadata: {
             category: match.item.category,
             brand: match.item.brand,
@@ -126,15 +117,15 @@ export function LogWearPage() {
               match.item.wearHistory && match.item.wearHistory.length > 0
                 ? differenceInDays(
                     new Date(),
-                    match.item.wearHistory[match.item.wearHistory.length - 1]!
+                    match.item.wearHistory[match.item.wearHistory.length - 1]!,
                   )
                 : undefined,
           },
         };
         await saveFeedback(feedback);
-        console.log("✓ Saved positive feedback for", itemId);
+        console.log('✓ Saved positive feedback for', itemId);
       } catch (error) {
-        console.error("Failed to save feedback:", error);
+        console.error('Failed to save feedback:', error);
         // Don't block the UI on feedback errors
       }
     }
@@ -166,7 +157,7 @@ export function LogWearPage() {
           baseSimilarity: match.baseSimilarity,
           boostedSimilarity: match.similarity,
           confidence: match.confidence,
-          userAction: "rejected",
+          userAction: 'rejected',
           metadata: {
             category: match.item.category,
             brand: match.item.brand,
@@ -176,15 +167,15 @@ export function LogWearPage() {
               match.item.wearHistory && match.item.wearHistory.length > 0
                 ? differenceInDays(
                     new Date(),
-                    match.item.wearHistory[match.item.wearHistory.length - 1]!
+                    match.item.wearHistory[match.item.wearHistory.length - 1]!,
                   )
                 : undefined,
           },
         };
         await saveFeedback(feedback);
-        console.log("✗ Saved negative feedback for", itemId);
+        console.log('✗ Saved negative feedback for', itemId);
       } catch (error) {
-        console.error("Failed to save feedback:", error);
+        console.error('Failed to save feedback:', error);
         // Don't block the UI on feedback errors
       }
     }
@@ -194,7 +185,7 @@ export function LogWearPage() {
     if (!imagePreview) return;
 
     setIsAnalyzing(true);
-    setError("");
+    setError('');
 
     try {
       const matches = await findMatchingItems(imagePreview, items, {
@@ -215,10 +206,8 @@ export function LogWearPage() {
       // Reset expanded sections (high expanded by default)
       setExpandedSections({ high: true, medium: false, low: false });
     } catch (error) {
-      console.error("Failed to analyze outfit:", error);
-      setError(
-        "Failed to analyze photo. Please try again or use manual selection."
-      );
+      console.error('Failed to analyze outfit:', error);
+      setError('Failed to analyze photo. Please try again or use manual selection.');
     } finally {
       setIsAnalyzing(false);
     }
@@ -235,7 +224,7 @@ export function LogWearPage() {
 
     // Clear the selection immediately for better UX
     setSelectedItems(new Set());
-    setError("");
+    setError('');
 
     try {
       // Actually save to IndexedDB in the background
@@ -247,7 +236,7 @@ export function LogWearPage() {
       // Auto-update AI learning from all the feedback just collected
       // This runs in background, doesn't block navigation
       updatePreferencesFromFeedback().catch((err) => {
-        console.error("Failed to update AI preferences:", err);
+        console.error('Failed to update AI preferences:', err);
         // Don't block user flow on learning errors
       });
 
@@ -257,14 +246,14 @@ export function LogWearPage() {
         setShowSaveOutfitDialog(true);
       } else {
         // No photo, navigate back to home
-        navigate("/");
+        navigate('/');
       }
     } catch (err) {
-      console.error("Failed to log wear:", err);
+      console.error('Failed to log wear:', err);
 
       // If this fails, useOptimistic automatically rolls back!
       // The items will un-grey themselves and return to selectable state
-      setError("Failed to log wear. Please try again.");
+      setError('Failed to log wear. Please try again.');
 
       // Re-select the items that failed so user can retry
       setSelectedItems(new Set(itemsToLog));
@@ -289,10 +278,10 @@ export function LogWearPage() {
           : undefined,
       });
       setShowSaveOutfitDialog(false);
-      navigate("/outfits");
+      navigate('/outfits');
     } catch (error) {
-      console.error("Failed to save outfit:", error);
-      setError("Failed to save outfit. Please try again.");
+      console.error('Failed to save outfit:', error);
+      setError('Failed to save outfit. Please try again.');
     } finally {
       setIsSavingOutfit(false);
     }
@@ -300,7 +289,7 @@ export function LogWearPage() {
 
   const handleSkipSaveOutfit = () => {
     setShowSaveOutfitDialog(false);
-    navigate("/");
+    navigate('/');
   };
 
   const isPending = optimisticLoggedItems.size > 0;
@@ -320,16 +309,16 @@ export function LogWearPage() {
       {isPending && (
         <Callout.Root color="blue" size="1" className={styles.callout}>
           <Callout.Text>
-            Logging {optimisticLoggedItems.size}{" "}
-            {optimisticLoggedItems.size === 1 ? "item" : "items"}...
+            Logging {optimisticLoggedItems.size}{' '}
+            {optimisticLoggedItems.size === 1 ? 'item' : 'items'}...
           </Callout.Text>
         </Callout.Root>
       )}
 
       <Tabs.Root
-        value={isAIMode ? "ai" : "manual"}
+        value={isAIMode ? 'ai' : 'manual'}
         onValueChange={(value) => {
-          const newIsAIMode = value === "ai";
+          const newIsAIMode = value === 'ai';
           setIsAIMode(newIsAIMode);
           setSelectedItems(new Set());
           setAcceptedItems(new Set());
@@ -367,11 +356,7 @@ export function LogWearPage() {
                   </Text>
                 </Flex>
               ) : (
-                <Button
-                  onClick={() =>
-                    document.getElementById("outfit-upload")?.click()
-                  }
-                >
+                <Button onClick={() => document.getElementById('outfit-upload')?.click()}>
                   <IoCameraOutline /> Upload Photo
                 </Button>
               )}
@@ -381,7 +366,7 @@ export function LogWearPage() {
                 accept="image/*"
                 onChange={handleImageUpload}
                 disabled={isUploading}
-                style={{ display: "none" }}
+                style={{ display: 'none' }}
               />
             </div>
           ) : (
@@ -404,11 +389,8 @@ export function LogWearPage() {
                 >
                   Remove Photo
                 </Button>
-                <Button
-                  onClick={handleAnalyzeOutfit}
-                  disabled={isAnalyzing}
-                >
-                  {isAnalyzing ? "Analyzing..." : "✨ Find Matching Items"}
+                <Button onClick={handleAnalyzeOutfit} disabled={isAnalyzing}>
+                  {isAnalyzing ? 'Analyzing...' : '✨ Find Matching Items'}
                 </Button>
               </div>
             </div>
@@ -419,24 +401,19 @@ export function LogWearPage() {
               <Heading size="4">AI Suggestions (Review & Confirm)</Heading>
 
               <div className={styles.matchesByConfidence}>
-                {(["high", "medium", "low"] as const).map((confidenceLevel) => {
-                  const matchesAtLevel = aiMatches.filter(
-                    (m) => m.confidence === confidenceLevel
-                  );
+                {(['high', 'medium', 'low'] as const).map((confidenceLevel) => {
+                  const matchesAtLevel = aiMatches.filter((m) => m.confidence === confidenceLevel);
                   if (matchesAtLevel.length === 0) return null;
 
                   const isExpanded = expandedSections[confidenceLevel];
 
                   return (
-                    <div
-                      key={confidenceLevel}
-                      className={styles.confidenceGroup}
-                    >
+                    <div key={confidenceLevel} className={styles.confidenceGroup}>
                       <div className={styles.confidenceHeader}>
                         <Text size="2" weight="bold" color="gray">
-                          {confidenceLevel === "high" && "🟢 High Confidence"}
-                          {confidenceLevel === "medium" && "🟡 Likely Match"}
-                          {confidenceLevel === "low" && "🟠 Possible Match"} (
+                          {confidenceLevel === 'high' && '🟢 High Confidence'}
+                          {confidenceLevel === 'medium' && '🟡 Likely Match'}
+                          {confidenceLevel === 'low' && '🟠 Possible Match'} (
                           {matchesAtLevel.length})
                         </Text>
 
@@ -453,7 +430,7 @@ export function LogWearPage() {
                           </Button>
                         )}
 
-                        {isExpanded && confidenceLevel !== "high" && (
+                        {isExpanded && confidenceLevel !== 'high' && (
                           <Button
                             onClick={() =>
                               setExpandedSections((prev) => ({
@@ -477,7 +454,7 @@ export function LogWearPage() {
                               <div
                                 key={match.item.id}
                                 className={`${styles.matchRow} ${
-                                  isRejected || isAccepted ? styles.rejected : ""
+                                  isRejected || isAccepted ? styles.rejected : ''
                                 }`}
                               >
                                 <img
@@ -492,8 +469,7 @@ export function LogWearPage() {
                                   <div className={styles.matchMetadata}>
                                     <Text size="1" color="gray">
                                       {match.item.category}
-                                      {match.item.brand &&
-                                        ` • ${match.item.brand}`}
+                                      {match.item.brand && ` • ${match.item.brand}`}
                                       {` • Worn ${match.item.wearCount}×`}
                                     </Text>
                                   </div>
@@ -503,18 +479,14 @@ export function LogWearPage() {
                                 </div>
                                 <Flex gap="1" align="center">
                                   <Button
-                                    onClick={() =>
-                                      handleAcceptItem(match.item.id)
-                                    }
+                                    onClick={() => handleAcceptItem(match.item.id)}
                                     className={styles.acceptButton}
                                   >
                                     ✓
                                   </Button>
                                   <Button
                                     variant="destructive"
-                                    onClick={() =>
-                                      handleRejectItem(match.item.id)
-                                    }
+                                    onClick={() => handleRejectItem(match.item.id)}
                                     className={styles.rejectButton}
                                   >
                                     ✗
@@ -536,10 +508,8 @@ export function LogWearPage() {
                 className={styles.submitButton}
               >
                 {isPending
-                  ? "Logging..."
-                  : `Log ${selectedItems.size} ${
-                      selectedItems.size === 1 ? "Item" : "Items"
-                    }`}
+                  ? 'Logging...'
+                  : `Log ${selectedItems.size} ${selectedItems.size === 1 ? 'Item' : 'Items'}`}
               </Button>
             </div>
           )}
@@ -567,22 +537,13 @@ export function LogWearPage() {
                 disabledItems={optimisticLoggedItems}
               />
               <div className={styles.actionButtons}>
-                <Button
-                  variant="destructive"
-                  onClick={() => navigate(-1)}
-                  disabled={isPending}
-                >
+                <Button variant="destructive" onClick={() => navigate(-1)} disabled={isPending}>
                   Cancel
                 </Button>
-                <Button
-                  onClick={handleSubmit}
-                  disabled={selectedItems.size === 0 || isPending}
-                >
+                <Button onClick={handleSubmit} disabled={selectedItems.size === 0 || isPending}>
                   {isPending
-                    ? "Logging..."
-                    : `Log ${selectedItems.size} ${
-                        selectedItems.size === 1 ? "Item" : "Items"
-                      }`}
+                    ? 'Logging...'
+                    : `Log ${selectedItems.size} ${selectedItems.size === 1 ? 'Item' : 'Items'}`}
                 </Button>
               </div>
             </>
@@ -591,10 +552,7 @@ export function LogWearPage() {
       )}
 
       {/* Save Outfit Dialog - rendered at component level to avoid unmounting issues */}
-      <Dialog.Root
-        open={showSaveOutfitDialog}
-        onOpenChange={setShowSaveOutfitDialog}
-      >
+      <Dialog.Root open={showSaveOutfitDialog} onOpenChange={setShowSaveOutfitDialog}>
         <Dialog.Content maxWidth="450px">
           <Dialog.Title>Save Outfit Photo?</Dialog.Title>
           <Dialog.Description size="2">
@@ -606,28 +564,22 @@ export function LogWearPage() {
                 src={imagePreview}
                 alt="Outfit preview"
                 style={{
-                  maxWidth: "100%",
-                  maxHeight: "200px",
-                  borderRadius: "var(--radius-3)",
-                  objectFit: "contain",
+                  maxWidth: '100%',
+                  maxHeight: '200px',
+                  borderRadius: 'var(--radius-3)',
+                  objectFit: 'contain',
                 }}
               />
             </Flex>
           )}
           <Flex gap="3" mt="4" justify="end">
             <Dialog.Close>
-              <Button
-                onClick={handleSkipSaveOutfit}
-                disabled={isSavingOutfit}
-              >
+              <Button onClick={handleSkipSaveOutfit} disabled={isSavingOutfit}>
                 Skip
               </Button>
             </Dialog.Close>
-            <Button
-              onClick={handleSaveOutfit}
-              disabled={isSavingOutfit}
-            >
-              {isSavingOutfit ? "Saving..." : "Save Outfit"}
+            <Button onClick={handleSaveOutfit} disabled={isSavingOutfit}>
+              {isSavingOutfit ? 'Saving...' : 'Save Outfit'}
             </Button>
           </Flex>
         </Dialog.Content>

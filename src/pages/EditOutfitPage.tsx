@@ -1,43 +1,38 @@
-import { IoTrashOutline } from "react-icons/io5";
-import { Button } from "../components/common/ui/Button";
-import { Flex } from "../components/common/ui/Flex";
-import { Heading } from "../components/common/ui/Heading";
-import { Text } from "../components/common/ui/Text";
-import { TextField } from "../components/common/ui/TextField";
-import { TextArea } from "../components/common/ui/TextArea";
-import { useMemo, useState } from "react";
+import { useMemo, useState } from 'react';
+import { IoTrashOutline } from 'react-icons/io5';
 import {
-  ActionFunctionArgs,
+  type ActionFunctionArgs,
   Form,
-  LoaderFunctionArgs,
+  type LoaderFunctionArgs,
   redirect,
   useLoaderData,
   useNavigate,
   useNavigation,
-} from "react-router";
-import { DeleteConfirmDialog } from "../components/common/DeleteConfirmDialog";
-import { RatingButtons } from "../components/common/form/RatingButtons";
-import { BackLink } from "../components/common/BackLink";
-import {
-  getOutfitById,
-  loadItems,
-  removeOutfit,
-  updateOutfit,
-} from "../utils/storageCommands";
-import { formatDate } from "../utils/dateFormatter";
-import styles from "./EditOutfitPage.module.css";
-import { ImageInput } from "../components/common/form/ImageInput";
+} from 'react-router';
+import { BackLink } from '../components/common/BackLink';
+import { CategoryItemsAccordion } from '../components/common/CategoryItemsAccordion';
+import { DeleteConfirmDialog } from '../components/common/DeleteConfirmDialog';
 import {
   CREATED_DATE_NAME,
   IMAGE_URL_NAME,
   ITEM_IDS_NAME,
   NOTES_NAME,
   RATING_NAME,
-} from "../components/common/form/constants";
-import { SearchBar } from "../components/common/SearchBar";
-import { CategoryItemsAccordion } from "../components/common/CategoryItemsAccordion";
-import { useItemSearch } from "../hooks/useItemSearch";
-import { OutfitRating } from "../types/outfit";
+} from '../components/common/form/constants';
+import { ImageInput } from '../components/common/form/ImageInput';
+import { RatingButtons } from '../components/common/form/RatingButtons';
+import { SearchBar } from '../components/common/SearchBar';
+import { Button } from '../components/common/ui/Button';
+import { Flex } from '../components/common/ui/Flex';
+import { Heading } from '../components/common/ui/Heading';
+import { Text } from '../components/common/ui/Text';
+import { TextArea } from '../components/common/ui/TextArea';
+import { TextField } from '../components/common/ui/TextField';
+import { useItemSearch } from '../hooks/useItemSearch';
+import type { OutfitRating } from '../types/outfit';
+import { formatDate } from '../utils/dateFormatter';
+import { getOutfitById, loadItems, removeOutfit, updateOutfit } from '../utils/storageCommands';
+import styles from './EditOutfitPage.module.css';
 
 export async function loader({ params }: LoaderFunctionArgs) {
   const { id } = params;
@@ -53,7 +48,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
 export async function action({ request, params }: ActionFunctionArgs) {
   const { id } = params;
   if (!id) {
-    return { error: "Outfit ID is required" };
+    return { error: 'Outfit ID is required' };
   }
 
   const formData = await request.formData();
@@ -68,16 +63,14 @@ export async function action({ request, params }: ActionFunctionArgs) {
       photo: imageUrl,
       createdAt: new Date(createdDate),
       notes: notes.trim() || undefined,
-      rating: rating
-        ? (Number.parseInt(rating, 10) as OutfitRating)
-        : undefined,
+      rating: rating ? (Number.parseInt(rating, 10) as OutfitRating) : undefined,
       itemIds: JSON.parse(itemIds),
     });
 
     return redirect(`/outfit/${id}`);
   } catch (error) {
-    console.error("Failed to update outfit:", error);
-    return { error: "Failed to update outfit. Please try again." };
+    console.error('Failed to update outfit:', error);
+    return { error: 'Failed to update outfit. Please try again.' };
   }
 }
 
@@ -87,16 +80,13 @@ export function EditOutfitPage() {
   const navigate = useNavigate();
   const navigation = useNavigation();
   const { outfit, items } = useLoaderData<typeof loader>();
-  const { searchQuery, setSearchQuery, clearSearch, filteredItems } =
-    useItemSearch(items);
+  const { searchQuery, setSearchQuery, clearSearch, filteredItems } = useItemSearch(items);
 
-  const [selectedItems, setSelectedItems] = useState<Set<string>>(
-    new Set(outfit?.itemIds || [])
-  );
+  const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set(outfit?.itemIds || []));
   const [isDeleting, setIsDeleting] = useState(false);
 
-  const isSubmitting = navigation.state === "submitting";
-  const isLoading = navigation.state === "loading";
+  const isSubmitting = navigation.state === 'submitting';
+  const isLoading = navigation.state === 'loading';
 
   const toggleItemSelection = (itemId: string) => {
     setSelectedItems((prev) => {
@@ -111,10 +101,7 @@ export function EditOutfitPage() {
   };
 
   // Memoize the JSON string to avoid unnecessary re-renders
-  const itemIdsJson = useMemo(
-    () => JSON.stringify(Array.from(selectedItems)),
-    [selectedItems]
-  );
+  const itemIdsJson = useMemo(() => JSON.stringify(Array.from(selectedItems)), [selectedItems]);
 
   const handleDelete = async () => {
     if (!outfit?.id) return;
@@ -122,10 +109,10 @@ export function EditOutfitPage() {
     setIsDeleting(true);
     try {
       await removeOutfit(outfit.id);
-      navigate("/outfits");
+      navigate('/outfits');
     } catch (error) {
-      console.error("Failed to delete outfit:", error);
-      alert("Failed to delete outfit. Please try again.");
+      console.error('Failed to delete outfit:', error);
+      alert('Failed to delete outfit. Please try again.');
       setIsDeleting(false);
     }
   };
@@ -172,7 +159,7 @@ export function EditOutfitPage() {
             <TextField.Input
               name={CREATED_DATE_NAME}
               type="date"
-              defaultValue={outfit.createdAt ? formatDate(outfit.createdAt) : ""}
+              defaultValue={outfit.createdAt ? formatDate(outfit.createdAt) : ''}
             />
           </TextField.Root>
         </Flex>
@@ -186,7 +173,7 @@ export function EditOutfitPage() {
             name={NOTES_NAME}
             placeholder="e.g., too warm, uncomfortable"
             rows={2}
-            defaultValue={outfit.notes || ""}
+            defaultValue={outfit.notes || ''}
             size="3"
           />
         </Flex>
@@ -216,11 +203,8 @@ export function EditOutfitPage() {
         {/* Hidden input to include selected items in form submission */}
         <input type="hidden" name={ITEM_IDS_NAME} value={itemIdsJson} />
 
-        <Button
-          type="submit"
-          disabled={isSubmitting || isLoading || selectedItems.size === 0}
-        >
-          {isSubmitting ? "Saving..." : "Save changes"}
+        <Button type="submit" disabled={isSubmitting || isLoading || selectedItems.size === 0}>
+          {isSubmitting ? 'Saving...' : 'Save changes'}
         </Button>
       </Form>
     </section>

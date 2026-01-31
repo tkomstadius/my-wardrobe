@@ -1,6 +1,6 @@
-import { Flex } from "../ui/Flex";
-import { Text } from "../ui/Text";
-import { TextField } from "../ui/TextField";
+import { Flex } from '../ui/Flex';
+import { Text } from '../ui/Text';
+import { TextField } from '../ui/TextField';
 
 type TextInputProps = {
   label: string;
@@ -10,13 +10,7 @@ type TextInputProps = {
   defaultValue?: string;
 };
 
-export function TextInput({
-  label,
-  name,
-  placeholder,
-  suggestions,
-  defaultValue,
-}: TextInputProps) {
+export function TextInput({ label, name, placeholder, suggestions, defaultValue }: TextInputProps) {
   return (
     <Flex direction="column" gap="1">
       <Text as="label" size="2" weight="bold">

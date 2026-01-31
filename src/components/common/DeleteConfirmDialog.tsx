@@ -1,8 +1,8 @@
-import { IoTrashOutline } from "react-icons/io5";
-import { AlertDialog } from "./ui/AlertDialog";
-import { Button } from "./ui/Button";
-import { Flex } from "./ui/Flex";
-import type { ReactNode } from "react";
+import type { ReactNode } from 'react';
+import { IoTrashOutline } from 'react-icons/io5';
+import { AlertDialog } from './ui/AlertDialog';
+import { Button } from './ui/Button';
+import { Flex } from './ui/Flex';
 
 interface DeleteConfirmDialogProps {
   title: string;
@@ -18,7 +18,7 @@ export function DeleteConfirmDialog({
   description,
   onConfirm,
   isDeleting = false,
-  confirmText = "Delete",
+  confirmText = 'Delete',
   triggerButton,
 }: DeleteConfirmDialogProps) {
   return (
@@ -32,21 +32,14 @@ export function DeleteConfirmDialog({
       </AlertDialog.Trigger>
       <AlertDialog.Content maxWidth="450px">
         <AlertDialog.Title>{title}</AlertDialog.Title>
-        <AlertDialog.Description size="2">
-          {description}
-        </AlertDialog.Description>
-        <Flex gap="3" style={{ marginTop: "1rem" }} justify="end">
+        <AlertDialog.Description size="2">{description}</AlertDialog.Description>
+        <Flex gap="3" style={{ marginTop: '1rem' }} justify="end">
           <AlertDialog.Cancel>
-            <Button>
-              Cancel
-            </Button>
+            <Button>Cancel</Button>
           </AlertDialog.Cancel>
           <AlertDialog.Action>
-            <Button
-              onClick={onConfirm}
-              disabled={isDeleting}
-            >
-              {isDeleting ? "Deleting..." : confirmText}
+            <Button onClick={onConfirm} disabled={isDeleting}>
+              {isDeleting ? 'Deleting...' : confirmText}
             </Button>
           </AlertDialog.Action>
         </Flex>

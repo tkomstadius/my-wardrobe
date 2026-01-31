@@ -1,38 +1,38 @@
-import { IoPencilOutline, IoTrashOutline } from "react-icons/io5";
-import { Button } from "../components/common/ui/Button";
-import { Flex } from "../components/common/ui/Flex";
-import { Grid } from "../components/common/ui/Grid";
-import { Heading } from "../components/common/ui/Heading";
-import { Text } from "../components/common/ui/Text";
-import { TextField } from "../components/common/ui/TextField";
-import { useState } from "react";
+import { useState } from 'react';
+import { IoPencilOutline, IoTrashOutline } from 'react-icons/io5';
 import {
+  type ActionFunctionArgs,
   Link,
-  useNavigate,
-  useLoaderData,
-  useRevalidator,
   type LoaderFunctionArgs,
-  ActionFunctionArgs,
-} from "react-router";
-import { DeleteConfirmDialog } from "../components/common/DeleteConfirmDialog";
-import {
-  getOutfitsWithItemId,
-  incrementWearCount,
-  logWearOnDate,
-  removeItem,
-  removeWear,
-} from "../utils/storageCommands";
+  useLoaderData,
+  useNavigate,
+  useRevalidator,
+} from 'react-router';
+import { BackLink } from '../components/common/BackLink';
+import { DeleteConfirmDialog } from '../components/common/DeleteConfirmDialog';
+import { RATING_OPTIONS } from '../components/common/form/constants';
+import { Button } from '../components/common/ui/Button';
+import { Flex } from '../components/common/ui/Flex';
+import { Grid } from '../components/common/ui/Grid';
+import { Heading } from '../components/common/ui/Heading';
+import { Text } from '../components/common/ui/Text';
+import { TextField } from '../components/common/ui/TextField';
 import {
   formatDate,
   formatDateDisplay,
   formatItemAge,
   formatLastWorn,
   normalizeToNoon,
-} from "../utils/dateFormatter";
-import { RATING_OPTIONS } from "../components/common/form/constants";
-import styles from "./ItemDetailPage.module.css";
-import { BackLink } from "../components/common/BackLink";
-import { loadItemById } from "../utils/indexedDB";
+} from '../utils/dateFormatter';
+import { loadItemById } from '../utils/indexedDB';
+import {
+  getOutfitsWithItemId,
+  incrementWearCount,
+  logWearOnDate,
+  removeItem,
+  removeWear,
+} from '../utils/storageCommands';
+import styles from './ItemDetailPage.module.css';
 
 export async function loader({ params }: LoaderFunctionArgs) {
   const { id } = params;
@@ -41,20 +41,17 @@ export async function loader({ params }: LoaderFunctionArgs) {
     return { item: null, outfits: [] };
   }
 
-  const [item, outfits] = await Promise.all([
-    loadItemById(id),
-    getOutfitsWithItemId(id),
-  ]);
+  const [item, outfits] = await Promise.all([loadItemById(id), getOutfitsWithItemId(id)]);
 
   return { item, outfits };
 }
 
 export async function clientAction({ request }: ActionFunctionArgs) {
   const formData = await request.formData();
-  const intent = formData.get("intent") as string;
+  const intent = formData.get('intent') as string;
 
-  if (intent === "delete") {
-    return { error: "Item ID is required" };
+  if (intent === 'delete') {
+    return { error: 'Item ID is required' };
   }
 
   return { success: true };
@@ -68,12 +65,10 @@ export function ItemDetailPage() {
   const revalidator = useRevalidator();
   const { item, outfits: outfitsWithItem } = useLoaderData<typeof loader>();
   const [isDeleting, setIsDeleting] = useState(false);
-  const [deletingWearIndex, setDeletingWearIndex] = useState<number | null>(
-    null
-  );
+  const [deletingWearIndex, setDeletingWearIndex] = useState<number | null>(null);
   const [showAllWears, setShowAllWears] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const [selectedDate, setSelectedDate] = useState("");
+  const [selectedDate, setSelectedDate] = useState('');
   const [newWearCount, setNewWearCount] = useState<number>();
 
   const handleDelete = async () => {
@@ -84,8 +79,8 @@ export function ItemDetailPage() {
       await removeItem(item.id);
       navigate(`/items/${item.category}`);
     } catch (error) {
-      console.error("Failed to delete item:", error);
-      alert("Failed to delete item. Please try again.");
+      console.error('Failed to delete item:', error);
+      alert('Failed to delete item. Please try again.');
       setIsDeleting(false);
     }
   };
@@ -97,8 +92,8 @@ export function ItemDetailPage() {
       const newCount = await incrementWearCount(item.id);
       setNewWearCount(newCount);
     } catch (error) {
-      console.error("Failed to mark as worn:", error);
-      alert("Failed to update wear count. Please try again.");
+      console.error('Failed to mark as worn:', error);
+      alert('Failed to update wear count. Please try again.');
     }
   };
 
@@ -109,11 +104,11 @@ export function ItemDetailPage() {
       const date = normalizeToNoon(selectedDate);
       await logWearOnDate(item.id, date);
       setShowDatePicker(false);
-      setSelectedDate("");
+      setSelectedDate('');
       revalidator.revalidate(); // Reload data to show updated wear history
     } catch (error) {
-      console.error("Failed to log wear:", error);
-      alert("Failed to log wear. Please try again.");
+      console.error('Failed to log wear:', error);
+      alert('Failed to log wear. Please try again.');
     }
   };
 
@@ -125,8 +120,8 @@ export function ItemDetailPage() {
       await removeWear(item.id, wearIndex);
       revalidator.revalidate(); // Reload data to show updated wear history
     } catch (error) {
-      console.error("Failed to remove wear:", error);
-      alert("Failed to remove wear. Please try again.");
+      console.error('Failed to remove wear:', error);
+      alert('Failed to remove wear. Please try again.');
     } finally {
       setDeletingWearIndex(null);
     }
@@ -137,16 +132,14 @@ export function ItemDetailPage() {
       <div className={styles.container}>
         <div className={styles.notFound}>
           <Heading size="5">Item not found</Heading>
-          <BackLink to={"/items"} />
+          <BackLink to={'/items'} />
         </div>
       </div>
     );
   }
 
   const costPerWear =
-    item.price !== undefined && item.wearCount > 0
-      ? item.price / item.wearCount
-      : null;
+    item.price !== undefined && item.wearCount > 0 ? item.price / item.wearCount : null;
 
   return (
     <div className={styles.container}>
@@ -156,7 +149,7 @@ export function ItemDetailPage() {
 
       <Flex direction="column" gap="3">
         <div className={styles.imageSection}>
-          <img src={item.imageUrl} alt={item.notes || item.brand || "Item"} />
+          <img src={item.imageUrl} alt={item.notes || item.brand || 'Item'} />
         </div>
 
         <section>
@@ -223,10 +216,7 @@ export function ItemDetailPage() {
           <Flex direction="column" gap="2">
             {!showDatePicker ? (
               <Flex gap="2" direction="column">
-                <Button
-                  onClick={handleMarkAsWorn}
-                  className={styles.wornButton}
-                >
+                <Button onClick={handleMarkAsWorn} className={styles.wornButton}>
                   Mark as Worn Today
                 </Button>
                 <Button
@@ -249,7 +239,9 @@ export function ItemDetailPage() {
                   <TextField.Input
                     type="date"
                     value={selectedDate}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSelectedDate(e.target.value)}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                      setSelectedDate(e.target.value)
+                    }
                     max={formatDate(new Date())}
                   />
                 </TextField.Root>
@@ -257,15 +249,12 @@ export function ItemDetailPage() {
                   <Button
                     onClick={() => {
                       setShowDatePicker(false);
-                      setSelectedDate("");
+                      setSelectedDate('');
                     }}
                   >
                     Cancel
                   </Button>
-                  <Button
-                    onClick={handleLogWearOnDate}
-                    disabled={!selectedDate}
-                  >
+                  <Button onClick={handleLogWearOnDate} disabled={!selectedDate}>
                     Log Wear
                   </Button>
                 </Flex>
@@ -285,8 +274,7 @@ export function ItemDetailPage() {
                 .reverse()
                 .slice(0, showAllWears ? item.wearHistory.length : 2)
                 .map((date, reverseIndex) => {
-                  const actualIndex =
-                    item.wearHistory!.length - 1 - reverseIndex;
+                  const actualIndex = item.wearHistory!.length - 1 - reverseIndex;
                   return (
                     <div key={actualIndex} className={styles.wearHistoryItem}>
                       <div className={styles.wearDate}>
@@ -299,11 +287,7 @@ export function ItemDetailPage() {
                         onClick={() => handleRemoveWear(actualIndex)}
                         disabled={deletingWearIndex === actualIndex}
                       >
-                        {deletingWearIndex === actualIndex ? (
-                          "Removing..."
-                        ) : (
-                          <IoTrashOutline />
-                        )}
+                        {deletingWearIndex === actualIndex ? 'Removing...' : <IoTrashOutline />}
                       </Button>
                     </div>
                   );
@@ -311,12 +295,8 @@ export function ItemDetailPage() {
             </div>
             {item.wearHistory.length > 2 && (
               <div className={styles.showMoreContainer}>
-                <Button
-                  onClick={() => setShowAllWears(!showAllWears)}
-                >
-                  {showAllWears
-                    ? "Show Less"
-                    : `Show All ${item.wearHistory.length} Wears`}
+                <Button onClick={() => setShowAllWears(!showAllWears)}>
+                  {showAllWears ? 'Show Less' : `Show All ${item.wearHistory.length} Wears`}
                 </Button>
               </div>
             )}
@@ -327,22 +307,14 @@ export function ItemDetailPage() {
         {outfitsWithItem.length > 0 && (
           <section className={styles.outfitSection}>
             <Heading size="4" className={styles.outfitHeading}>
-              Featured in {outfitsWithItem.length}{" "}
-              {outfitsWithItem.length === 1 ? "Outfit" : "Outfits"}
+              Featured in {outfitsWithItem.length}{' '}
+              {outfitsWithItem.length === 1 ? 'Outfit' : 'Outfits'}
             </Heading>
             <div className={styles.outfitGrid}>
               {outfitsWithItem.map((outfit) => (
-                <Link
-                  key={outfit.id}
-                  to={`/outfit/${outfit.id}`}
-                  className={styles.outfitCard}
-                >
+                <Link key={outfit.id} to={`/outfit/${outfit.id}`} className={styles.outfitCard}>
                   {outfit.photo ? (
-                    <img
-                      src={outfit.photo}
-                      alt="Outfit"
-                      className={styles.outfitImage}
-                    />
+                    <img src={outfit.photo} alt="Outfit" className={styles.outfitImage} />
                   ) : (
                     <div className={styles.outfitPlaceholder}>
                       <Text size="1" color="gray">
@@ -355,11 +327,7 @@ export function ItemDetailPage() {
                       Outfit
                     </Text>
                     {outfit.notes && (
-                      <Text
-                        size="1"
-                        color="gray"
-                        className={styles.outfitNotes}
-                      >
+                      <Text size="1" color="gray" className={styles.outfitNotes}>
                         {outfit.notes}
                       </Text>
                     )}
@@ -378,19 +346,13 @@ export function ItemDetailPage() {
             onConfirm={handleDelete}
             isDeleting={isDeleting}
             triggerButton={
-              <Button
-                variant="destructive"
-                className={styles.deleteButton}
-              >
+              <Button variant="destructive" className={styles.deleteButton}>
                 <IoTrashOutline /> Delete
               </Button>
             }
           />
 
-          <Button
-            onClick={() => navigate(`/edit-item/${item.id}`)}
-            className={styles.editButton}
-          >
+          <Button onClick={() => navigate(`/edit-item/${item.id}`)} className={styles.editButton}>
             <IoPencilOutline /> Edit Item
           </Button>
         </section>

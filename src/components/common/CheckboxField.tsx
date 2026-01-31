@@ -1,6 +1,6 @@
-import { Checkbox } from "./ui/Checkbox";
-import { Flex } from "./ui/Flex";
-import { Text } from "./ui/Text";
+import { Checkbox } from './ui/Checkbox';
+import { Flex } from './ui/Flex';
+import { Text } from './ui/Text';
 
 interface CheckboxFieldProps {
   label: string;

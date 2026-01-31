@@ -1,26 +1,30 @@
-import type { ReactNode } from "react";
-import styles from "./Callout.module.css";
+import type { ReactNode } from 'react';
+import styles from './Callout.module.css';
 
 interface CalloutRootProps {
   children: ReactNode;
-  color?: "blue" | "yellow" | "red" | "green" | "purple" | "amber" | "orange";
-  variant?: "soft" | "outline";
+  color?: 'blue' | 'yellow' | 'red' | 'green' | 'purple' | 'amber' | 'orange';
+  variant?: 'soft' | 'outline';
   size?: string;
   className?: string;
 }
 
-function CalloutRoot({ children, color = "blue", className }: CalloutRootProps) {
+function CalloutRoot({ children, color = 'blue', className }: CalloutRootProps) {
   const colorMap: Record<string, string> = {
-    blue: styles.info || "",
-    yellow: styles.warning || "",
-    amber: styles.warning || "",
-    red: styles.error || "",
-    green: styles.success || "",
-    purple: styles.info || "",
-    orange: styles.warning || "",
+    blue: styles.info || '',
+    yellow: styles.warning || '',
+    amber: styles.warning || '',
+    red: styles.error || '',
+    green: styles.success || '',
+    purple: styles.info || '',
+    orange: styles.warning || '',
   };
 
-  return <div className={`${styles.callout} ${colorMap[color] || styles.info} ${className || ""}`}>{children}</div>;
+  return (
+    <div className={`${styles.callout} ${colorMap[color] || styles.info} ${className || ''}`}>
+      {children}
+    </div>
+  );
 }
 
 interface CalloutIconProps {

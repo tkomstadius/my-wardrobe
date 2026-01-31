@@ -1,49 +1,47 @@
-import type { ItemCategory } from "../types/wardrobe";
+import type { ItemCategory } from '../types/wardrobe';
 
 export const CATEGORIES = [
-  { id: "tops" as const, title: "Tops" },
-  { id: "bottoms" as const, title: "Bottoms" },
-  { id: "dresses" as const, title: "One piece" },
-  { id: "outerwear" as const, title: "Outerwear" },
-  { id: "shoes" as const, title: "Shoes" },
-  { id: "bags" as const, title: "Bags" },
-  { id: "jewelry" as const, title: "Jewelry" },
-  { id: "accessories" as const, title: "Accessories" },
+  { id: 'tops' as const, title: 'Tops' },
+  { id: 'bottoms' as const, title: 'Bottoms' },
+  { id: 'dresses' as const, title: 'One piece' },
+  { id: 'outerwear' as const, title: 'Outerwear' },
+  { id: 'shoes' as const, title: 'Shoes' },
+  { id: 'bags' as const, title: 'Bags' },
+  { id: 'jewelry' as const, title: 'Jewelry' },
+  { id: 'accessories' as const, title: 'Accessories' },
 ] as const;
 
 export const CATEGORY_IDS = CATEGORIES.map((cat) => cat.id) as ItemCategory[];
 
 // Create title lookup object for backwards compatibility
 export const CATEGORY_TITLES: Record<ItemCategory, string> = Object.fromEntries(
-  CATEGORIES.map((cat) => [cat.id, cat.title])
+  CATEGORIES.map((cat) => [cat.id, cat.title]),
 ) as Record<ItemCategory, string>;
 
 export const SUBCATEGORIES: Record<ItemCategory, readonly string[]> = {
   tops: [
-    "T-Shirt",
-    "Tank top",
-    "West",
-    "Long sleeve",
-    "Shirt",
-    "Sweatshirt",
-    "Hoodie",
-    "Sweater",
-    "Cardigan",
-    "Jacket",
-    "Jeans jacket",
+    'T-Shirt',
+    'Tank top',
+    'West',
+    'Long sleeve',
+    'Shirt',
+    'Sweatshirt',
+    'Hoodie',
+    'Sweater',
+    'Cardigan',
+    'Jacket',
+    'Jeans jacket',
   ] as const,
-  bottoms: ["Jeans", "Slacks", "Shorts", "Skirt"] as const,
-  dresses: ["Dress", "Jumpsuit"] as const,
-  outerwear: ["Jacket", "Coat"] as const,
-  shoes: ["Sneakers", "Boots", "Sandals", "Heels"] as const,
-  bags: ["Handbag", "Backpack"] as const,
-  jewelry: ["Necklace", "Earrings", "Bracelet", "Ring"] as const,
-  accessories: ["Hat", "Belt", "Glasses", "Sunglasses"] as const,
+  bottoms: ['Jeans', 'Slacks', 'Shorts', 'Skirt'] as const,
+  dresses: ['Dress', 'Jumpsuit'] as const,
+  outerwear: ['Jacket', 'Coat'] as const,
+  shoes: ['Sneakers', 'Boots', 'Sandals', 'Heels'] as const,
+  bags: ['Handbag', 'Backpack'] as const,
+  jewelry: ['Necklace', 'Earrings', 'Bracelet', 'Ring'] as const,
+  accessories: ['Hat', 'Belt', 'Glasses', 'Sunglasses'] as const,
 } as const;
 
-export function getSubCategoriesForCategory(
-  category: ItemCategory
-): readonly string[] {
+export function getSubCategoriesForCategory(category: ItemCategory): readonly string[] {
   return SUBCATEGORIES[category] || [];
 }
 

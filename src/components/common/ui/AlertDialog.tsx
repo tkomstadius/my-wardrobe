@@ -1,7 +1,7 @@
-import { Dialog as BaseDialog } from "@base-ui/react/dialog";
-import type { ReactNode } from "react";
-import { useState } from "react";
-import styles from "./AlertDialog.module.css";
+import { Dialog as BaseDialog } from '@base-ui/react/dialog';
+import type { ReactNode } from 'react';
+import { useState } from 'react';
+import styles from './AlertDialog.module.css';
 
 interface AlertDialogRootProps {
   children: ReactNode;
@@ -47,25 +47,20 @@ interface AlertDialogTitleProps {
 }
 
 function AlertDialogTitle({ children }: AlertDialogTitleProps) {
-  return (
-    <BaseDialog.Title className={styles.title}>{children}</BaseDialog.Title>
-  );
+  return <BaseDialog.Title className={styles.title}>{children}</BaseDialog.Title>;
 }
 
 interface AlertDialogDescriptionProps {
   children: ReactNode;
-  size?: "1" | "2" | "3";
+  size?: '1' | '2' | '3';
 }
 
-function AlertDialogDescription({
-  children,
-  size = "2",
-}: AlertDialogDescriptionProps) {
+function AlertDialogDescription({ children, size = '2' }: AlertDialogDescriptionProps) {
   return (
     <BaseDialog.Description
       className={styles.description}
       style={{
-        fontSize: size === "1" ? "0.75rem" : size === "2" ? "0.875rem" : "1rem",
+        fontSize: size === '1' ? '0.75rem' : size === '2' ? '0.875rem' : '1rem',
       }}
     >
       {children}

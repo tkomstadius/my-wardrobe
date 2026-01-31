@@ -1,35 +1,27 @@
 import {
-  IoHomeOutline,
   IoAddCircleOutline,
-  IoOptionsOutline,
   IoArchiveOutline,
-} from "react-icons/io5";
-import { Link, useLocation } from "react-router";
-import styles from "./BottomNav.module.css";
+  IoHomeOutline,
+  IoOptionsOutline,
+} from 'react-icons/io5';
+import { Link, useLocation } from 'react-router';
+import styles from './BottomNav.module.css';
 
 export function BottomNav() {
   const location = useLocation();
   const currentPath = location.pathname;
-  const isOnItemsOrCategoryPage =
-    currentPath === "/items" || currentPath.startsWith("/items/");
+  const isOnItemsOrCategoryPage = currentPath === '/items' || currentPath.startsWith('/items/');
 
   return (
     <nav className={styles.bottomNav}>
-      <Link
-        to="/"
-        className={`${styles.navItem} ${
-          currentPath === "/" ? styles.active : ""
-        }`}
-      >
+      <Link to="/" className={`${styles.navItem} ${currentPath === '/' ? styles.active : ''}`}>
         <IoHomeOutline className={styles.icon} />
         <span className={styles.label}>Home</span>
       </Link>
 
       <Link
         to="/items"
-        className={`${styles.navItem} ${
-          isOnItemsOrCategoryPage ? styles.active : ""
-        }`}
+        className={`${styles.navItem} ${isOnItemsOrCategoryPage ? styles.active : ''}`}
       >
         <IoArchiveOutline className={styles.icon} />
         <span className={styles.label}>Items</span>
@@ -38,9 +30,9 @@ export function BottomNav() {
       <Link
         to="/outfits"
         className={`${styles.navItem} ${
-          currentPath.startsWith("/outfits") || currentPath === "/create-outfit"
+          currentPath.startsWith('/outfits') || currentPath === '/create-outfit'
             ? styles.active
-            : ""
+            : ''
         }`}
       >
         <IoOptionsOutline className={styles.icon} />
@@ -49,9 +41,7 @@ export function BottomNav() {
 
       <Link
         to="/log-wear"
-        className={`${styles.navItem} ${
-          currentPath === "/log-wear" ? styles.active : ""
-        }`}
+        className={`${styles.navItem} ${currentPath === '/log-wear' ? styles.active : ''}`}
       >
         <IoAddCircleOutline className={styles.icon} />
         <span className={styles.label}>Log Wear</span>

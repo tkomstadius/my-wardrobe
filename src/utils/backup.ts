@@ -1,13 +1,8 @@
 // Backup and restore utilities for wardrobe data
 
-import type { WardrobeItem } from "../types/wardrobe";
-import type { Outfit } from "../types/outfit";
-import {
-  loadAllItems,
-  saveItem,
-  loadAllOutfits,
-  saveOutfit,
-} from "./indexedDB";
+import type { Outfit } from '../types/outfit';
+import type { WardrobeItem } from '../types/wardrobe';
+import { loadAllItems, loadAllOutfits, saveItem, saveOutfit } from './indexedDB';
 
 export interface BackupData {
   version: string; // Backup format version (not database version)
@@ -25,7 +20,7 @@ export async function exportBackup(): Promise<Blob> {
   const outfits = await loadAllOutfits();
 
   const backupData: BackupData = {
-    version: "1.0",
+    version: '1.0',
     exportDate: new Date().toISOString(),
     items,
     outfits,
@@ -33,7 +28,7 @@ export async function exportBackup(): Promise<Blob> {
 
   // Convert to JSON blob
   const json = JSON.stringify(backupData, null, 2);
-  return new Blob([json], { type: "application/json" });
+  return new Blob([json], { type: 'application/json' });
 }
 
 /**
@@ -41,7 +36,7 @@ export async function exportBackup(): Promise<Blob> {
  */
 export function generateBackupFilename(): string {
   const date = new Date();
-  const dateStr = date.toISOString().split("T")[0]; // YYYY-MM-DD
+  const dateStr = date.toISOString().split('T')[0]; // YYYY-MM-DD
   return `wardrobe-backup-${dateStr}.json`;
 }
 
@@ -51,7 +46,7 @@ export function generateBackupFilename(): string {
 export async function downloadBackup(): Promise<void> {
   const blob = await exportBackup();
   const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
+  const link = document.createElement('a');
   link.href = url;
   link.download = generateBackupFilename();
   document.body.appendChild(link);
@@ -73,13 +68,13 @@ export async function shareBackup(): Promise<boolean> {
   try {
     const blob = await exportBackup();
     const file = new File([blob], generateBackupFilename(), {
-      type: "application/json",
+      type: 'application/json',
     });
 
     const shareData = {
       files: [file],
-      title: "My Wardrobe Backup",
-      text: "Backup of my wardrobe data",
+      title: 'My Wardrobe Backup',
+      text: 'Backup of my wardrobe data',
     };
 
     if (navigator.canShare(shareData)) {
@@ -92,7 +87,7 @@ export async function shareBackup(): Promise<boolean> {
     return true;
   } catch (error) {
     // User cancelled or error occurred
-    if ((error as Error).name === "AbortError") {
+    if ((error as Error).name === 'AbortError') {
       // User cancelled, not a real error
       return false;
     }
@@ -104,15 +99,15 @@ export async function shareBackup(): Promise<boolean> {
  * Validate backup data structure
  */
 function validateBackupData(data: unknown): data is BackupData {
-  if (typeof data !== "object" || data === null) {
+  if (typeof data !== 'object' || data === null) {
     return false;
   }
 
   const backup = data as Partial<BackupData>;
 
   return (
-    typeof backup.version === "string" &&
-    typeof backup.exportDate === "string" &&
+    typeof backup.version === 'string' &&
+    typeof backup.exportDate === 'string' &&
     Array.isArray(backup.items) &&
     Array.isArray(backup.outfits)
   );
@@ -131,17 +126,17 @@ export async function parseBackupFile(file: File): Promise<BackupData> {
         const data = JSON.parse(content);
 
         if (!validateBackupData(data)) {
-          reject(new Error("Invalid backup file format"));
+          reject(new Error('Invalid backup file format'));
           return;
         }
 
         resolve(data);
-      } catch (error) {
-        reject(new Error("Failed to parse backup file"));
+      } catch {
+        reject(new Error('Failed to parse backup file'));
       }
     };
 
-    reader.onerror = () => reject(new Error("Failed to read file"));
+    reader.onerror = () => reject(new Error('Failed to read file'));
     reader.readAsText(file);
   });
 }
@@ -176,9 +171,7 @@ function convertDatesToObjects(data: BackupData): BackupData {
  * - Backup version is independent of database version
  * - Data will be imported into current database schema via saveItem/saveOutfit
  */
-export async function importBackup(
-  data: BackupData
-): Promise<{
+export async function importBackup(data: BackupData): Promise<{
   itemsImported: number;
   outfitsImported: number;
   errors: string[];
@@ -196,9 +189,9 @@ export async function importBackup(
       await saveItem(item);
       itemsImported++;
     } catch (error) {
-      const errorMsg = error instanceof Error ? error.message : "Unknown error";
+      const errorMsg = error instanceof Error ? error.message : 'Unknown error';
       errors.push(`Failed to import item ${item.id}: ${errorMsg}`);
-      console.error("Failed to import item:", item.id, error);
+      console.error('Failed to import item:', item.id, error);
     }
   }
 
@@ -208,9 +201,9 @@ export async function importBackup(
       await saveOutfit(outfit);
       outfitsImported++;
     } catch (error) {
-      const errorMsg = error instanceof Error ? error.message : "Unknown error";
+      const errorMsg = error instanceof Error ? error.message : 'Unknown error';
       errors.push(`Failed to import outfit ${outfit.id}: ${errorMsg}`);
-      console.error("Failed to import outfit:", outfit.id, error);
+      console.error('Failed to import outfit:', outfit.id, error);
     }
   }
 
@@ -225,8 +218,5 @@ export async function importBackup(
  * Check if Web Share API is available (typically mobile)
  */
 export function isShareSupported(): boolean {
-  return (
-    typeof navigator.share === "function" &&
-    typeof navigator.canShare === "function"
-  );
+  return typeof navigator.share === 'function' && typeof navigator.canShare === 'function';
 }

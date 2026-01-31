@@ -1,16 +1,12 @@
-import type { WardrobeItem } from "../types/wardrobe";
-import { cosineSimilarity, getImageEmbedding } from "./aiEmbedding";
-import {
-  getDefaultPreferences,
-  loadUserPreferences,
-  type UserPreferences,
-} from "./aiLearning";
+import type { WardrobeItem } from '../types/wardrobe';
+import { cosineSimilarity, getImageEmbedding } from './aiEmbedding';
+import { getDefaultPreferences, loadUserPreferences, type UserPreferences } from './aiLearning';
 
 export interface ItemMatch {
   item: WardrobeItem;
   similarity: number;
   percentage: number;
-  confidence: "high" | "medium" | "low";
+  confidence: 'high' | 'medium' | 'low';
   baseSimilarity: number; // Original similarity before boosting
   boost: number; // How much the score was boosted
 }
@@ -23,7 +19,7 @@ function boostScore(
   baseSimilarity: number,
   wardrobeItem: WardrobeItem,
   allItems: WardrobeItem[],
-  preferences: UserPreferences
+  preferences: UserPreferences,
 ): { boostedScore: number; boost: number } {
   let boosted = baseSimilarity;
   let totalBoost = 0;
@@ -42,11 +38,8 @@ function boostScore(
   // Wear frequency: Items worn recently are more likely to be worn again
   // Weight is learned from user feedback
   if (wardrobeItem.wearHistory && wardrobeItem.wearHistory.length > 0) {
-    const lastWornDate = new Date(
-      wardrobeItem.wearHistory[wardrobeItem.wearHistory.length - 1]!
-    );
-    const daysSinceWorn =
-      (Date.now() - lastWornDate.getTime()) / (24 * 60 * 60 * 1000);
+    const lastWornDate = new Date(wardrobeItem.wearHistory[wardrobeItem.wearHistory.length - 1]!);
+    const daysSinceWorn = (Date.now() - lastWornDate.getTime()) / (24 * 60 * 60 * 1000);
     if (daysSinceWorn < 7) {
       // Worn in last week
       const wearBoost = 1.0 + 0.06 * preferences.wearFrequencyWeight; // Learned weight
@@ -66,7 +59,7 @@ function boostScore(
   // Brand consistency: Users tend to wear same brands
   // Weight is learned from user feedback
   const brandCount = allItems.filter(
-    (item) => item.brand === wardrobeItem.brand && item.brand
+    (item) => item.brand === wardrobeItem.brand && item.brand,
   ).length;
   if (brandCount > 5) {
     // Frequently owned brand
@@ -97,7 +90,7 @@ export async function findMatchingItems(
       medium?: number;
       low?: number;
     };
-  } = {}
+  } = {},
 ): Promise<ItemMatch[]> {
   const {
     minThreshold = 0.6, // Increased from 0.55 to reduce noise
@@ -119,9 +112,7 @@ export async function findMatchingItems(
   const itemsWithEmbeddings = wardrobeItems.filter((item) => item.embedding);
 
   if (itemsWithEmbeddings.length === 0) {
-    throw new Error(
-      "No items have embeddings. Please generate embeddings first."
-    );
+    throw new Error('No items have embeddings. Please generate embeddings first.');
   }
 
   // Calculate similarity for each item with metadata boosting
@@ -130,22 +121,15 @@ export async function findMatchingItems(
       const baseSimilarity = cosineSimilarity(outfitEmbedding, item.embedding!);
 
       // Apply metadata-based boosting with learned preferences
-      const { boostedScore, boost } = boostScore(
-        baseSimilarity,
-        item,
-        wardrobeItems,
-        preferences
-      );
+      const { boostedScore, boost } = boostScore(baseSimilarity, item, wardrobeItems, preferences);
 
       const percentage = Math.round(boostedScore * 100);
 
       // Use learned confidence thresholds
-      let confidence: "high" | "medium" | "low";
-      if (boostedScore >= preferences.highConfidenceThreshold)
-        confidence = "high";
-      else if (boostedScore >= preferences.mediumConfidenceThreshold)
-        confidence = "medium";
-      else confidence = "low";
+      let confidence: 'high' | 'medium' | 'low';
+      if (boostedScore >= preferences.highConfidenceThreshold) confidence = 'high';
+      else if (boostedScore >= preferences.mediumConfidenceThreshold) confidence = 'medium';
+      else confidence = 'low';
 
       return {
         item,
@@ -162,9 +146,9 @@ export async function findMatchingItems(
   // Apply per-confidence limits
   const limitedMatches: ItemMatch[] = [];
   const grouped = {
-    high: matches.filter((m) => m.confidence === "high"),
-    medium: matches.filter((m) => m.confidence === "medium"),
-    low: matches.filter((m) => m.confidence === "low"),
+    high: matches.filter((m) => m.confidence === 'high'),
+    medium: matches.filter((m) => m.confidence === 'medium'),
+    low: matches.filter((m) => m.confidence === 'low'),
   };
 
   if (maxPerConfidence.high) {

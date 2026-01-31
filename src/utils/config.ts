@@ -2,8 +2,8 @@
  * Application-wide constants
  */
 
-export const CURRENCY = "kr";
-export const CURRENCY_SYMBOL = "kr";
+export const CURRENCY = 'kr';
+export const CURRENCY_SYMBOL = 'kr';
 
 // Time thresholds
 export const NEGLECTED_ITEMS_THRESHOLD_DAYS = 60;

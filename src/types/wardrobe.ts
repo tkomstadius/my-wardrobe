@@ -1,15 +1,14 @@
-import type { OutfitRating } from "./outfit";
+import type { OutfitRating } from './outfit';
 
 export type ItemCategory =
-  | "tops"
-  | "bottoms"
-  | "outerwear"
-  | "accessories"
-  | "shoes"
-  | "dresses"
-  | "bags"
-  | "jewelry";
-
+  | 'tops'
+  | 'bottoms'
+  | 'outerwear'
+  | 'accessories'
+  | 'shoes'
+  | 'dresses'
+  | 'bags'
+  | 'jewelry';
 
 // Subcategory is kept as string for backward compatibility with existing data
 // but should ideally match one of the predefined subcategories for the category
@@ -36,13 +35,13 @@ export type WardrobeItem = {
 
 export type NewWardrobeItem = Omit<
   WardrobeItem,
-  "id" | "createdAt" | "updatedAt" | "wearCount" | "wearHistory"
+  'id' | 'createdAt' | 'updatedAt' | 'wearCount' | 'wearHistory'
 >;
 
 export type AddItemFormState = Partial<
   Omit<
     NewWardrobeItem,
-    "imageUrl" | "embedding" | "price" | "purchaseDate" | "initialWearCount"
+    'imageUrl' | 'embedding' | 'price' | 'purchaseDate' | 'initialWearCount'
   > & {
     price?: string;
     purchaseDate?: string;
@@ -52,7 +51,7 @@ export type AddItemFormState = Partial<
 
 export type EditItemFormState = Omit<
   NewWardrobeItem,
-  "imageUrl" | "embedding" | "price" | "purchaseDate" | "initialWearCount"
+  'imageUrl' | 'embedding' | 'price' | 'purchaseDate' | 'initialWearCount'
 > & {
   price?: string;
   purchaseDate?: string;

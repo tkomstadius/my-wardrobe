@@ -12,7 +12,8 @@
   cursor: not-allowed;
 }
 
-.button:hover:not(:disabled), .button:active:not(:disabled) {
+.button:hover:not(:disabled),
+.button:active:not(:disabled) {
   opacity: 0.8;
 }
 

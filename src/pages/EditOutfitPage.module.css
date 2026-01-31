@@ -18,9 +18,6 @@
   gap: 1rem;
 }
 
-.divider {
-}
-
 .itemsSection {
   border-top: 1px solid var(--complimentary-color);
   margin-top: 16px;

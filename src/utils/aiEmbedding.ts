@@ -4,11 +4,7 @@
  * Models are cached in browser after first download
  */
 
-import {
-  CLIPVisionModelWithProjection,
-  AutoProcessor,
-  RawImage,
-} from "@huggingface/transformers";
+import { AutoProcessor, CLIPVisionModelWithProjection, RawImage } from '@huggingface/transformers';
 
 // Cache the model to avoid reloading
 let embeddingModel: CLIPVisionModelWithProjection | null = null;
@@ -38,12 +34,8 @@ async function getEmbeddingModel() {
   try {
     // Load Marqo-FashionCLIP model
     // First call downloads model, subsequent calls load from browser cache
-    const processor = await AutoProcessor.from_pretrained(
-      "Marqo/marqo-fashionCLIP"
-    );
-    const model = await CLIPVisionModelWithProjection.from_pretrained(
-      "Marqo/marqo-fashionCLIP"
-    );
+    const processor = await AutoProcessor.from_pretrained('Marqo/marqo-fashionCLIP');
+    const model = await CLIPVisionModelWithProjection.from_pretrained('Marqo/marqo-fashionCLIP');
 
     // Cache for future use
     embeddingProcessor = processor;
@@ -51,9 +43,9 @@ async function getEmbeddingModel() {
 
     return { model, processor };
   } catch (error) {
-    console.error("Failed to load embedding model:", error);
+    console.error('Failed to load embedding model:', error);
     isLoadingEmbedding = false;
-    throw new Error("Failed to load fashion recognition model");
+    throw new Error('Failed to load fashion recognition model');
   } finally {
     isLoadingEmbedding = false;
   }
@@ -64,19 +56,17 @@ async function getEmbeddingModel() {
  * @param imageDataURL - Image as data URL (base64)
  * @returns Promise<number[]> - Embedding vector (normalized)
  */
-export async function getImageEmbedding(
-  imageDataURL: string
-): Promise<number[]> {
+export async function getImageEmbedding(imageDataURL: string): Promise<number[]> {
   try {
     const { model, processor } = await getEmbeddingModel();
 
     // Try reading data URL directly first
-    let image: any;
+    let image: RawImage;
     let blobUrl: string | null = null;
 
     try {
       image = await RawImage.read(imageDataURL);
-    } catch (directError) {
+    } catch {
       // If direct read fails, convert to blob URL
       const response = await fetch(imageDataURL);
       const blob = await response.blob();
@@ -85,30 +75,31 @@ export async function getImageEmbedding(
     }
 
     if (!image) {
-      throw new Error("Failed to load image");
+      throw new Error('Failed to load image');
     }
 
     try {
       // The processor expects images and processes them
       // Try different calling patterns to find what works
-      let imageInputs: any;
+      let imageInputs: unknown;
+      const processorFn = processor as unknown as (...args: unknown[]) => Promise<unknown>;
 
       // Pattern 1: Direct image argument
       try {
-        imageInputs = await (processor as any)(image);
-      } catch (e1) {
+        imageInputs = await processorFn(image);
+      } catch {
         // Pattern 2: Object with images property (single image)
         try {
-          imageInputs = await (processor as any)({ images: image });
-        } catch (e2) {
+          imageInputs = await processorFn({ images: image });
+        } catch {
           // Pattern 3: Object with images array
           try {
-            imageInputs = await (processor as any)({ images: [image] });
-          } catch (e3) {
+            imageInputs = await processorFn({ images: [image] });
+          } catch {
             // Pattern 4: With options
-            imageInputs = await (processor as any)(image, {
-              padding: "max_length",
-              return_tensors: "pt",
+            imageInputs = await processorFn(image, {
+              padding: 'max_length',
+              return_tensors: 'pt',
             });
           }
         }
@@ -126,7 +117,7 @@ export async function getImageEmbedding(
       }
     }
   } catch (error) {
-    console.error("Failed to get image embedding:", error);
+    console.error('Failed to get image embedding:', error);
     throw error;
   }
 }
@@ -138,12 +129,9 @@ export async function getImageEmbedding(
  * @param embedding2 - Second embedding vector
  * @returns number - Similarity score (0-1 range typically)
  */
-export function cosineSimilarity(
-  embedding1: number[],
-  embedding2: number[]
-): number {
+export function cosineSimilarity(embedding1: number[], embedding2: number[]): number {
   if (embedding1.length !== embedding2.length) {
-    throw new Error("Embeddings must have same dimensions");
+    throw new Error('Embeddings must have same dimensions');
   }
 
   let dotProduct = 0;
@@ -185,11 +173,11 @@ export async function testModelLoading(): Promise<boolean> {
   try {
     // Create a tiny 1x1 test image
     const testImage =
-      "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==";
+      'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
     await getImageEmbedding(testImage);
     return true;
   } catch (error) {
-    console.error("Model loading test failed:", error);
+    console.error('Model loading test failed:', error);
     return false;
   }
 }
@@ -201,7 +189,7 @@ export async function testModelLoading(): Promise<boolean> {
 export function clearModelCache(): void {
   embeddingModel = null;
   embeddingProcessor = null;
-  console.log("In-memory model cache cleared");
+  console.log('In-memory model cache cleared');
 }
 
 /**
@@ -218,23 +206,18 @@ export async function clearModelStorage(): Promise<void> {
     // We need to delete caches that contain Hugging Face model files
     const cacheNames = await caches.keys();
     const transformersCaches = cacheNames.filter(
-      (name) =>
-        name.includes("hf-transformers") || name.includes("transformers")
+      (name) => name.includes('hf-transformers') || name.includes('transformers'),
     );
 
     // Delete all Transformers.js related caches
-    await Promise.all(
-      transformersCaches.map((cacheName) => caches.delete(cacheName))
-    );
+    await Promise.all(transformersCaches.map((cacheName) => caches.delete(cacheName)));
 
     // Also try to clear IndexedDB if Transformers.js uses it
     // Transformers.js may also store model metadata in IndexedDB
     try {
       const dbNames = await indexedDB.databases();
       const transformersDBs = dbNames.filter(
-        (db) =>
-          db.name?.includes("transformers") ||
-          db.name?.includes("hf-transformers")
+        (db) => db.name?.includes('transformers') || db.name?.includes('hf-transformers'),
       );
       for (const db of transformersDBs) {
         if (db.name) {
@@ -243,15 +226,15 @@ export async function clearModelStorage(): Promise<void> {
       }
     } catch (dbError) {
       // IndexedDB clearing is optional, don't fail if it doesn't work
-      console.log("Could not clear IndexedDB caches:", dbError);
+      console.log('Could not clear IndexedDB caches:', dbError);
     }
 
     console.log(
-      `Cleared ${transformersCaches.length} Transformers.js cache(s) from browser storage`
+      `Cleared ${transformersCaches.length} Transformers.js cache(s) from browser storage`,
     );
   } catch (error) {
-    console.error("Failed to clear model storage:", error);
-    throw new Error("Failed to clear model cache");
+    console.error('Failed to clear model storage:', error);
+    throw new Error('Failed to clear model cache');
   }
 }
 
@@ -263,8 +246,7 @@ export async function getModelCacheSize(): Promise<number | null> {
   try {
     const cacheNames = await caches.keys();
     const transformersCaches = cacheNames.filter(
-      (name) =>
-        name.includes("hf-transformers") || name.includes("transformers")
+      (name) => name.includes('hf-transformers') || name.includes('transformers'),
     );
 
     if (transformersCaches.length === 0) {
@@ -287,7 +269,7 @@ export async function getModelCacheSize(): Promise<number | null> {
     // Convert bytes to MB
     return Math.round((totalSize / (1024 * 1024)) * 100) / 100;
   } catch (error) {
-    console.error("Failed to calculate cache size:", error);
+    console.error('Failed to calculate cache size:', error);
     return null;
   }
 }

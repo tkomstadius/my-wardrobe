@@ -3,27 +3,27 @@
  * Tracks user acceptance/rejection of AI suggestions to improve matching over time
  */
 
-import { differenceInDays } from "date-fns";
-import { openDB, type IDBPDatabase } from "idb";
-import type { ItemCategory } from "../types/wardrobe";
+import { differenceInDays } from 'date-fns';
+import { type IDBPDatabase, openDB } from 'idb';
+import type { ItemCategory } from '../types/wardrobe';
 
-const DB_NAME = "MyWardrobeDB";
+const DB_NAME = 'MyWardrobeDB';
 const DB_VERSION = 4;
-const STORE_NAME = "items";
-const OUTFITS_STORE = "outfits";
-const FEEDBACK_STORE = "matchFeedback";
-const PREFERENCES_STORE = "userPreferences";
+const STORE_NAME = 'items';
+const OUTFITS_STORE = 'outfits';
+const FEEDBACK_STORE = 'matchFeedback';
+const PREFERENCES_STORE = 'userPreferences';
 
 // Database schema type (matches indexedDB.ts)
 interface DBSchema {
   items: {
     key: string;
-    value: any;
+    value: unknown;
     indexes: { category: string; createdAt: string };
   };
   outfits: {
     key: string;
-    value: any;
+    value: unknown;
     indexes: { createdAt: string };
   };
   matchFeedback: {
@@ -50,8 +50,8 @@ interface DBFeedback {
   suggestedItemId: string;
   baseSimilarity: number;
   boostedSimilarity: number;
-  confidence: "high" | "medium" | "low";
-  userAction: "accepted" | "rejected";
+  confidence: 'high' | 'medium' | 'low';
+  userAction: 'accepted' | 'rejected';
   metadata: {
     category: ItemCategory;
     brand?: string;
@@ -87,10 +87,10 @@ export interface MatchFeedback {
   suggestedItemId: string;
   baseSimilarity: number;
   boostedSimilarity: number;
-  confidence: "high" | "medium" | "low";
+  confidence: 'high' | 'medium' | 'low';
 
   // User action
-  userAction: "accepted" | "rejected";
+  userAction: 'accepted' | 'rejected';
 
   // Context at time of suggestion
   metadata: {
@@ -145,51 +145,49 @@ export function getDefaultPreferences(): UserPreferences {
 function getDB(): Promise<IDBPDatabase<DBSchema>> {
   return openDB<DBSchema>(DB_NAME, DB_VERSION, {
     upgrade(db, oldVersion) {
-      console.log(
-        `[AI Learning] Upgrading database from version ${oldVersion} to ${DB_VERSION}`
-      );
+      console.log(`[AI Learning] Upgrading database from version ${oldVersion} to ${DB_VERSION}`);
 
       // Version 1: Create items store (may already exist)
       if (!db.objectStoreNames.contains(STORE_NAME)) {
-        console.log("[AI Learning] Creating items store");
-        const objectStore = db.createObjectStore(STORE_NAME, { keyPath: "id" });
-        objectStore.createIndex("category", "category", { unique: false });
-        objectStore.createIndex("createdAt", "createdAt", { unique: false });
+        console.log('[AI Learning] Creating items store');
+        const objectStore = db.createObjectStore(STORE_NAME, { keyPath: 'id' });
+        objectStore.createIndex('category', 'category', { unique: false });
+        objectStore.createIndex('createdAt', 'createdAt', { unique: false });
       }
 
       // Version 3: Create outfits store (may already exist)
       if (!db.objectStoreNames.contains(OUTFITS_STORE)) {
-        console.log("[AI Learning] Creating outfits store");
+        console.log('[AI Learning] Creating outfits store');
         const outfitsStore = db.createObjectStore(OUTFITS_STORE, {
-          keyPath: "id",
+          keyPath: 'id',
         });
-        outfitsStore.createIndex("createdAt", "createdAt", { unique: false });
+        outfitsStore.createIndex('createdAt', 'createdAt', { unique: false });
       }
 
       // Version 4: Create AI learning stores
       if (!db.objectStoreNames.contains(FEEDBACK_STORE)) {
-        console.log("[AI Learning] Creating matchFeedback store");
+        console.log('[AI Learning] Creating matchFeedback store');
         const feedbackStore = db.createObjectStore(FEEDBACK_STORE, {
-          keyPath: "id",
+          keyPath: 'id',
         });
-        feedbackStore.createIndex("timestamp", "timestamp", { unique: false });
-        feedbackStore.createIndex("suggestedItemId", "suggestedItemId", {
+        feedbackStore.createIndex('timestamp', 'timestamp', { unique: false });
+        feedbackStore.createIndex('suggestedItemId', 'suggestedItemId', {
           unique: false,
         });
-        feedbackStore.createIndex("userAction", "userAction", {
+        feedbackStore.createIndex('userAction', 'userAction', {
           unique: false,
         });
-        feedbackStore.createIndex("outfitPhotoHash", "outfitPhotoHash", {
+        feedbackStore.createIndex('outfitPhotoHash', 'outfitPhotoHash', {
           unique: false,
         });
       }
 
       if (!db.objectStoreNames.contains(PREFERENCES_STORE)) {
-        console.log("[AI Learning] Creating userPreferences store");
-        db.createObjectStore(PREFERENCES_STORE, { keyPath: "id" });
+        console.log('[AI Learning] Creating userPreferences store');
+        db.createObjectStore(PREFERENCES_STORE, { keyPath: 'id' });
       }
 
-      console.log("[AI Learning] Database upgrade complete");
+      console.log('[AI Learning] Database upgrade complete');
     },
   });
 }
@@ -205,7 +203,7 @@ export async function saveFeedback(feedback: MatchFeedback): Promise<void> {
     timestamp: feedback.timestamp.toISOString(),
   };
 
-  const tx = db.transaction(FEEDBACK_STORE, "readwrite");
+  const tx = db.transaction(FEEDBACK_STORE, 'readwrite');
   await tx.store.put(dbFeedback);
   await tx.done;
 }
@@ -216,7 +214,7 @@ export async function saveFeedback(feedback: MatchFeedback): Promise<void> {
 export async function loadAllFeedback(): Promise<MatchFeedback[]> {
   const db = await getDB();
 
-  const tx = db.transaction(FEEDBACK_STORE, "readonly");
+  const tx = db.transaction(FEEDBACK_STORE, 'readonly');
   const dbFeedback = await tx.store.getAll();
 
   const feedback = dbFeedback.map((fb) => ({
@@ -230,13 +228,11 @@ export async function loadAllFeedback(): Promise<MatchFeedback[]> {
 /**
  * Load feedback for a specific item
  */
-export async function loadFeedbackForItem(
-  itemId: string
-): Promise<MatchFeedback[]> {
+export async function loadFeedbackForItem(itemId: string): Promise<MatchFeedback[]> {
   const db = await getDB();
 
-  const tx = db.transaction(FEEDBACK_STORE, "readonly");
-  const index = tx.store.index("suggestedItemId");
+  const tx = db.transaction(FEEDBACK_STORE, 'readonly');
+  const index = tx.store.index('suggestedItemId');
   const dbFeedback = await index.getAll(itemId);
 
   const feedback = dbFeedback.map((fb) => ({
@@ -250,18 +246,16 @@ export async function loadFeedbackForItem(
 /**
  * Save user preferences
  */
-export async function saveUserPreferences(
-  preferences: UserPreferences
-): Promise<void> {
+export async function saveUserPreferences(preferences: UserPreferences): Promise<void> {
   const db = await getDB();
 
   const dbPreferences: DBPreferences = {
-    id: "default", // Single preferences record
+    id: 'default', // Single preferences record
     ...preferences,
     lastUpdated: preferences.lastUpdated.toISOString(),
   };
 
-  const tx = db.transaction(PREFERENCES_STORE, "readwrite");
+  const tx = db.transaction(PREFERENCES_STORE, 'readwrite');
   await tx.store.put(dbPreferences);
   await tx.done;
 }
@@ -272,8 +266,8 @@ export async function saveUserPreferences(
 export async function loadUserPreferences(): Promise<UserPreferences | null> {
   const db = await getDB();
 
-  const tx = db.transaction(PREFERENCES_STORE, "readonly");
-  const dbPreferences = await tx.store.get("default");
+  const tx = db.transaction(PREFERENCES_STORE, 'readonly');
+  const dbPreferences = await tx.store.get('default');
 
   if (!dbPreferences) {
     return null;
@@ -291,7 +285,7 @@ export async function loadUserPreferences(): Promise<UserPreferences | null> {
 export async function clearAllFeedback(): Promise<void> {
   const db = await getDB();
 
-  const tx = db.transaction(FEEDBACK_STORE, "readwrite");
+  const tx = db.transaction(FEEDBACK_STORE, 'readwrite');
   await tx.store.clear();
   await tx.done;
 }
@@ -331,7 +325,7 @@ function calculateWeightedAcceptRate(feedback: MatchFeedback[]): {
   for (const f of feedback) {
     const weight = calculateTimeWeight(f.timestamp);
     totalWeight += weight;
-    if (f.userAction === "accepted") {
+    if (f.userAction === 'accepted') {
       acceptedWeight += weight;
     }
   }
@@ -352,14 +346,12 @@ export async function updatePreferencesFromFeedback(): Promise<UserPreferences> 
 
   // Need minimum feedback to start learning
   if (allFeedback.length < 5) {
-    console.log("Not enough feedback to learn yet (need at least 5)");
+    console.log('Not enough feedback to learn yet (need at least 5)');
     return preferences;
   }
 
   // Calculate weighted acceptance rates for different factors
-  const totalAccepted = allFeedback.filter(
-    (f) => f.userAction === "accepted"
-  ).length;
+  const totalAccepted = allFeedback.filter((f) => f.userAction === 'accepted').length;
   const overallAcceptRate = totalAccepted / allFeedback.length;
 
   // Recency analysis: Do recently added items get accepted more? (weighted)
@@ -375,61 +367,49 @@ export async function updatePreferencesFromFeedback(): Promise<UserPreferences> 
   }
 
   // Wear frequency analysis: Do favorites get accepted more? (weighted)
-  const favoriteItemFeedback = allFeedback.filter(
-    (f) => f.metadata.wearCount > 10
-  );
+  const favoriteItemFeedback = allFeedback.filter((f) => f.metadata.wearCount > 10);
   const favoriteWeighted = calculateWeightedAcceptRate(favoriteItemFeedback);
 
   if (favoriteWeighted.rate > 0.7 && favoriteWeighted.totalWeight > 3) {
-    preferences.wearFrequencyWeight = Math.min(
-      preferences.wearFrequencyWeight * 1.05,
-      1.3
-    );
+    preferences.wearFrequencyWeight = Math.min(preferences.wearFrequencyWeight * 1.05, 1.3);
   } else if (favoriteWeighted.rate < 0.4 && favoriteWeighted.totalWeight > 3) {
-    preferences.wearFrequencyWeight = Math.max(
-      preferences.wearFrequencyWeight * 0.95,
-      0.7
-    );
+    preferences.wearFrequencyWeight = Math.max(preferences.wearFrequencyWeight * 0.95, 0.7);
   }
 
   // Confidence threshold calibration (weighted)
   // If high confidence suggestions are often rejected, raise the threshold
-  const highConfidenceFeedback = allFeedback.filter(
-    (f) => f.confidence === "high"
-  );
+  const highConfidenceFeedback = allFeedback.filter((f) => f.confidence === 'high');
   const highWeighted = calculateWeightedAcceptRate(highConfidenceFeedback);
 
   if (highWeighted.rate < 0.7 && highWeighted.totalWeight > 5) {
     // High confidence not reliable enough - raise threshold
     preferences.highConfidenceThreshold = Math.min(
       preferences.highConfidenceThreshold + 0.01,
-      0.85
+      0.85,
     );
   } else if (highWeighted.rate > 0.95 && highWeighted.totalWeight > 5) {
     // High confidence very reliable - can lower threshold slightly
     preferences.highConfidenceThreshold = Math.max(
       preferences.highConfidenceThreshold - 0.005,
-      0.75
+      0.75,
     );
   }
 
   // Medium confidence threshold (weighted)
-  const mediumConfidenceFeedback = allFeedback.filter(
-    (f) => f.confidence === "medium"
-  );
+  const mediumConfidenceFeedback = allFeedback.filter((f) => f.confidence === 'medium');
   const mediumWeighted = calculateWeightedAcceptRate(mediumConfidenceFeedback);
 
   if (mediumWeighted.rate > 0.8 && mediumWeighted.totalWeight > 5) {
     // Medium confidence very reliable - can lower threshold
     preferences.mediumConfidenceThreshold = Math.max(
       preferences.mediumConfidenceThreshold - 0.01,
-      0.6
+      0.6,
     );
   } else if (mediumWeighted.rate < 0.5 && mediumWeighted.totalWeight > 5) {
     // Medium confidence not reliable - raise threshold
     preferences.mediumConfidenceThreshold = Math.min(
       preferences.mediumConfidenceThreshold + 0.01,
-      0.75
+      0.75,
     );
   }
 
@@ -440,7 +420,7 @@ export async function updatePreferencesFromFeedback(): Promise<UserPreferences> 
   // Save updated preferences
   await saveUserPreferences(preferences);
 
-  console.log("✨ Updated AI preferences from feedback:", {
+  console.log('✨ Updated AI preferences from feedback:', {
     feedbackCount: allFeedback.length,
     overallAcceptRate: overallAcceptRate.toFixed(2),
     weightedRates: {
@@ -470,44 +450,40 @@ export async function getFeedbackStats(): Promise<{
   };
 }> {
   const allFeedback = await loadAllFeedback();
-  const accepted = allFeedback.filter((f) => f.userAction === "accepted");
+  const accepted = allFeedback.filter((f) => f.userAction === 'accepted');
 
-  const highConf = allFeedback.filter((f) => f.confidence === "high");
-  const mediumConf = allFeedback.filter((f) => f.confidence === "medium");
-  const lowConf = allFeedback.filter((f) => f.confidence === "low");
+  const highConf = allFeedback.filter((f) => f.confidence === 'high');
+  const mediumConf = allFeedback.filter((f) => f.confidence === 'medium');
+  const lowConf = allFeedback.filter((f) => f.confidence === 'low');
 
   return {
     totalFeedback: allFeedback.length,
     acceptedCount: accepted.length,
     rejectedCount: allFeedback.length - accepted.length,
-    acceptanceRate:
-      allFeedback.length > 0 ? accepted.length / allFeedback.length : 0,
+    acceptanceRate: allFeedback.length > 0 ? accepted.length / allFeedback.length : 0,
     confidenceAccuracy: {
       high: {
         total: highConf.length,
-        accepted: highConf.filter((f) => f.userAction === "accepted").length,
+        accepted: highConf.filter((f) => f.userAction === 'accepted').length,
         rate:
           highConf.length > 0
-            ? highConf.filter((f) => f.userAction === "accepted").length /
-              highConf.length
+            ? highConf.filter((f) => f.userAction === 'accepted').length / highConf.length
             : 0,
       },
       medium: {
         total: mediumConf.length,
-        accepted: mediumConf.filter((f) => f.userAction === "accepted").length,
+        accepted: mediumConf.filter((f) => f.userAction === 'accepted').length,
         rate:
           mediumConf.length > 0
-            ? mediumConf.filter((f) => f.userAction === "accepted").length /
-              mediumConf.length
+            ? mediumConf.filter((f) => f.userAction === 'accepted').length / mediumConf.length
             : 0,
       },
       low: {
         total: lowConf.length,
-        accepted: lowConf.filter((f) => f.userAction === "accepted").length,
+        accepted: lowConf.filter((f) => f.userAction === 'accepted').length,
         rate:
           lowConf.length > 0
-            ? lowConf.filter((f) => f.userAction === "accepted").length /
-              lowConf.length
+            ? lowConf.filter((f) => f.userAction === 'accepted').length / lowConf.length
             : 0,
       },
     },

@@ -1,12 +1,12 @@
-import { Outlet, useNavigate } from "react-router";
-import { BottomNav } from "./BottomNav";
-import { ScrollToTop } from "../common/ScrollToTop";
-import styles from "./MainLayout.module.css";
-import { IoBarChartOutline, IoSettingsOutline } from "react-icons/io5";
-import { Flex } from "../common/ui/Flex";
-import { IconButton } from "../common/ui/IconButton";
-import { Text } from "../common/ui/Text";
-import { useWeather } from "../../contexts/WeatherContext";
+import { IoBarChartOutline, IoSettingsOutline } from 'react-icons/io5';
+import { Outlet, useNavigate } from 'react-router';
+import { useWeather } from '../../contexts/WeatherContext';
+import { ScrollToTop } from '../common/ScrollToTop';
+import { Flex } from '../common/ui/Flex';
+import { IconButton } from '../common/ui/IconButton';
+import { Text } from '../common/ui/Text';
+import { BottomNav } from './BottomNav';
+import styles from './MainLayout.module.css';
 
 export function MainLayout() {
   const navigate = useNavigate();
@@ -21,16 +21,12 @@ export function MainLayout() {
           <Flex align="center" gap="4">
             <IconButton
               size="3"
-              onClick={() => navigate("/settings")}
+              onClick={() => navigate('/settings')}
               className={styles.iconButton}
             >
               <IoSettingsOutline size={20} />
             </IconButton>
-            <IconButton
-              size="3"
-              onClick={() => navigate("/stats")}
-              className={styles.iconButton}
-            >
+            <IconButton size="3" onClick={() => navigate('/stats')} className={styles.iconButton}>
               <IoBarChartOutline size={20} />
             </IconButton>
           </Flex>

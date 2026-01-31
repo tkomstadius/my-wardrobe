@@ -1,34 +1,18 @@
-import { IoTrashOutline } from "react-icons/io5";
-import { Button } from "../components/common/ui/Button";
-import { Callout } from "../components/common/ui/Callout";
-import { Flex } from "../components/common/ui/Flex";
-import { Text } from "../components/common/ui/Text";
-import { TextField } from "../components/common/ui/TextField";
-import { TextArea } from "../components/common/ui/TextArea";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from 'react';
+import { IoTrashOutline } from 'react-icons/io5';
 import {
+  type ActionFunctionArgs,
   Form,
+  type LoaderFunctionArgs,
   redirect,
+  useActionData,
   useLoaderData,
   useNavigate,
   useNavigation,
-  useActionData,
-  type LoaderFunctionArgs,
-  type ActionFunctionArgs,
-} from "react-router";
-import { DeleteConfirmDialog } from "../components/common/DeleteConfirmDialog";
-import { CheckboxField } from "../components/common/CheckboxField";
-import { getImageEmbedding } from "../utils/aiEmbedding";
-import { loadItemById, saveItem } from "../utils/indexedDB";
-import type { ItemCategory, WardrobeItem } from "../types/wardrobe";
-import {
-  CATEGORIES,
-  CATEGORY_IDS,
-  getSubCategoriesForCategory,
-} from "../utils/categories";
-import styles from "./EditItemPage.module.css";
-import { ImageInput } from "../components/common/form/ImageInput";
-import { TextInput } from "../components/common/form/TextInput";
+} from 'react-router';
+import { BackLink } from '../components/common/BackLink';
+import { CheckboxField } from '../components/common/CheckboxField';
+import { DeleteConfirmDialog } from '../components/common/DeleteConfirmDialog';
 import {
   BRAND_NAME,
   CATEGORY_NAME,
@@ -43,16 +27,24 @@ import {
   RATING_NAME,
   SECOND_HAND_NAME,
   SUBCATEGORY_NAME,
-} from "../components/common/form/constants";
-import { SelectInput } from "../components/common/form/SelectInput";
-import { RatingButtons } from "../components/common/form/RatingButtons";
-import type { OutfitRating } from "../types/outfit";
-import { BackLink } from "../components/common/BackLink";
-import {
-  getAllBrands,
-  getItemById,
-  removeItem,
-} from "../utils/storageCommands";
+} from '../components/common/form/constants';
+import { ImageInput } from '../components/common/form/ImageInput';
+import { RatingButtons } from '../components/common/form/RatingButtons';
+import { SelectInput } from '../components/common/form/SelectInput';
+import { TextInput } from '../components/common/form/TextInput';
+import { Button } from '../components/common/ui/Button';
+import { Callout } from '../components/common/ui/Callout';
+import { Flex } from '../components/common/ui/Flex';
+import { Text } from '../components/common/ui/Text';
+import { TextArea } from '../components/common/ui/TextArea';
+import { TextField } from '../components/common/ui/TextField';
+import type { OutfitRating } from '../types/outfit';
+import type { ItemCategory, WardrobeItem } from '../types/wardrobe';
+import { getImageEmbedding } from '../utils/aiEmbedding';
+import { CATEGORIES, CATEGORY_IDS, getSubCategoriesForCategory } from '../utils/categories';
+import { loadItemById, saveItem } from '../utils/indexedDB';
+import { getAllBrands, getItemById, removeItem } from '../utils/storageCommands';
+import styles from './EditItemPage.module.css';
 
 type ActionData = {
   error?: string;
@@ -72,7 +64,7 @@ export async function clientLoader({ params }: LoaderFunctionArgs) {
 export async function clientAction({ request, params }: ActionFunctionArgs) {
   const { id } = params;
   if (!id) {
-    return { error: "Item ID is required" };
+    return { error: 'Item ID is required' };
   }
 
   const formData = await request.formData();
@@ -88,23 +80,23 @@ export async function clientAction({ request, params }: ActionFunctionArgs) {
   const initialWearCount = formData.get(INITIAL_WEAR_COUNT_NAME) as string;
   const notes = formData.get(NOTES_NAME) as string;
   const rating = formData.get(RATING_NAME) as string;
-  const isSecondHand = formData.get(SECOND_HAND_NAME) === "on";
-  const isDogCasual = formData.get(DOG_CASUAL_NAME) === "on";
-  const isHandmade = formData.get(HANDMADE_NAME) === "on";
+  const isSecondHand = formData.get(SECOND_HAND_NAME) === 'on';
+  const isDogCasual = formData.get(DOG_CASUAL_NAME) === 'on';
+  const isHandmade = formData.get(HANDMADE_NAME) === 'on';
 
   if (!imageUrl) {
-    return { error: "Please add an image of the item" };
+    return { error: 'Please add an image of the item' };
   }
 
   if (!category || !CATEGORY_IDS.includes(category)) {
-    return { error: "Please select a valid category" };
+    return { error: 'Please select a valid category' };
   }
 
   try {
     // Load the existing item
     const existingItem = await loadItemById(id);
     if (!existingItem) {
-      return { error: "Item not found" };
+      return { error: 'Item not found' };
     }
 
     // Regenerate embedding if image has changed
@@ -113,17 +105,14 @@ export async function clientAction({ request, params }: ActionFunctionArgs) {
       try {
         embedding = await getImageEmbedding(imageUrl);
       } catch (error) {
-        console.error("Failed to generate embedding:", error);
+        console.error('Failed to generate embedding:', error);
         // Continue without updating embedding
       }
     }
 
-    const newInitialWearCount = initialWearCount
-      ? Number.parseInt(initialWearCount, 10)
-      : 0;
+    const newInitialWearCount = initialWearCount ? Number.parseInt(initialWearCount, 10) : 0;
 
-    const totalWearCount =
-      newInitialWearCount + existingItem.wearHistory.length;
+    const totalWearCount = newInitialWearCount + existingItem.wearHistory.length;
 
     const updatedItem: WardrobeItem = {
       ...existingItem,
@@ -136,9 +125,7 @@ export async function clientAction({ request, params }: ActionFunctionArgs) {
       isSecondHand,
       isDogCasual,
       isHandmade,
-      rating: rating
-        ? (Number.parseInt(rating, 10) as OutfitRating)
-        : undefined,
+      rating: rating ? (Number.parseInt(rating, 10) as OutfitRating) : undefined,
       purchaseDate: purchaseDate ? new Date(purchaseDate) : undefined,
       initialWearCount: newInitialWearCount,
       wearCount: totalWearCount,
@@ -150,8 +137,8 @@ export async function clientAction({ request, params }: ActionFunctionArgs) {
 
     return redirect(`/item/${existingItem.id}`);
   } catch (err) {
-    console.error("Failed to update item:", err);
-    return { error: "Failed to save changes. Please try again." };
+    console.error('Failed to update item:', err);
+    return { error: 'Failed to save changes. Please try again.' };
   }
 }
 
@@ -163,11 +150,9 @@ export function EditItemPage() {
   const { item, brands } = useLoaderData<typeof clientLoader>();
   const actionData = useActionData<ActionData>();
   const [isDeleting, setIsDeleting] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState<ItemCategory>(
-    item?.category || "tops"
-  );
+  const [selectedCategory, setSelectedCategory] = useState<ItemCategory>(item?.category || 'tops');
 
-  const isSubmitting = navigation.state === "submitting";
+  const isSubmitting = navigation.state === 'submitting';
 
   // Update selected category when item changes
   useEffect(() => {
@@ -182,10 +167,9 @@ export function EditItemPage() {
   const categoryWarning =
     item && !CATEGORY_IDS.includes(item.category)
       ? `Warning: This item had an invalid category "${item.category}". Please select the correct category and save.`
-      : "";
+      : '';
 
-  const validCategory =
-    item && CATEGORY_IDS.includes(item.category) ? item.category : "tops";
+  const validCategory = item && CATEGORY_IDS.includes(item.category) ? item.category : 'tops';
 
   const handleDelete = async () => {
     if (!item) return;
@@ -193,9 +177,9 @@ export function EditItemPage() {
     setIsDeleting(true);
     try {
       await removeItem(item.id);
-      navigate("/");
+      navigate('/');
     } catch (err) {
-      console.error("Failed to delete item:", err);
+      console.error('Failed to delete item:', err);
       setIsDeleting(false);
     }
   };
@@ -227,7 +211,7 @@ export function EditItemPage() {
             label="Brand"
             name={BRAND_NAME}
             placeholder="e.g., Ganni, Hope"
-            defaultValue={item.brand || ""}
+            defaultValue={item.brand || ''}
             suggestions={brands}
           />
 
@@ -239,9 +223,7 @@ export function EditItemPage() {
               title: category.title,
             }))}
             defaultValue={validCategory}
-            onValueChange={(value) =>
-              setSelectedCategory(value as ItemCategory)
-            }
+            onValueChange={(value) => setSelectedCategory(value as ItemCategory)}
           />
 
           <SelectInput
@@ -258,7 +240,7 @@ export function EditItemPage() {
             label="Price"
             name={PRICE_NAME}
             placeholder="e.g., 499"
-            defaultValue={item.price?.toString() || ""}
+            defaultValue={item.price?.toString() || ''}
           />
 
           <Flex direction="column" gap="1">
@@ -270,9 +252,7 @@ export function EditItemPage() {
                 name={PURCHASE_DATE_NAME}
                 type="date"
                 defaultValue={
-                  item.purchaseDate
-                    ? new Date(item.purchaseDate).toISOString().split("T")[0]
-                    : ""
+                  item.purchaseDate ? new Date(item.purchaseDate).toISOString().split('T')[0] : ''
                 }
               />
             </TextField.Root>
@@ -301,7 +281,7 @@ export function EditItemPage() {
               name={NOTES_NAME}
               placeholder="e.g., favorite jeans, scratched"
               rows={2}
-              defaultValue={item.notes || ""}
+              defaultValue={item.notes || ''}
               size="3"
             />
           </Flex>
@@ -312,17 +292,9 @@ export function EditItemPage() {
             label="Second Hand / Thrifted"
           />
 
-          <CheckboxField
-            name="isDogCasual"
-            defaultChecked={item.isDogCasual}
-            label="Dog casual"
-          />
+          <CheckboxField name="isDogCasual" defaultChecked={item.isDogCasual} label="Dog casual" />
 
-          <CheckboxField
-            name="isHandmade"
-            defaultChecked={item.isHandmade}
-            label="Handmade"
-          />
+          <CheckboxField name="isHandmade" defaultChecked={item.isHandmade} label="Handmade" />
 
           <Flex direction="column" gap="2">
             <Text size="2" weight="bold">
@@ -338,12 +310,8 @@ export function EditItemPage() {
           )}
 
           <div className={styles.actions}>
-            <Button
-              type="submit"
-              disabled={isSubmitting}
-              className={styles.saveButton}
-            >
-              {isSubmitting ? "Saving..." : "Save Changes"}
+            <Button type="submit" disabled={isSubmitting} className={styles.saveButton}>
+              {isSubmitting ? 'Saving...' : 'Save Changes'}
             </Button>
 
             <DeleteConfirmDialog

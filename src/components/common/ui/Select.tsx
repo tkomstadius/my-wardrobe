@@ -1,7 +1,7 @@
-import { Select as BaseSelect } from "@base-ui/react/select";
-import type { ReactNode } from "react";
-import { IoChevronDown } from "react-icons/io5";
-import styles from "./Select.module.css";
+import { Select as BaseSelect } from '@base-ui/react/select';
+import type { ReactNode } from 'react';
+import { IoChevronDown } from 'react-icons/io5';
+import styles from './Select.module.css';
 
 interface SelectRootProps {
   children: ReactNode;
@@ -41,9 +41,9 @@ interface SelectTriggerProps {
 
 function SelectTrigger({ placeholder, className }: SelectTriggerProps) {
   return (
-    <BaseSelect.Trigger className={`${styles.trigger} ${className || ""}`}>
+    <BaseSelect.Trigger className={`${styles.trigger} ${className || ''}`}>
       <BaseSelect.Value>
-        {(value: string | null) => value || placeholder || "Select an option"}
+        {(value: string | null) => value || placeholder || 'Select an option'}
       </BaseSelect.Value>
       <div className={styles.icon}>
         <IoChevronDown size={16} />
@@ -60,9 +60,7 @@ function SelectContent({ children }: SelectContentProps) {
   return (
     <BaseSelect.Portal>
       <BaseSelect.Positioner>
-        <BaseSelect.Popup className={styles.listbox}>
-          {children}
-        </BaseSelect.Popup>
+        <BaseSelect.Popup className={styles.listbox}>{children}</BaseSelect.Popup>
       </BaseSelect.Positioner>
     </BaseSelect.Portal>
   );

@@ -1,20 +1,20 @@
-import type { ReactNode } from "react";
-import styles from "./IconButton.module.css";
+import type { ReactNode } from 'react';
+import styles from './IconButton.module.css';
 
 interface IconButtonProps {
   children: ReactNode;
   onClick?: () => void;
-  size?: "1" | "2" | "3" | "4";
-  type?: "button" | "submit" | "reset";
+  size?: '1' | '2' | '3' | '4';
+  type?: 'button' | 'submit' | 'reset';
   className?: string;
 }
 
 export function IconButton({
   children,
   onClick,
-  size = "3",
-  type = "button",
-  className = "",
+  size = '3',
+  type = 'button',
+  className = '',
 }: IconButtonProps) {
   return (
     <button

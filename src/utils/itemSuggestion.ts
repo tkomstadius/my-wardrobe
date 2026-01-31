@@ -1,7 +1,7 @@
-import type { WardrobeItem } from "../types/wardrobe";
-import { getNeglectedItems, isWornToday } from "./wardrobeFilters";
-import type { WeatherData } from "../contexts/WeatherContext";
-import { differenceInDays } from "date-fns";
+import { differenceInDays } from 'date-fns';
+import type { WeatherData } from '../contexts/WeatherContext';
+import type { WardrobeItem } from '../types/wardrobe';
+import { getNeglectedItems, isWornToday } from './wardrobeFilters';
 
 /**
  * Suggest a single item to wear today
@@ -10,7 +10,7 @@ import { differenceInDays } from "date-fns";
  */
 export function suggestItem(
   items: WardrobeItem[],
-  weatherData: WeatherData | null
+  weatherData: WeatherData | null,
 ): WardrobeItem | null {
   if (items.length === 0) {
     return null;
@@ -19,10 +19,8 @@ export function suggestItem(
   // Filter to only tops, bottoms, or dresses, excluding dog clothes
   const relevantItems = items.filter(
     (item) =>
-      (item.category === "tops" ||
-        item.category === "bottoms" ||
-        item.category === "dresses") &&
-      !item.isDogCasual
+      (item.category === 'tops' || item.category === 'bottoms' || item.category === 'dresses') &&
+      !item.isDogCasual,
   );
 
   if (relevantItems.length === 0) {
@@ -34,15 +32,11 @@ export function suggestItem(
 
   if (availableItems.length === 0) {
     // If all relevant items are worn today, just return a random one from relevant items
-    return (
-      relevantItems[Math.floor(Math.random() * relevantItems.length)] || null
-    );
+    return relevantItems[Math.floor(Math.random() * relevantItems.length)] || null;
   }
 
   // Get temperature from weather (extract number from "20°C")
-  const temperature = weatherData
-    ? parseFloat(weatherData.actualTemp.replace("°C", ""))
-    : null;
+  const temperature = weatherData ? parseFloat(weatherData.actualTemp.replace('°C', '')) : null;
 
   // Score each item based on various factors
   const scoredItems = availableItems.map((item) => {
@@ -79,7 +73,7 @@ export function suggestItem(
 
       // Cold weather: favor outerwear, less favor tops/shoes
       if (temperature < 10) {
-        if (category === "tops") score += 5;
+        if (category === 'tops') score += 5;
       }
       // Moderate weather: balanced
       else if (temperature >= 10 && temperature < 20) {
@@ -87,16 +81,13 @@ export function suggestItem(
       }
       // Warm weather: favor lighter categories
       else if (temperature >= 20) {
-        if (category === "tops") score += 10;
-        if (category === "dresses") score += 10;
+        if (category === 'tops') score += 10;
+        if (category === 'dresses') score += 10;
       }
     }
 
     // Recently added items get a small boost (encourage trying new items)
-    const daysSinceAdded = differenceInDays(
-      new Date(),
-      new Date(item.createdAt)
-    );
+    const daysSinceAdded = differenceInDays(new Date(), new Date(item.createdAt));
     if (daysSinceAdded < 7) {
       score += 10;
     }

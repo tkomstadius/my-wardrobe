@@ -1,6 +1,6 @@
-import { Checkbox as BaseCheckbox } from "@base-ui/react/checkbox";
-import { IoCheckmark } from "react-icons/io5";
-import styles from "./Checkbox.module.css";
+import { Checkbox as BaseCheckbox } from '@base-ui/react/checkbox';
+import { IoCheckmark } from 'react-icons/io5';
+import styles from './Checkbox.module.css';
 
 interface CheckboxProps {
   name?: string;
@@ -9,12 +9,7 @@ interface CheckboxProps {
   onCheckedChange?: (checked: boolean) => void;
 }
 
-export function Checkbox({
-  name,
-  checked,
-  defaultChecked,
-  onCheckedChange,
-}: CheckboxProps) {
+export function Checkbox({ name, checked, defaultChecked, onCheckedChange }: CheckboxProps) {
   return (
     <BaseCheckbox.Root
       name={name}

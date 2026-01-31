@@ -1,7 +1,7 @@
-import { IoArrowBackOutline } from "react-icons/io5";
-import { Flex } from "./ui/Flex";
-import { Link } from "./ui/Link";
-import { Text } from "./ui/Text";
+import { IoArrowBackOutline } from 'react-icons/io5';
+import { Flex } from './ui/Flex';
+import { Link } from './ui/Link';
+import { Text } from './ui/Text';
 
 type BackButtonProps = {
   to: string;

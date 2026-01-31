@@ -1,30 +1,22 @@
-import { Button } from "../components/common/ui/Button";
-import { Text } from "../components/common/ui/Text";
-import { useState, useMemo } from "react";
-import { Link, useLoaderData, type LoaderFunctionArgs } from "react-router";
-import { ItemCard } from "../components/common/ItemCard";
-import { SearchBar } from "../components/common/SearchBar";
-import {
-  QuickFilters,
-  type BooleanFilter,
-} from "../components/common/QuickFilters";
-import { useItemSearch } from "../hooks/useItemSearch";
-import type { ItemCategory } from "../types/wardrobe";
-import {
-  CATEGORY_TITLES,
-  CATEGORY_IDS,
-  getSubCategoriesForCategory,
-} from "../utils/categories";
-import { getItemsByCategory } from "../utils/storageCommands";
-import styles from "./ItemCategoryPage.module.css";
-import { Fab } from "../components/common/Fab";
-import { BackLink } from "../components/common/BackLink";
+import { useMemo, useState } from 'react';
+import { Link, type LoaderFunctionArgs, useLoaderData } from 'react-router';
+import { BackLink } from '../components/common/BackLink';
+import { Fab } from '../components/common/Fab';
+import { ItemCard } from '../components/common/ItemCard';
+import { type BooleanFilter, QuickFilters } from '../components/common/QuickFilters';
+import { SearchBar } from '../components/common/SearchBar';
+import { Button } from '../components/common/ui/Button';
+import { Text } from '../components/common/ui/Text';
+import { useItemSearch } from '../hooks/useItemSearch';
+import type { ItemCategory } from '../types/wardrobe';
+import { CATEGORY_IDS, CATEGORY_TITLES, getSubCategoriesForCategory } from '../utils/categories';
+import { getItemsByCategory } from '../utils/storageCommands';
+import styles from './ItemCategoryPage.module.css';
 
 export async function loader({ params }: LoaderFunctionArgs) {
   const { category } = params;
 
-  const isValidItemCategory =
-    category && CATEGORY_IDS.includes(category as ItemCategory);
+  const isValidItemCategory = category && CATEGORY_IDS.includes(category as ItemCategory);
 
   if (!isValidItemCategory) {
     return { items: [], category: null, title: null, isValid: false };
@@ -41,19 +33,12 @@ export async function loader({ params }: LoaderFunctionArgs) {
 }
 
 export function ItemCategoryPage() {
-  const {
-    items: categoryItems,
-    category,
-    title,
-    isValid,
-  } = useLoaderData<typeof loader>();
+  const { items: categoryItems, category, title, isValid } = useLoaderData<typeof loader>();
 
-  const [selectedBooleanFilters, setSelectedBooleanFilters] = useState<
-    Set<BooleanFilter>
-  >(new Set());
-  const [selectedSubCategory, setSelectedSubCategory] = useState<string | null>(
-    null
+  const [selectedBooleanFilters, setSelectedBooleanFilters] = useState<Set<BooleanFilter>>(
+    new Set(),
   );
+  const [selectedSubCategory, setSelectedSubCategory] = useState<string | null>(null);
 
   // Apply fast filters first
   const fastFilteredItems = useMemo(() => {
@@ -61,9 +46,9 @@ export function ItemCategoryPage() {
       // Boolean filters
       if (selectedBooleanFilters.size > 0) {
         const matchesBooleanFilter =
-          (selectedBooleanFilters.has("secondhand") && item.isSecondHand) ||
-          (selectedBooleanFilters.has("dogCasual") && item.isDogCasual) ||
-          (selectedBooleanFilters.has("handmade") && item.isHandmade);
+          (selectedBooleanFilters.has('secondhand') && item.isSecondHand) ||
+          (selectedBooleanFilters.has('dogCasual') && item.isDogCasual) ||
+          (selectedBooleanFilters.has('handmade') && item.isHandmade);
 
         if (!matchesBooleanFilter) {
           return false;
@@ -104,7 +89,7 @@ export function ItemCategoryPage() {
       const subCategories = getSubCategoriesForCategory(category);
       subCategories.forEach((subCategory) => {
         counts.subCategories[subCategory] = categoryItems.filter(
-          (item) => item.subCategory === subCategory
+          (item) => item.subCategory === subCategory,
         ).length;
       });
     }
@@ -135,7 +120,7 @@ export function ItemCategoryPage() {
     return (
       <div className={styles.container}>
         <div className={styles.header}>
-          <BackLink to={"/items"} />
+          <BackLink to={'/items'} />
         </div>
         <div className={styles.errorState}>
           <Text size="2" color="gray">
@@ -149,7 +134,7 @@ export function ItemCategoryPage() {
   return (
     <>
       <div className={styles.header}>
-        <BackLink to={"/items"} />
+        <BackLink to={'/items'} />
         <h2 className={styles.title}>{title}</h2>
         <div className={styles.spacer} />
       </div>
@@ -195,9 +180,7 @@ export function ItemCategoryPage() {
           ) : (
             <div className={styles.noResultsState}>
               <Text size="2" color="gray">
-                {searchQuery
-                  ? `No items match "${searchQuery}"`
-                  : "No items found"}
+                {searchQuery ? `No items match "${searchQuery}"` : 'No items found'}
               </Text>
               {searchQuery && (
                 <Text size="2" color="gray">

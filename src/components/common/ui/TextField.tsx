@@ -1,16 +1,16 @@
-import type { ReactNode } from "react";
-import styles from "./TextField.module.css";
+import type { ReactNode } from 'react';
+import styles from './TextField.module.css';
 
 interface TextFieldRootProps {
   children: ReactNode;
-  size?: "1" | "2" | "3";
+  size?: '1' | '2' | '3';
   variant?: string;
   defaultValue?: string;
   type?: string;
   name?: string;
 }
 
-function TextFieldRoot({ children, size = "3" }: TextFieldRootProps) {
+function TextFieldRoot({ children, size = '3' }: TextFieldRootProps) {
   return <div className={`${styles.root} ${styles[`size${size}`]}`}>{children}</div>;
 }
 

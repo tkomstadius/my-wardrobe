@@ -1,4 +1,4 @@
-import styles from "./TextArea.module.css";
+import styles from './TextArea.module.css';
 
 interface TextAreaProps {
   name?: string;

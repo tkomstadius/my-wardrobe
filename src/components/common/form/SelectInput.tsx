@@ -1,6 +1,6 @@
-import { Flex } from "../ui/Flex";
-import { Text } from "../ui/Text";
-import { Select } from "../ui/Select";
+import { Flex } from '../ui/Flex';
+import { Select } from '../ui/Select';
+import { Text } from '../ui/Text';
 
 type SelectInputProps = {
   label: string;
@@ -26,7 +26,7 @@ export function SelectInput({
       </Text>
       <Select.Root
         name={name}
-        onValueChange={(value) => onValueChange?.(value || "")}
+        onValueChange={(value) => onValueChange?.(value || '')}
         disabled={disabled}
         defaultValue={defaultValue}
       >

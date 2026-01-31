@@ -1,7 +1,7 @@
 // Background removal utilities
 // Uses @imgly/background-removal to remove backgrounds from images
 
-import { removeBackground } from "@imgly/background-removal";
+import { removeBackground } from '@imgly/background-removal';
 
 /**
  * Remove background from an image data URL
@@ -27,7 +27,7 @@ export async function removeImageBackground(dataURL: string): Promise<string> {
       reader.readAsDataURL(blobWithoutBackground);
     });
   } catch (error) {
-    console.error("Failed to remove background:", error);
-    throw new Error("Failed to remove background from image");
+    console.error('Failed to remove background:', error);
+    throw new Error('Failed to remove background from image');
   }
 }

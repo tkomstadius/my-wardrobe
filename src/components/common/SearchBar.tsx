@@ -1,9 +1,9 @@
-import { TextField } from "./ui/TextField";
-import { IconButton } from "./ui/IconButton";
-import { Text } from "./ui/Text";
-import { Flex } from "./ui/Flex";
-import { IoClose, IoSearchOutline } from "react-icons/io5";
-import styles from "./SearchBar.module.css";
+import { IoClose, IoSearchOutline } from 'react-icons/io5';
+import styles from './SearchBar.module.css';
+import { Flex } from './ui/Flex';
+import { IconButton } from './ui/IconButton';
+import { Text } from './ui/Text';
+import { TextField } from './ui/TextField';
 
 interface SearchBarProps {
   value: string;
@@ -17,7 +17,7 @@ export function SearchBar({
   value,
   onChange,
   onClear,
-  placeholder = "category, brand, notes, tags...",
+  placeholder = 'category, brand, notes, tags...',
   resultCount,
 }: SearchBarProps) {
   return (
@@ -33,11 +33,7 @@ export function SearchBar({
         />
         {value && (
           <TextField.Slot>
-            <IconButton
-              size="1"
-              onClick={onClear}
-              type="button"
-            >
+            <IconButton size="1" onClick={onClear} type="button">
               <IoClose />
             </IconButton>
           </TextField.Slot>
@@ -47,7 +43,7 @@ export function SearchBar({
       {resultCount !== undefined && (
         <div className={styles.resultCount}>
           <Text size="2" color="gray">
-            {resultCount} {resultCount === 1 ? "item" : "items"}
+            {resultCount} {resultCount === 1 ? 'item' : 'items'}
           </Text>
         </div>
       )}

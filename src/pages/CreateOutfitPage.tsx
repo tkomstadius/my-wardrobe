@@ -1,34 +1,34 @@
-import { Button } from "../components/common/ui/Button";
-import { Flex } from "../components/common/ui/Flex";
-import { Heading } from "../components/common/ui/Heading";
-import { Text } from "../components/common/ui/Text";
-import { TextField } from "../components/common/ui/TextField";
-import { TextArea } from "../components/common/ui/TextArea";
-import { useState, useMemo } from "react";
+import { useMemo, useState } from 'react';
 import {
-  ActionFunctionArgs,
+  type ActionFunctionArgs,
   Form,
   redirect,
   useLoaderData,
   useNavigation,
-} from "react-router";
-import { RatingButtons } from "../components/common/form/RatingButtons";
-import type { OutfitRating } from "../types/outfit";
-import styles from "./CreateOutfitPage.module.css";
-import { BackLink } from "../components/common/BackLink";
-import { addOutfit, loadItems } from "../utils/storageCommands";
-import { formatDate } from "../utils/dateFormatter";
-import { ImageInput } from "../components/common/form/ImageInput";
+} from 'react-router';
+import { BackLink } from '../components/common/BackLink';
+import { CategoryItemsAccordion } from '../components/common/CategoryItemsAccordion';
 import {
   CREATED_DATE_NAME,
   IMAGE_URL_NAME,
   ITEM_IDS_NAME,
   NOTES_NAME,
   RATING_NAME,
-} from "../components/common/form/constants";
-import { CategoryItemsAccordion } from "../components/common/CategoryItemsAccordion";
-import { SearchBar } from "../components/common/SearchBar";
-import { useItemSearch } from "../hooks/useItemSearch";
+} from '../components/common/form/constants';
+import { ImageInput } from '../components/common/form/ImageInput';
+import { RatingButtons } from '../components/common/form/RatingButtons';
+import { SearchBar } from '../components/common/SearchBar';
+import { Button } from '../components/common/ui/Button';
+import { Flex } from '../components/common/ui/Flex';
+import { Heading } from '../components/common/ui/Heading';
+import { Text } from '../components/common/ui/Text';
+import { TextArea } from '../components/common/ui/TextArea';
+import { TextField } from '../components/common/ui/TextField';
+import { useItemSearch } from '../hooks/useItemSearch';
+import type { OutfitRating } from '../types/outfit';
+import { formatDate } from '../utils/dateFormatter';
+import { addOutfit, loadItems } from '../utils/storageCommands';
+import styles from './CreateOutfitPage.module.css';
 
 export async function loader() {
   const items = await loadItems();
@@ -44,37 +44,32 @@ export async function action({ request }: ActionFunctionArgs) {
   const itemIdsJson = formData.get(ITEM_IDS_NAME) as string;
 
   // Parse the JSON array of item IDs
-  const itemIds: string[] = itemIdsJson
-    ? (JSON.parse(itemIdsJson) as string[])
-    : [];
+  const itemIds: string[] = itemIdsJson ? (JSON.parse(itemIdsJson) as string[]) : [];
 
   try {
     await addOutfit({
       photo: imageUrl || undefined,
       createdAt: new Date(createdDate),
       notes: notes.trim() || undefined,
-      rating: rating
-        ? (Number.parseInt(rating, 10) as OutfitRating)
-        : undefined,
+      rating: rating ? (Number.parseInt(rating, 10) as OutfitRating) : undefined,
       itemIds,
     });
 
-    return redirect("/outfits");
+    return redirect('/outfits');
   } catch (error) {
-    console.error("Failed to save outfit:", error);
-    alert("Failed to save outfit. Please try again.");
+    console.error('Failed to save outfit:', error);
+    alert('Failed to save outfit. Please try again.');
   }
 }
 
 export function CreateOutfitPage() {
   const { items } = useLoaderData<typeof loader>();
   const navigation = useNavigation();
-  const { searchQuery, setSearchQuery, clearSearch, filteredItems } =
-    useItemSearch(items);
+  const { searchQuery, setSearchQuery, clearSearch, filteredItems } = useItemSearch(items);
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
 
-  const isSubmitting = navigation.state === "submitting";
-  const isLoading = navigation.state === "loading";
+  const isSubmitting = navigation.state === 'submitting';
+  const isLoading = navigation.state === 'loading';
 
   const toggleItemSelection = (itemId: string) => {
     setSelectedItems((prev) => {
@@ -89,15 +84,12 @@ export function CreateOutfitPage() {
   };
 
   // Memoize the JSON string to avoid unnecessary re-renders
-  const itemIdsJson = useMemo(
-    () => JSON.stringify(Array.from(selectedItems)),
-    [selectedItems]
-  );
+  const itemIdsJson = useMemo(() => JSON.stringify(Array.from(selectedItems)), [selectedItems]);
 
   return (
     <section className={styles.container}>
       <div className={styles.header}>
-        <BackLink to={"/outfits"} />
+        <BackLink to={'/outfits'} />
         <Heading size="6">Create Outfit</Heading>
       </div>
 
@@ -109,11 +101,7 @@ export function CreateOutfitPage() {
             Created Date
           </Text>
           <TextField.Root size="3">
-            <TextField.Input
-              defaultValue={formatDate(new Date())}
-              name="createdDate"
-              type="date"
-            />
+            <TextField.Input defaultValue={formatDate(new Date())} name="createdDate" type="date" />
           </TextField.Root>
         </Flex>
 
@@ -161,11 +149,8 @@ export function CreateOutfitPage() {
         {/* Hidden input to include selected items in form submission */}
         <input type="hidden" name={ITEM_IDS_NAME} value={itemIdsJson} />
 
-        <Button
-          type="submit"
-          disabled={isSubmitting || isLoading || selectedItems.size === 0}
-        >
-          {isSubmitting ? "Creating..." : "Create Outfit"}
+        <Button type="submit" disabled={isSubmitting || isLoading || selectedItems.size === 0}>
+          {isSubmitting ? 'Creating...' : 'Create Outfit'}
         </Button>
       </Form>
     </section>
