@@ -4,76 +4,8 @@
  */
 
 import { differenceInDays } from 'date-fns';
-import { type IDBPDatabase, openDB } from 'idb';
 import type { ItemCategory } from '../types/wardrobe';
-
-const DB_NAME = 'MyWardrobeDB';
-const DB_VERSION = 4;
-const STORE_NAME = 'items';
-const OUTFITS_STORE = 'outfits';
-const FEEDBACK_STORE = 'matchFeedback';
-const PREFERENCES_STORE = 'userPreferences';
-
-// Database schema type (matches indexedDB.ts)
-interface DBSchema {
-  items: {
-    key: string;
-    value: unknown;
-    indexes: { category: string; createdAt: string };
-  };
-  outfits: {
-    key: string;
-    value: unknown;
-    indexes: { createdAt: string };
-  };
-  matchFeedback: {
-    key: string;
-    value: DBFeedback;
-    indexes: {
-      timestamp: string;
-      suggestedItemId: string;
-      userAction: string;
-      outfitPhotoHash: string;
-    };
-  };
-  userPreferences: {
-    key: string;
-    value: DBPreferences;
-  };
-}
-
-// Database format for feedback (with ISO string timestamp)
-interface DBFeedback {
-  id: string;
-  timestamp: string; // ISO string
-  outfitPhotoHash: string;
-  suggestedItemId: string;
-  baseSimilarity: number;
-  boostedSimilarity: number;
-  confidence: 'high' | 'medium' | 'low';
-  userAction: 'accepted' | 'rejected';
-  metadata: {
-    category: ItemCategory;
-    brand?: string;
-    wearCount: number;
-    itemAge: number;
-    daysSinceWorn?: number;
-  };
-}
-
-// Database format for preferences (with ISO string lastUpdated)
-interface DBPreferences {
-  id: string;
-  categoryMatchWeight: number;
-  brandMatchWeight: number;
-  recencyWeight: number;
-  wearFrequencyWeight: number;
-  highConfidenceThreshold: number;
-  mediumConfidenceThreshold: number;
-  totalFeedbackCount: number;
-  lastUpdated: string; // ISO string
-  version: number;
-}
+import { getCurrentUserId, supabase } from './supabase';
 
 /**
  * Feedback record for each AI suggestion
@@ -139,143 +71,140 @@ export function getDefaultPreferences(): UserPreferences {
   };
 }
 
-/**
- * Open database with feedback stores
- */
-function getDB(): Promise<IDBPDatabase<DBSchema>> {
-  return openDB<DBSchema>(DB_NAME, DB_VERSION, {
-    upgrade(db, oldVersion) {
-      console.log(`[AI Learning] Upgrading database from version ${oldVersion} to ${DB_VERSION}`);
+// ========== DB Access (Supabase) ==========
 
-      // Version 1: Create items store (may already exist)
-      if (!db.objectStoreNames.contains(STORE_NAME)) {
-        console.log('[AI Learning] Creating items store');
-        const objectStore = db.createObjectStore(STORE_NAME, { keyPath: 'id' });
-        objectStore.createIndex('category', 'category', { unique: false });
-        objectStore.createIndex('createdAt', 'createdAt', { unique: false });
-      }
-
-      // Version 3: Create outfits store (may already exist)
-      if (!db.objectStoreNames.contains(OUTFITS_STORE)) {
-        console.log('[AI Learning] Creating outfits store');
-        const outfitsStore = db.createObjectStore(OUTFITS_STORE, {
-          keyPath: 'id',
-        });
-        outfitsStore.createIndex('createdAt', 'createdAt', { unique: false });
-      }
-
-      // Version 4: Create AI learning stores
-      if (!db.objectStoreNames.contains(FEEDBACK_STORE)) {
-        console.log('[AI Learning] Creating matchFeedback store');
-        const feedbackStore = db.createObjectStore(FEEDBACK_STORE, {
-          keyPath: 'id',
-        });
-        feedbackStore.createIndex('timestamp', 'timestamp', { unique: false });
-        feedbackStore.createIndex('suggestedItemId', 'suggestedItemId', {
-          unique: false,
-        });
-        feedbackStore.createIndex('userAction', 'userAction', {
-          unique: false,
-        });
-        feedbackStore.createIndex('outfitPhotoHash', 'outfitPhotoHash', {
-          unique: false,
-        });
-      }
-
-      if (!db.objectStoreNames.contains(PREFERENCES_STORE)) {
-        console.log('[AI Learning] Creating userPreferences store');
-        db.createObjectStore(PREFERENCES_STORE, { keyPath: 'id' });
-      }
-
-      console.log('[AI Learning] Database upgrade complete');
+function mapRowToFeedback(row: Record<string, unknown>): MatchFeedback {
+  return {
+    id: row.id as string,
+    timestamp: new Date(row.timestamp as string),
+    outfitPhotoHash: (row.outfit_photo_hash as string) ?? '',
+    suggestedItemId: (row.suggested_item_id as string) ?? '',
+    baseSimilarity: (row.base_similarity as number) ?? 0,
+    boostedSimilarity: (row.boosted_similarity as number) ?? 0,
+    confidence: (row.confidence as 'high' | 'medium' | 'low') ?? 'low',
+    userAction: (row.user_action as 'accepted' | 'rejected') ?? 'rejected',
+    metadata: (row.metadata as MatchFeedback['metadata']) ?? {
+      category: 'tops' as ItemCategory,
+      wearCount: 0,
+      itemAge: 0,
     },
-  });
+  };
 }
 
 /**
  * Save feedback for an AI suggestion
  */
 export async function saveFeedback(feedback: MatchFeedback): Promise<void> {
-  const db = await getDB();
+  const userId = await getCurrentUserId();
 
-  const dbFeedback: DBFeedback = {
-    ...feedback,
+  const { error } = await supabase.from('match_feedback').upsert({
+    id: feedback.id,
     timestamp: feedback.timestamp.toISOString(),
-  };
+    outfit_photo_hash: feedback.outfitPhotoHash,
+    suggested_item_id: feedback.suggestedItemId,
+    base_similarity: feedback.baseSimilarity,
+    boosted_similarity: feedback.boostedSimilarity,
+    confidence: feedback.confidence,
+    user_action: feedback.userAction,
+    metadata: feedback.metadata,
+    user_id: userId,
+  });
 
-  const tx = db.transaction(FEEDBACK_STORE, 'readwrite');
-  await tx.store.put(dbFeedback);
-  await tx.done;
+  if (error) {
+    throw new Error(`Failed to save feedback: ${error.message}`);
+  }
 }
 
 /**
  * Load all feedback records
  */
 export async function loadAllFeedback(): Promise<MatchFeedback[]> {
-  const db = await getDB();
+  const userId = await getCurrentUserId();
 
-  const tx = db.transaction(FEEDBACK_STORE, 'readonly');
-  const dbFeedback = await tx.store.getAll();
+  const { data, error } = await supabase.from('match_feedback').select('*').eq('user_id', userId);
 
-  const feedback = dbFeedback.map((fb) => ({
-    ...fb,
-    timestamp: new Date(fb.timestamp),
-  }));
+  if (error) {
+    throw new Error(`Failed to load feedback: ${error.message}`);
+  }
 
-  return feedback;
+  return (data ?? []).map(mapRowToFeedback);
 }
 
 /**
  * Load feedback for a specific item
  */
 export async function loadFeedbackForItem(itemId: string): Promise<MatchFeedback[]> {
-  const db = await getDB();
+  const userId = await getCurrentUserId();
 
-  const tx = db.transaction(FEEDBACK_STORE, 'readonly');
-  const index = tx.store.index('suggestedItemId');
-  const dbFeedback = await index.getAll(itemId);
+  const { data, error } = await supabase
+    .from('match_feedback')
+    .select('*')
+    .eq('user_id', userId)
+    .eq('suggested_item_id', itemId);
 
-  const feedback = dbFeedback.map((fb) => ({
-    ...fb,
-    timestamp: new Date(fb.timestamp),
-  }));
+  if (error) {
+    throw new Error(`Failed to load feedback for item: ${error.message}`);
+  }
 
-  return feedback;
+  return (data ?? []).map(mapRowToFeedback);
 }
 
 /**
  * Save user preferences
  */
 export async function saveUserPreferences(preferences: UserPreferences): Promise<void> {
-  const db = await getDB();
+  const userId = await getCurrentUserId();
 
-  const dbPreferences: DBPreferences = {
-    id: 'default', // Single preferences record
-    ...preferences,
-    lastUpdated: preferences.lastUpdated.toISOString(),
-  };
+  const { error } = await supabase.from('user_preferences').upsert({
+    id: 'default',
+    category_match_weight: preferences.categoryMatchWeight,
+    brand_match_weight: preferences.brandMatchWeight,
+    recency_weight: preferences.recencyWeight,
+    wear_frequency_weight: preferences.wearFrequencyWeight,
+    high_confidence_threshold: preferences.highConfidenceThreshold,
+    medium_confidence_threshold: preferences.mediumConfidenceThreshold,
+    total_feedback_count: preferences.totalFeedbackCount,
+    last_updated: preferences.lastUpdated.toISOString(),
+    version: preferences.version,
+    user_id: userId,
+  });
 
-  const tx = db.transaction(PREFERENCES_STORE, 'readwrite');
-  await tx.store.put(dbPreferences);
-  await tx.done;
+  if (error) {
+    throw new Error(`Failed to save preferences: ${error.message}`);
+  }
 }
 
 /**
  * Load user preferences
  */
 export async function loadUserPreferences(): Promise<UserPreferences | null> {
-  const db = await getDB();
+  const userId = await getCurrentUserId();
 
-  const tx = db.transaction(PREFERENCES_STORE, 'readonly');
-  const dbPreferences = await tx.store.get('default');
+  const { data, error } = await supabase
+    .from('user_preferences')
+    .select('*')
+    .eq('user_id', userId)
+    .eq('id', 'default')
+    .single();
 
-  if (!dbPreferences) {
-    return null;
+  if (error) {
+    // PGRST116 = no rows found, which is expected for new users
+    if (error.code === 'PGRST116') return null;
+    throw new Error(`Failed to load preferences: ${error.message}`);
   }
 
+  if (!data) return null;
+
   return {
-    ...dbPreferences,
-    lastUpdated: new Date(dbPreferences.lastUpdated),
+    categoryMatchWeight: (data.category_match_weight as number) ?? 1.0,
+    brandMatchWeight: (data.brand_match_weight as number) ?? 1.0,
+    recencyWeight: (data.recency_weight as number) ?? 1.0,
+    wearFrequencyWeight: (data.wear_frequency_weight as number) ?? 1.0,
+    highConfidenceThreshold: (data.high_confidence_threshold as number) ?? 0.78,
+    mediumConfidenceThreshold: (data.medium_confidence_threshold as number) ?? 0.68,
+    totalFeedbackCount: (data.total_feedback_count as number) ?? 0,
+    lastUpdated: new Date(data.last_updated as string),
+    version: (data.version as number) ?? 1,
   };
 }
 
@@ -283,11 +212,13 @@ export async function loadUserPreferences(): Promise<UserPreferences | null> {
  * Clear all feedback (for reset)
  */
 export async function clearAllFeedback(): Promise<void> {
-  const db = await getDB();
+  const userId = await getCurrentUserId();
 
-  const tx = db.transaction(FEEDBACK_STORE, 'readwrite');
-  await tx.store.clear();
-  await tx.done;
+  const { error } = await supabase.from('match_feedback').delete().eq('user_id', userId);
+
+  if (error) {
+    throw new Error(`Failed to clear feedback: ${error.message}`);
+  }
 }
 
 /**
@@ -297,16 +228,15 @@ export async function resetUserPreferences(): Promise<void> {
   await saveUserPreferences(getDefaultPreferences());
 }
 
+// ========== Learning Algorithm (unchanged) ==========
+
 /**
  * Calculate time-based weight for feedback
  * Recent feedback = 1.0, older feedback decays exponentially
  */
 function calculateTimeWeight(timestamp: Date): number {
-  // Use date-fns for accurate day calculations (handles DST, timezones, etc.)
   const ageInDays = differenceInDays(new Date(), timestamp);
-
   // Exponential decay with 60-day half-life
-  // Today: 1.0, 60 days ago: 0.5, 120 days ago: 0.25
   return Math.exp((-ageInDays * Math.LN2) / 60);
 }
 
@@ -358,8 +288,6 @@ export async function updatePreferencesFromFeedback(): Promise<UserPreferences> 
   const recentItemFeedback = allFeedback.filter((f) => f.metadata.itemAge < 30);
   const recentWeighted = calculateWeightedAcceptRate(recentItemFeedback);
 
-  // If recent items are accepted at high rate, increase recency weight
-  // Use weighted rate (recent feedback influences more)
   if (recentWeighted.rate > 0.7 && recentWeighted.totalWeight > 3) {
     preferences.recencyWeight = Math.min(preferences.recencyWeight * 1.05, 1.3);
   } else if (recentWeighted.rate < 0.4 && recentWeighted.totalWeight > 3) {
@@ -377,18 +305,15 @@ export async function updatePreferencesFromFeedback(): Promise<UserPreferences> 
   }
 
   // Confidence threshold calibration (weighted)
-  // If high confidence suggestions are often rejected, raise the threshold
   const highConfidenceFeedback = allFeedback.filter((f) => f.confidence === 'high');
   const highWeighted = calculateWeightedAcceptRate(highConfidenceFeedback);
 
   if (highWeighted.rate < 0.7 && highWeighted.totalWeight > 5) {
-    // High confidence not reliable enough - raise threshold
     preferences.highConfidenceThreshold = Math.min(
       preferences.highConfidenceThreshold + 0.01,
       0.85,
     );
   } else if (highWeighted.rate > 0.95 && highWeighted.totalWeight > 5) {
-    // High confidence very reliable - can lower threshold slightly
     preferences.highConfidenceThreshold = Math.max(
       preferences.highConfidenceThreshold - 0.005,
       0.75,
@@ -400,13 +325,11 @@ export async function updatePreferencesFromFeedback(): Promise<UserPreferences> 
   const mediumWeighted = calculateWeightedAcceptRate(mediumConfidenceFeedback);
 
   if (mediumWeighted.rate > 0.8 && mediumWeighted.totalWeight > 5) {
-    // Medium confidence very reliable - can lower threshold
     preferences.mediumConfidenceThreshold = Math.max(
       preferences.mediumConfidenceThreshold - 0.01,
       0.6,
     );
   } else if (mediumWeighted.rate < 0.5 && mediumWeighted.totalWeight > 5) {
-    // Medium confidence not reliable - raise threshold
     preferences.mediumConfidenceThreshold = Math.min(
       preferences.mediumConfidenceThreshold + 0.01,
       0.75,
@@ -420,7 +343,7 @@ export async function updatePreferencesFromFeedback(): Promise<UserPreferences> 
   // Save updated preferences
   await saveUserPreferences(preferences);
 
-  console.log('✨ Updated AI preferences from feedback:', {
+  console.log('Updated AI preferences from feedback:', {
     feedbackCount: allFeedback.length,
     overallAcceptRate: overallAcceptRate.toFixed(2),
     weightedRates: {
@@ -495,7 +418,6 @@ export async function getFeedbackStats(): Promise<{
  * Used to group feedback by outfit photo
  */
 export function hashImageData(imageDataURL: string): string {
-  // Simple hash: take length + first/last 100 chars
   const start = imageDataURL.substring(0, 100);
   const end = imageDataURL.substring(imageDataURL.length - 100);
   return `${imageDataURL.length}-${btoa(start + end).substring(0, 32)}`;

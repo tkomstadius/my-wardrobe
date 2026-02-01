@@ -386,6 +386,21 @@ export async function updateItemEmbedding(id: string, embedding: number[]): Prom
   }
 }
 
+/**
+ * Get the raw storage path for an item's image (not the signed URL).
+ * Used when the image hasn't changed and we need to preserve the existing path.
+ */
+export async function getItemStoragePath(id: string): Promise<string | null> {
+  const userId = await getCurrentUserId();
+  const { data } = await supabase
+    .from('wardrobe_items')
+    .select('image_url')
+    .eq('id', id)
+    .eq('user_id', userId)
+    .single();
+  return (data?.image_url as string) ?? null;
+}
+
 // ========== Outfit Storage Functions ==========
 
 export async function loadOutfits(): Promise<Outfit[]> {
@@ -502,6 +517,30 @@ export async function addOutfit(outfit: NewOutfit): Promise<void> {
     console.error('Failed to save outfit:', error);
     throw new Error('Failed to save outfit.');
   }
+}
+
+export async function saveOutfits(outfits: Outfit[]): Promise<void> {
+  const userId = await getCurrentUserId();
+  const rows = outfits.map((outfit) => ({
+    id: outfit.id,
+    photo_url: outfit.photo ?? null,
+    item_ids: outfit.itemIds,
+    notes: outfit.notes ?? null,
+    rating: outfit.rating ?? null,
+    created_at: outfit.createdAt.toISOString(),
+    updated_at: outfit.updatedAt.toISOString(),
+    user_id: userId,
+  }));
+
+  const { error } = await supabase.from('outfits').upsert(rows);
+  if (error) {
+    console.error('Failed to save outfits:', error);
+    throw new Error('Failed to save outfits.');
+  }
+}
+
+export async function saveOutfit(outfit: Outfit): Promise<void> {
+  await saveOutfits([outfit]);
 }
 
 export async function updateOutfit(id: string, updates: Partial<Outfit>): Promise<void> {

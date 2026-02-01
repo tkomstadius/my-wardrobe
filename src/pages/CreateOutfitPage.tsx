@@ -27,7 +27,9 @@ import { TextField } from '../components/common/ui/TextField';
 import { useItemSearch } from '../hooks/useItemSearch';
 import type { OutfitRating } from '../types/outfit';
 import { formatDate } from '../utils/dateFormatter';
-import { addOutfit, loadItems } from '../utils/storageCommands';
+import { addOutfit, generateId, loadItems } from '../utils/storageCommands';
+import { getCurrentUserId } from '../utils/supabase';
+import { dataUrlToBlob, uploadOutfitPhoto } from '../utils/supabaseStorage';
 import styles from './CreateOutfitPage.module.css';
 
 export async function loader() {
@@ -47,8 +49,17 @@ export async function action({ request }: ActionFunctionArgs) {
   const itemIds: string[] = itemIdsJson ? (JSON.parse(itemIdsJson) as string[]) : [];
 
   try {
+    // Upload photo to Storage if provided
+    let photoPath: string | undefined;
+    if (imageUrl?.startsWith('data:')) {
+      const userId = await getCurrentUserId();
+      const outfitId = generateId();
+      const blob = dataUrlToBlob(imageUrl);
+      photoPath = await uploadOutfitPhoto(userId, outfitId, blob);
+    }
+
     await addOutfit({
-      photo: imageUrl || undefined,
+      photo: photoPath,
       createdAt: new Date(createdDate),
       notes: notes.trim() || undefined,
       rating: rating ? (Number.parseInt(rating, 10) as OutfitRating) : undefined,

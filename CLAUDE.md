@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-My Wardrobe is a personal-use, mobile-first PWA for tracking wardrobe items and outfits. It runs entirely in the browser with no backend — data is stored in IndexedDB and AI features (FashionCLIP embeddings) run client-side via Hugging Face Transformers.js.
+My Wardrobe is a personal-use, mobile-first PWA for tracking wardrobe items and outfits. Data is stored in Supabase (Postgres + Storage) with magic link authentication. AI features (FashionCLIP embeddings) run client-side via Hugging Face Transformers.js.
 
 ## Commands
 
@@ -16,6 +16,13 @@ pnpm lint             # Biome lint check
 pnpm lint:fix         # Auto-fix lint errors
 pnpm format           # Biome format
 pnpm test             # Playwright tests
+```
+
+### Database Commands
+
+```bash
+pnpm drizzle-kit generate   # Generate SQL migration from schema changes
+pnpm drizzle-kit push       # Push schema directly to Supabase (dev)
 ```
 
 ## After Making Changes
@@ -32,21 +39,62 @@ Fix any errors from steps 1-3 before committing. There are no automated tests ye
 ## Tech Stack
 
 - **React 19** + **TypeScript 5.9** (strict mode) + **React Router 7** (loaders/actions pattern)
+- **Supabase** (Postgres + Storage + Auth) — data and image storage, magic link authentication
+- **Drizzle ORM** (dev only) — schema definition and migrations via `drizzle-kit`
 - **Base UI** (`@base-ui/react`) for accessible component primitives
 - **CSS Modules** for styling — no Tailwind, no inline styles
-- **IndexedDB** (via `idb`) for persistent storage (images stored as Blobs)
 - **Vite 7** for bundling, **Biome** for linting/formatting, **pnpm** as package manager
 - **Netlify** for deployment
+
+## Environment Variables
+
+Required in `.env` (see `.env.example`):
+
+- `VITE_SUPABASE_URL` — Supabase project URL
+- `VITE_SUPABASE_ANON_KEY` — Supabase anon/public key
+- `DATABASE_URL` — Postgres connection string (for Drizzle migrations only, not used at runtime)
 
 ## Architecture
 
 ### Data Flow
 
-Components never access IndexedDB directly. The layers are:
+```
+React Pages (loaders/actions)
+  → utils/storageCommands.ts (business logic, camelCase↔snake_case mapping)
+    → Supabase JS client (Postgres queries + RLS)
+    → utils/supabaseStorage.ts (image upload/download, signed URLs)
+
+Auth: contexts/AuthContext.tsx → Supabase Auth (magic link)
+```
 
 1. **Pages** use React Router `clientLoader`/`clientAction` for data fetching and mutations
-2. **`utils/storageCommands.ts`** — high-level business operations (add/edit items, log wear, etc.)
-3. **`utils/indexedDB.ts`** — low-level DB wrapper handling Blob↔DataURL conversion
+2. **`utils/storageCommands.ts`** — high-level business operations (CRUD items/outfits, wear logging, brands)
+3. **`utils/supabase.ts`** — Supabase client singleton + `getCurrentUserId()` helper
+4. **`utils/supabaseStorage.ts`** — image upload/download to private `wardrobe-images` bucket
+
+### Database
+
+4 tables, all with `user_id` column and Row Level Security (RLS) policies:
+
+- **`wardrobe_items`** — clothing items with image paths, categories, wear history, embeddings
+- **`outfits`** — outfit records with photo paths, item ID arrays, ratings
+- **`match_feedback`** — AI suggestion accept/reject feedback for learning
+- **`user_preferences`** — learned AI preference weights
+
+Schema defined in `src/db/schema.ts` (Drizzle). Runtime queries use Supabase JS client (not Drizzle — browser can't make TCP connections to Postgres).
+
+### Image Storage
+
+- Images stored in private Supabase Storage bucket `wardrobe-images`
+- DB stores **storage paths** (e.g., `{userId}/items/{itemId}.jpg`), not URLs
+- Signed URLs (1hr expiry) generated at read time via `getSignedUrl()`/`getSignedUrls()`
+- Upload pipeline: compress → upload Blob to Storage → store path in DB
+
+### Authentication
+
+- Magic link (email OTP) via Supabase Auth
+- `AuthContext` wraps the app, gates all routes behind authentication
+- `App.tsx` checks `isAuthenticated` — unauthenticated users see `LoginPage`
 
 ### Core Domain Models (`src/types/`)
 
@@ -60,8 +108,9 @@ Components never access IndexedDB directly. The layers are:
 - `src/components/common/form/` — form field components (TextInput, SelectInput, etc.)
 - `src/components/layout/` — MainLayout with BottomNav
 - `src/utils/` — business logic, DB access, AI integration, categories, stats calculations
-- `src/contexts/` — WeatherContext (open-meteo API)
-- `src/hooks/` — useImageUpload, useItemSearch, useStorageInfo
+- `src/db/` — Drizzle schema (used for migrations only)
+- `src/contexts/` — AuthContext (Supabase Auth), WeatherContext (open-meteo API)
+- `src/hooks/` — useImageUpload, useItemSearch
 
 ### Patterns
 
@@ -69,7 +118,8 @@ Components never access IndexedDB directly. The layers are:
 - **Router actions** for form submissions. Pages export `clientAction` and use `Form` from React Router.
 - **CSS Modules** everywhere: `import styles from "./Component.module.css"` — class composition via template literals.
 - **Base UI wrapping**: UI components in `common/ui/` wrap `@base-ui/react` primitives with app-specific styling.
-- **Image pipeline**: upload → canvas compression → optional AI background removal → Blob storage in IndexedDB → DataURL conversion for display.
+- **Image pipeline**: upload → canvas compression → optional AI background removal → upload to Supabase Storage → store path in DB → signed URL for display.
+- **snake_case ↔ camelCase**: `mapRowToItem()`/`mapRowToOutfit()` in storageCommands handle mapping between Postgres column names and TypeScript types.
 
 ### AI Features
 
@@ -77,7 +127,14 @@ Components never access IndexedDB directly. The layers are:
 - Model (~200-500MB) auto-cached in browser after first download
 - `utils/aiEmbedding.ts` — model loading and vector generation
 - `utils/aiMatching.ts` — cosine similarity matching for outfit suggestions
+- `utils/aiLearning.ts` — feedback tracking and preference learning (Supabase-backed)
 - `utils/itemSuggestion.ts` — weighted scoring algorithm (neglect days, weather, category)
+
+### Migration (temporary)
+
+- `utils/indexedDB.ts` — legacy IndexedDB wrapper, kept temporarily for data migration
+- `utils/migrateFromIndexedDB.ts` — one-time tool to migrate IndexedDB data to Supabase
+- After migration is confirmed: delete both files and remove `idb` dependency
 
 ## Code Style
 

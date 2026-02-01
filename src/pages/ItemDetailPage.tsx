@@ -24,8 +24,8 @@ import {
   formatLastWorn,
   normalizeToNoon,
 } from '../utils/dateFormatter';
-import { loadItemById } from '../utils/indexedDB';
 import {
+  getItemById,
   getOutfitsWithItemId,
   incrementWearCount,
   logWearOnDate,
@@ -41,7 +41,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
     return { item: null, outfits: [] };
   }
 
-  const [item, outfits] = await Promise.all([loadItemById(id), getOutfitsWithItemId(id)]);
+  const [item, outfits] = await Promise.all([getItemById(id), getOutfitsWithItemId(id)]);
 
   return { item, outfits };
 }

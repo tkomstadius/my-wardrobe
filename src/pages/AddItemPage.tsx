@@ -37,8 +37,9 @@ import type { OutfitRating } from '../types/outfit';
 import type { ItemCategory, NewWardrobeItem, WardrobeItem } from '../types/wardrobe';
 import { getImageEmbedding } from '../utils/aiEmbedding';
 import { CATEGORIES, getSubCategoriesForCategory } from '../utils/categories';
-import { saveItem } from '../utils/indexedDB';
-import { generateId, getAllBrands } from '../utils/storageCommands';
+import { generateId, getAllBrands, saveItem } from '../utils/storageCommands';
+import { getCurrentUserId } from '../utils/supabase';
+import { dataUrlToBlob, uploadItemImage } from '../utils/supabaseStorage';
 import styles from './AddItemPage.module.css';
 
 type ActionData = {
@@ -88,9 +89,15 @@ export async function clientAction({ request }: ActionFunctionArgs) {
 
     const now = new Date();
     const initialCount = initialWearCount ? Number.parseInt(initialWearCount, 10) : 0;
+    const id = generateId();
+
+    // Upload image to Supabase Storage
+    const userId = await getCurrentUserId();
+    const blob = dataUrlToBlob(imageUrl);
+    const storagePath = await uploadItemImage(userId, id, blob);
 
     const newItemData: NewWardrobeItem = {
-      imageUrl,
+      imageUrl: storagePath,
       notes: notes?.trim() ?? undefined,
       brand: brand?.trim() ?? undefined,
       category,
@@ -107,7 +114,7 @@ export async function clientAction({ request }: ActionFunctionArgs) {
 
     const item: WardrobeItem = {
       ...newItemData,
-      id: generateId(),
+      id,
       initialWearCount: initialCount,
       wearCount: initialCount,
       wearHistory: [],
@@ -115,7 +122,6 @@ export async function clientAction({ request }: ActionFunctionArgs) {
       updatedAt: now,
     };
 
-    // TODO go trough storage commands
     await saveItem(item);
 
     return redirect(`/items/${category}`);

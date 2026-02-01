@@ -2,7 +2,7 @@
 
 import type { ItemCategory } from '../types/wardrobe';
 import { CATEGORY_IDS } from './categories';
-import { loadAllItems, saveItem } from './indexedDB';
+import { loadItems, saveItem } from './storageCommands';
 
 /**
  * Repair all data issues in items
@@ -12,7 +12,7 @@ export async function repairWearCountMismatches(): Promise<{
   itemsChecked: number;
   itemsRepaired: number;
 }> {
-  const items = await loadAllItems();
+  const items = await loadItems();
   let repairedCount = 0;
 
   for (const item of items) {
@@ -102,7 +102,7 @@ export async function findInconsistentItems(): Promise<
     wearHistoryLength: number;
   }>
 > {
-  const items = await loadAllItems();
+  const items = await loadItems();
   const inconsistencies: Array<{
     id: string;
     issue: string;
@@ -137,7 +137,7 @@ export async function findInconsistentItems(): Promise<
  * Diagnostic function to log all items to console for debugging
  */
 export async function diagnoseAllItems(): Promise<void> {
-  const items = await loadAllItems();
+  const items = await loadItems();
 
   console.log('=== WARDROBE DIAGNOSTIC REPORT ===');
   console.log(`Total items in database: ${items.length}`);

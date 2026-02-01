@@ -32,6 +32,8 @@ import { useItemSearch } from '../hooks/useItemSearch';
 import type { OutfitRating } from '../types/outfit';
 import { formatDate } from '../utils/dateFormatter';
 import { getOutfitById, loadItems, removeOutfit, updateOutfit } from '../utils/storageCommands';
+import { getCurrentUserId } from '../utils/supabase';
+import { dataUrlToBlob, uploadOutfitPhoto } from '../utils/supabaseStorage';
 import styles from './EditOutfitPage.module.css';
 
 export async function loader({ params }: LoaderFunctionArgs) {
@@ -59,13 +61,23 @@ export async function action({ request, params }: ActionFunctionArgs) {
   const itemIds = formData.get(ITEM_IDS_NAME) as string;
 
   try {
-    await updateOutfit(id, {
-      photo: imageUrl,
+    // Handle photo: upload if new, omit from update if unchanged
+    const updates: Parameters<typeof updateOutfit>[1] = {
       createdAt: new Date(createdDate),
       notes: notes.trim() || undefined,
       rating: rating ? (Number.parseInt(rating, 10) as OutfitRating) : undefined,
       itemIds: JSON.parse(itemIds),
-    });
+    };
+
+    if (imageUrl?.startsWith('data:')) {
+      const userId = await getCurrentUserId();
+      const blob = dataUrlToBlob(imageUrl);
+      const storagePath = await uploadOutfitPhoto(userId, id, blob);
+      updates.photo = storagePath;
+    }
+    // If image unchanged (signed URL), don't update photo — DB value is preserved
+
+    await updateOutfit(id, updates);
 
     return redirect(`/outfit/${id}`);
   } catch (error) {

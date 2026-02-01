@@ -21,7 +21,6 @@ import {
   IMAGE_URL_NAME,
   INITIAL_WEAR_COUNT_NAME,
   NOTES_NAME,
-  ORIGINAL_IMAGE_URL_NAME,
   PRICE_NAME,
   PURCHASE_DATE_NAME,
   RATING_NAME,
@@ -42,8 +41,15 @@ import type { OutfitRating } from '../types/outfit';
 import type { ItemCategory, WardrobeItem } from '../types/wardrobe';
 import { getImageEmbedding } from '../utils/aiEmbedding';
 import { CATEGORIES, CATEGORY_IDS, getSubCategoriesForCategory } from '../utils/categories';
-import { loadItemById, saveItem } from '../utils/indexedDB';
-import { getAllBrands, getItemById, removeItem } from '../utils/storageCommands';
+import {
+  getAllBrands,
+  getItemById,
+  getItemStoragePath,
+  removeItem,
+  saveItem,
+} from '../utils/storageCommands';
+import { getCurrentUserId } from '../utils/supabase';
+import { dataUrlToBlob, uploadItemImage } from '../utils/supabaseStorage';
 import styles from './EditItemPage.module.css';
 
 type ActionData = {
@@ -71,7 +77,6 @@ export async function clientAction({ request, params }: ActionFunctionArgs) {
 
   // Handle update action
   const imageUrl = formData.get(IMAGE_URL_NAME) as string;
-  const originalImageUrl = formData.get(ORIGINAL_IMAGE_URL_NAME) as string;
   const brand = formData.get(BRAND_NAME) as string;
   const category = formData.get(CATEGORY_NAME) as ItemCategory;
   const subCategory = formData.get(SUBCATEGORY_NAME) as string;
@@ -94,14 +99,16 @@ export async function clientAction({ request, params }: ActionFunctionArgs) {
 
   try {
     // Load the existing item
-    const existingItem = await loadItemById(id);
+    const existingItem = await getItemById(id);
     if (!existingItem) {
       return { error: 'Item not found' };
     }
 
+    const imageChanged = imageUrl.startsWith('data:');
+
     // Regenerate embedding if image has changed
     let embedding = existingItem.embedding;
-    if (originalImageUrl && imageUrl !== originalImageUrl) {
+    if (imageChanged) {
       try {
         embedding = await getImageEmbedding(imageUrl);
       } catch (error) {
@@ -110,13 +117,24 @@ export async function clientAction({ request, params }: ActionFunctionArgs) {
       }
     }
 
+    // Resolve storage path for image
+    let storagePath: string;
+    if (imageChanged) {
+      const userId = await getCurrentUserId();
+      const blob = dataUrlToBlob(imageUrl);
+      storagePath = await uploadItemImage(userId, id, blob);
+    } else {
+      // Image unchanged — retrieve existing storage path from DB
+      storagePath = (await getItemStoragePath(id)) ?? '';
+    }
+
     const newInitialWearCount = initialWearCount ? Number.parseInt(initialWearCount, 10) : 0;
 
     const totalWearCount = newInitialWearCount + existingItem.wearHistory.length;
 
     const updatedItem: WardrobeItem = {
       ...existingItem,
-      imageUrl,
+      imageUrl: storagePath,
       notes: notes?.trim() || undefined,
       brand: brand?.trim() || undefined,
       category,

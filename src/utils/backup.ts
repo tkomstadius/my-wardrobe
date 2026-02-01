@@ -2,7 +2,9 @@
 
 import type { Outfit } from '../types/outfit';
 import type { WardrobeItem } from '../types/wardrobe';
-import { loadAllItems, loadAllOutfits, saveItem, saveOutfit } from './indexedDB';
+import { loadItems, loadOutfits, saveItem, saveOutfit } from './storageCommands';
+import { getCurrentUserId } from './supabase';
+import { dataUrlToBlob, uploadItemImage, uploadOutfitPhoto } from './supabaseStorage';
 
 export interface BackupData {
   version: string; // Backup format version (not database version)
@@ -12,21 +14,56 @@ export interface BackupData {
 }
 
 /**
- * Export all wardrobe data to a JSON backup file
+ * Fetch an image from a URL and convert to a base64 data URL.
+ * Signed URLs from Supabase Storage are converted to self-contained data URLs
+ * so backups are portable and don't expire.
+ */
+async function fetchAsDataUrl(url: string): Promise<string> {
+  // Already a data URL (e.g. from an old backup) — pass through
+  if (url.startsWith('data:')) return url;
+
+  const response = await fetch(url);
+  const blob = await response.blob();
+
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = () => reject(new Error('Failed to convert image to data URL'));
+    reader.readAsDataURL(blob);
+  });
+}
+
+/**
+ * Export all wardrobe data to a JSON backup file.
+ * Images are fetched from Supabase Storage and embedded as base64 data URLs
+ * so the backup JSON is fully self-contained.
  */
 export async function exportBackup(): Promise<Blob> {
-  // Load all data from IndexedDB
-  const items = await loadAllItems();
-  const outfits = await loadAllOutfits();
+  const items = await loadItems();
+  const outfits = await loadOutfits();
+
+  // Convert signed URL images to embedded data URLs
+  const itemsWithDataUrls = await Promise.all(
+    items.map(async (item) => ({
+      ...item,
+      imageUrl: await fetchAsDataUrl(item.imageUrl),
+    })),
+  );
+
+  const outfitsWithDataUrls = await Promise.all(
+    outfits.map(async (outfit) => ({
+      ...outfit,
+      photo: outfit.photo ? await fetchAsDataUrl(outfit.photo) : undefined,
+    })),
+  );
 
   const backupData: BackupData = {
     version: '1.0',
     exportDate: new Date().toISOString(),
-    items,
-    outfits,
+    items: itemsWithDataUrls,
+    outfits: outfitsWithDataUrls,
   };
 
-  // Convert to JSON blob
   const json = JSON.stringify(backupData, null, 2);
   return new Blob([json], { type: 'application/json' });
 }
@@ -142,8 +179,8 @@ export async function parseBackupFile(file: File): Promise<BackupData> {
 }
 
 /**
- * Convert string dates back to Date objects after JSON parsing
- * JSON.parse() converts Date objects to strings, but saveItem/saveOutfit expect Date objects
+ * Convert string dates back to Date objects after JSON parsing.
+ * JSON.parse() converts Date objects to strings, but saveItem/saveOutfit expect Date objects.
  */
 function convertDatesToObjects(data: BackupData): BackupData {
   return {
@@ -164,12 +201,14 @@ function convertDatesToObjects(data: BackupData): BackupData {
 }
 
 /**
- * Import backup data into IndexedDB
+ * Import backup data into Supabase.
+ * Images (base64 data URLs) are uploaded to Supabase Storage, and the
+ * storage paths are saved in the DB records.
+ *
  * @param data Validated backup data
  * Note:
- * - IndexedDB put() will replace existing items with same IDs
+ * - Supabase upsert() will replace existing items with same IDs
  * - Backup version is independent of database version
- * - Data will be imported into current database schema via saveItem/saveOutfit
  */
 export async function importBackup(data: BackupData): Promise<{
   itemsImported: number;
@@ -180,12 +219,17 @@ export async function importBackup(data: BackupData): Promise<{
   let itemsImported = 0;
   let outfitsImported = 0;
 
-  // Convert date strings back to Date objects (JSON.parse converts them to strings)
   const convertedData = convertDatesToObjects(data);
+  const userId = await getCurrentUserId();
 
-  // Import items (will overwrite items with same IDs)
+  // Import items — upload images to Storage, then save records
   for (const item of convertedData.items) {
     try {
+      if (item.imageUrl.startsWith('data:')) {
+        const blob = dataUrlToBlob(item.imageUrl);
+        const storagePath = await uploadItemImage(userId, item.id, blob);
+        item.imageUrl = storagePath;
+      }
       await saveItem(item);
       itemsImported++;
     } catch (error) {
@@ -195,9 +239,14 @@ export async function importBackup(data: BackupData): Promise<{
     }
   }
 
-  // Import outfits (will overwrite outfits with same IDs)
+  // Import outfits — upload photos to Storage, then save records
   for (const outfit of convertedData.outfits) {
     try {
+      if (outfit.photo?.startsWith('data:')) {
+        const blob = dataUrlToBlob(outfit.photo);
+        const storagePath = await uploadOutfitPhoto(userId, outfit.id, blob);
+        outfit.photo = storagePath;
+      }
       await saveOutfit(outfit);
       outfitsImported++;
     } catch (error) {
