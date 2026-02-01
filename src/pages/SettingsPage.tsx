@@ -479,16 +479,14 @@ export function SettingsPage() {
                     {isMigrating ? 'Migrating...' : 'Start Migration'}
                   </Button>
 
-                  {migrationDone && (
-                    <Button
-                      onClick={handleClearIndexedDB}
-                      disabled={isClearingIndexedDB}
-                      variant="destructive"
-                      className={styles.secondaryButton}
-                    >
-                      {isClearingIndexedDB ? 'Clearing...' : 'Clear Old Local Database'}
-                    </Button>
-                  )}
+                  <Button
+                    onClick={handleClearIndexedDB}
+                    disabled={isClearingIndexedDB}
+                    variant="destructive"
+                    className={styles.secondaryButton}
+                  >
+                    {isClearingIndexedDB ? 'Clearing...' : 'Clear Old Local Database'}
+                  </Button>
                 </div>
 
                 {isMigrating && migrationProgress && (
