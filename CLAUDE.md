@@ -130,12 +130,6 @@ Schema defined in `src/db/schema.ts` (Drizzle). Runtime queries use Supabase JS 
 - `utils/aiLearning.ts` — feedback tracking and preference learning (Supabase-backed)
 - `utils/itemSuggestion.ts` — weighted scoring algorithm (neglect days, weather, category)
 
-### Migration (temporary)
-
-- `utils/indexedDB.ts` — legacy IndexedDB wrapper, kept temporarily for data migration
-- `utils/migrateFromIndexedDB.ts` — one-time tool to migrate IndexedDB data to Supabase
-- After migration is confirmed: delete both files and remove `idb` dependency
-
 ## Code Style
 
 - Biome enforces: single quotes, semicolons always, 100 char line width, 2-space indent

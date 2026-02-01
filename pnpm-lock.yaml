@@ -23,9 +23,6 @@ importers:
       date-fns:
         specifier: ^4.1.0
         version: 4.1.0
-      idb:
-        specifier: ^8.0.3
-        version: 8.0.3
       onnxruntime-web:
         specifier: ^1.21.0
         version: 1.21.0
@@ -1227,9 +1224,6 @@ packages:
     resolution: {integrity: sha512-1dhVQZXhcHje7798IVM+xoo/1ZdVfzOMIc8/rgVSijRK38EDqOJoGula9N/8ZI5RD8QTxNQtK/Gozpr+qUqRRA==}
     engines: {node: '>=20.0.0'}
 
-  idb@8.0.3:
-    resolution: {integrity: sha512-LtwtVyVYO5BqRvcsKuB2iUMnHwPVByPCXFXOpuU96IZPPoPN6xjOGxZQ74pgSVVLQWtUOYgyeL4GE98BY5D3wg==}
-
   iota-array@1.0.0:
     resolution: {integrity: sha512-pZ2xT+LOHckCatGQ3DcG/a+QuEqvoxqkiL7tvE8nn3uuu+f6i1TtpB5/FtWFbxUuVr5PZCx8KskuGatbJDXOWA==}
 
@@ -2382,8 +2376,6 @@ snapshots:
       es-define-property: 1.0.1
 
   iceberg-js@0.8.1: {}
-
-  idb@8.0.3: {}
 
   iota-array@1.0.0: {}
 

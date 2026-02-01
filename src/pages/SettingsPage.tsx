@@ -17,12 +17,6 @@ import {
   updatePreferencesFromFeedback,
 } from '../utils/aiLearning';
 import { importBackup, isShareSupported, parseBackupFile, shareBackup } from '../utils/backup';
-import {
-  clearIndexedDB,
-  hasIndexedDBData,
-  type MigrationProgress,
-  migrateFromIndexedDB,
-} from '../utils/migrateFromIndexedDB';
 import { diagnoseAllItems, repairWearCountMismatches } from '../utils/repairData';
 import { loadItems, loadOutfits, updateItemEmbedding } from '../utils/storageCommands';
 import styles from './SettingsPage.module.css';
@@ -62,24 +56,10 @@ export function SettingsPage() {
   const [isClearingCache, setIsClearingCache] = useState(false);
   const [cacheSize, setCacheSize] = useState<number | null>(null);
 
-  // Migration state
-  const [hasLegacyData, setHasLegacyData] = useState<boolean | null>(null);
-  const [isMigrating, setIsMigrating] = useState(false);
-  const [migrationProgress, setMigrationProgress] = useState<MigrationProgress | null>(null);
-  const [migrationDone, setMigrationDone] = useState(false);
-  const [isClearingIndexedDB, setIsClearingIndexedDB] = useState(false);
-
   // Count items without embeddings
   const itemsNeedingEmbeddings = items.filter((item) => !item.embedding);
   const hasEmbeddingGap = itemsNeedingEmbeddings.length > 0;
   const hasAllEmbeddings = items.length > 0 && itemsNeedingEmbeddings.length === 0;
-
-  // Check for legacy IndexedDB data on mount
-  useEffect(() => {
-    hasIndexedDBData()
-      .then(setHasLegacyData)
-      .catch(() => setHasLegacyData(false));
-  }, []);
 
   // Load feedback stats and cache size on mount
   useEffect(() => {
@@ -323,71 +303,6 @@ export function SettingsPage() {
     }
   };
 
-  const handleMigrate = async () => {
-    setIsMigrating(true);
-    setMessage(null);
-    setMigrationDone(false);
-
-    try {
-      const result = await migrateFromIndexedDB((progress) => {
-        setMigrationProgress(progress);
-      });
-
-      setMigrationDone(true);
-
-      if (result.errors.length > 0) {
-        setMessage({
-          type: result.itemsMigrated > 0 || result.outfitsMigrated > 0 ? 'info' : 'error',
-          text: `Migrated ${result.itemsMigrated} items, ${result.outfitsMigrated} outfits, ${result.feedbackMigrated} feedback records. ${result.errors.length} error(s) — check console for details.`,
-        });
-        console.error('Migration errors:', result.errors);
-      } else {
-        setMessage({
-          type: 'success',
-          text: `Successfully migrated ${result.itemsMigrated} items, ${result.outfitsMigrated} outfits, and ${result.feedbackMigrated} feedback records to Supabase!`,
-        });
-      }
-    } catch (error) {
-      console.error('Migration failed:', error);
-      setMessage({
-        type: 'error',
-        text: error instanceof Error ? error.message : 'Migration failed. Please try again.',
-      });
-    } finally {
-      setIsMigrating(false);
-      setMigrationProgress(null);
-    }
-  };
-
-  const handleClearIndexedDB = async () => {
-    if (
-      !confirm(
-        'Clear all data from the old local database? Only do this after verifying your data migrated correctly.',
-      )
-    ) {
-      return;
-    }
-
-    setIsClearingIndexedDB(true);
-    try {
-      await clearIndexedDB();
-      setHasLegacyData(false);
-      setMigrationDone(false);
-      setMessage({
-        type: 'success',
-        text: 'Old local database cleared successfully.',
-      });
-    } catch (error) {
-      console.error('Failed to clear IndexedDB:', error);
-      setMessage({
-        type: 'error',
-        text: error instanceof Error ? error.message : 'Failed to clear local database.',
-      });
-    } finally {
-      setIsClearingIndexedDB(false);
-    }
-  };
-
   const handleGenerateEmbeddings = async (regenerateAll = false) => {
     setIsGeneratingEmbeddings(true);
     setMessage(null);
@@ -451,83 +366,6 @@ export function SettingsPage() {
       </div>
 
       <div className={styles.content}>
-        {/* IndexedDB Migration Section — only shown when legacy data exists */}
-        {hasLegacyData && (
-          <section className={styles.section}>
-            <h3 className={styles.sectionTitle}>Migrate Local Data</h3>
-
-            <Card className={styles.card}>
-              <div className={styles.cardContent}>
-                <div className={styles.infoBox}>
-                  <Callout.Root size="1" color="amber">
-                    <Callout.Icon>
-                      <IoInformationCircleOutline />
-                    </Callout.Icon>
-                    <Callout.Text>
-                      Data from the old local database was detected. Migrate it to Supabase so your
-                      items and outfits are safely stored in the cloud.
-                    </Callout.Text>
-                  </Callout.Root>
-                </div>
-
-                <div className={styles.buttonGroup}>
-                  <Button
-                    onClick={handleMigrate}
-                    disabled={isMigrating}
-                    className={styles.primaryButton}
-                  >
-                    {isMigrating ? 'Migrating...' : 'Start Migration'}
-                  </Button>
-
-                  <Button
-                    onClick={handleClearIndexedDB}
-                    disabled={isClearingIndexedDB}
-                    variant="destructive"
-                    className={styles.secondaryButton}
-                  >
-                    {isClearingIndexedDB ? 'Clearing...' : 'Clear Old Local Database'}
-                  </Button>
-                </div>
-
-                {isMigrating && migrationProgress && (
-                  <div className={styles.progressContainer}>
-                    <div className={styles.progressBar}>
-                      <div
-                        className={styles.progressFill}
-                        style={{
-                          width:
-                            migrationProgress.total > 0
-                              ? `${(migrationProgress.current / migrationProgress.total) * 100}%`
-                              : '0%',
-                        }}
-                      />
-                    </div>
-                    <Text size="1" color="gray" className={styles.progressText}>
-                      {migrationProgress.phase === 'items' &&
-                        `Migrating items: ${migrationProgress.current} / ${migrationProgress.total}`}
-                      {migrationProgress.phase === 'outfits' &&
-                        `Migrating outfits: ${migrationProgress.current} / ${migrationProgress.total}`}
-                      {migrationProgress.phase === 'feedback' &&
-                        `Migrating feedback: ${migrationProgress.current} / ${migrationProgress.total}`}
-                      {migrationProgress.phase === 'preferences' && 'Migrating preferences...'}
-                      {migrationProgress.phase === 'done' && 'Migration complete!'}
-                    </Text>
-                  </div>
-                )}
-
-                {migrationDone && (
-                  <div className={styles.helpText}>
-                    <Text size="2" color="gray">
-                      Verify your data looks correct, then clear the old local database to free up
-                      space. You can reload the page first to check.
-                    </Text>
-                  </div>
-                )}
-              </div>
-            </Card>
-          </section>
-        )}
-
         {/* Backup & Restore Section */}
         <section className={styles.section}>
           <h3 className={styles.sectionTitle}>Backup & Restore</h3>

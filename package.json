@@ -19,7 +19,6 @@
     "@imgly/background-removal": "^1.7.0",
     "@supabase/supabase-js": "^2.93.3",
     "date-fns": "^4.1.0",
-    "idb": "^8.0.3",
     "onnxruntime-web": "^1.21.0",
     "react": "^19.2.1",
     "react-dom": "^19.2.1",

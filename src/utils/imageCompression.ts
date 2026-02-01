@@ -1,5 +1,4 @@
 // Image compression utilities
-// Reduces image size before saving to IndexedDB
 
 export interface CompressionOptions {
   maxWidth?: number;

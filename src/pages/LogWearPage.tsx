@@ -227,8 +227,7 @@ export function LogWearPage() {
     setError('');
 
     try {
-      // Actually save to IndexedDB in the background
-      // This happens while the user sees the optimistic update
+      // Save in the background while the user sees the optimistic update
       for (const itemId of itemsToLog) {
         await incrementWearCount(itemId);
       }
