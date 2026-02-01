@@ -38,7 +38,7 @@ export function DeleteConfirmDialog({
             <Button>Cancel</Button>
           </AlertDialog.Cancel>
           <AlertDialog.Action>
-            <Button onClick={onConfirm} disabled={isDeleting}>
+            <Button variant="destructive" onClick={onConfirm} disabled={isDeleting}>
               {isDeleting ? 'Deleting...' : confirmText}
             </Button>
           </AlertDialog.Action>

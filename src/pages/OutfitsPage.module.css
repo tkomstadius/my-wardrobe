@@ -44,7 +44,7 @@
 }
 
 .outfitCard:hover {
-  border-color: var(text-color);
+  border-color: var(--text-color);
 }
 
 .outfitImage {

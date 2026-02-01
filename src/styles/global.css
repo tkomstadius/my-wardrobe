@@ -36,6 +36,29 @@
   --error-color: #ef4444;
   --success-color: #10b981;
   --warning-color: #f59e0b;
+
+  /* Gray scale (dark theme) */
+  --gray-2: #1c1c1c;
+  --gray-3: #232323;
+  --gray-4: #2c2c2c;
+  --gray-5: #353535;
+  --gray-6: #3e3e3e;
+  --gray-7: #484848;
+  --gray-8: #606060;
+  --gray-9: #6e6e6e;
+  --gray-11: #b4b4b4;
+  --gray-12: #eeeeee;
+
+  /* Accent tokens */
+  --accent-9: var(--items-color);
+  --accent-a3: rgba(99, 102, 241, 0.12);
+
+  /* Radius tokens */
+  --radius-2: 6px;
+  --radius-3: 8px;
+
+  /* Alias */
+  --color-background: var(--background-color);
 }
 
 body {
