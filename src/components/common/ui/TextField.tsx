@@ -27,6 +27,8 @@ interface TextFieldInputProps {
   min?: string;
   max?: string;
   list?: string;
+  inputMode?: React.HTMLAttributes<HTMLInputElement>['inputMode'];
+  autoComplete?: string;
 }
 
 function TextFieldInput(props: TextFieldInputProps) {
