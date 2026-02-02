@@ -3,8 +3,14 @@
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  border-radius: var(--small-border-radius);
-  padding: 0.5rem;
+  border-radius: 10px;
+  padding: 0.5rem 1rem;
+  font-weight: 600;
+  font-size: 0.9375rem;
+  transition:
+    opacity var(--transition-fast),
+    transform var(--transition-fast),
+    box-shadow var(--transition-fast);
 }
 
 .button:disabled {
@@ -12,13 +18,17 @@
   cursor: not-allowed;
 }
 
-.button:hover:not(:disabled),
+.button:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
 .button:active:not(:disabled) {
-  opacity: 0.8;
+  transform: scale(0.97);
 }
 
 .primary {
   background-color: var(--items-color);
+  box-shadow: var(--shadow-sm);
 }
 
 .destructive {

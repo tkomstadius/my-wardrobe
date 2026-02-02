@@ -5,7 +5,7 @@
 }
 
 .card {
-  background-color: var(--surface-color);
+  background: var(--gradient-surface);
   border-radius: var(--border-radius);
   border: 1px solid var(--border-color);
   overflow: hidden;
@@ -15,10 +15,12 @@
   padding: 12px;
   gap: 12px;
   align-items: center;
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--transition-fast);
 }
 
 .card:active {
-  background-color: var(--accent-action-color);
+  transform: scale(0.98);
 }
 
 .imageContainer {
@@ -34,6 +36,7 @@
   object-fit: cover;
   display: block;
   border-radius: 50%;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.08);
 }
 
 .compact {
@@ -49,19 +52,24 @@
 .quickWearButton,
 .quickEditButton {
   background: var(--items-color);
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  box-shadow: var(--shadow-sm);
+  transition:
+    background var(--transition-fast),
+    transform var(--transition-fast);
 }
 
 .quickWearButton:active,
 .quickEditButton:active {
   background: var(--complimentary-color);
   color: var(--accent-action-color);
+  transform: scale(0.92);
 }
 
 .quickWearButton:disabled,

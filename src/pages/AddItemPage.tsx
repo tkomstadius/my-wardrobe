@@ -155,71 +155,78 @@ export function AddItemPage() {
       <Form method="post" className={styles.form}>
         <ImageInput />
 
-        <TextInput
-          label="Brand"
-          name={BRAND_NAME}
-          placeholder="e.g., Ganni, Hope"
-          suggestions={brands}
-        />
-
-        <SelectInput
-          label="Category*"
-          name={CATEGORY_NAME}
-          options={CATEGORIES.map((category) => ({
-            id: category.id,
-            title: category.title,
-          }))}
-          onValueChange={(value) => setSelectedCategory(value as ItemCategory)}
-        />
-
-        <SelectInput
-          label="Sub category"
-          name={SUBCATEGORY_NAME}
-          disabled={!selectedCategory}
-          options={availableSubCategories.map((subCategory) => ({
-            id: subCategory,
-            title: subCategory,
-          }))}
-        />
-
-        <TextInput label="Price" name={PRICE_NAME} placeholder="e.g., 499" />
-
-        <Flex direction="column" gap="1">
-          <Text as="label" size="2" weight="bold">
-            Purchase Date
-          </Text>
-          <TextField.Root size="3">
-            <TextField.Input name="purchaseDate" type="date" />
-          </TextField.Root>
-        </Flex>
-
-        <Flex direction="column" gap="1">
-          <Text as="label" size="2" weight="bold">
-            Initial Wear Count
-          </Text>
-          <TextField.Root size="3">
-            <TextField.Input name="initialWearCount" type="number" placeholder="0" />
-          </TextField.Root>
-        </Flex>
-
-        <Flex direction="column" gap="1">
-          <Text as="label" size="2" weight="bold">
-            Notes
-          </Text>
-          <TextArea
-            variant="soft"
-            name={NOTES_NAME}
-            placeholder="e.g., favorite jeans, scratched"
-            rows={2}
-            size="3"
+        <fieldset className={styles.fieldSection}>
+          <legend>Details</legend>
+          <TextInput
+            label="Brand"
+            name={BRAND_NAME}
+            placeholder="e.g., Ganni, Hope"
+            suggestions={brands}
           />
-        </Flex>
 
-        <CheckboxField name="isSecondHand" label="Second Hand / Thrifted" />
+          <SelectInput
+            label="Category*"
+            name={CATEGORY_NAME}
+            options={CATEGORIES.map((category) => ({
+              id: category.id,
+              title: category.title,
+            }))}
+            onValueChange={(value) => setSelectedCategory(value as ItemCategory)}
+          />
 
-        <CheckboxField name="isDogCasual" label="Dog casual" />
+          <SelectInput
+            label="Sub category"
+            name={SUBCATEGORY_NAME}
+            disabled={!selectedCategory}
+            options={availableSubCategories.map((subCategory) => ({
+              id: subCategory,
+              title: subCategory,
+            }))}
+          />
+        </fieldset>
 
-        <CheckboxField name="isHandmade" label="Handmade" />
+        <fieldset className={styles.fieldSection}>
+          <legend>Metadata</legend>
+          <TextInput label="Price" name={PRICE_NAME} placeholder="e.g., 499" />
+
+          <Flex direction="column" gap="1">
+            <Text as="label" size="2" weight="bold">
+              Purchase Date
+            </Text>
+            <TextField.Root size="3">
+              <TextField.Input name="purchaseDate" type="date" />
+            </TextField.Root>
+          </Flex>
+
+          <Flex direction="column" gap="1">
+            <Text as="label" size="2" weight="bold">
+              Initial Wear Count
+            </Text>
+            <TextField.Root size="3">
+              <TextField.Input name="initialWearCount" type="number" placeholder="0" />
+            </TextField.Root>
+          </Flex>
+
+          <Flex direction="column" gap="1">
+            <Text as="label" size="2" weight="bold">
+              Notes
+            </Text>
+            <TextArea
+              variant="soft"
+              name={NOTES_NAME}
+              placeholder="e.g., favorite jeans, scratched"
+              rows={2}
+              size="3"
+            />
+          </Flex>
+        </fieldset>
+
+        <fieldset className={styles.fieldSection}>
+          <legend>Properties</legend>
+          <CheckboxField name="isSecondHand" label="Second Hand / Thrifted" />
+          <CheckboxField name="isDogCasual" label="Dog casual" />
+          <CheckboxField name="isHandmade" label="Handmade" />
+        </fieldset>
 
         <Flex direction="column" gap="2">
           <Text size="2" weight="bold">

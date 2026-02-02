@@ -3,16 +3,16 @@
   align-items: center;
   justify-content: space-between;
   gap: 0.5rem;
-  min-width: 200px;
-  max-width: 100%;
+  width: 100%;
+  min-width: 0;
   padding: 0.5rem 1rem;
   background-color: var(--surface-color);
   border: 1px solid var(--border-color);
   border-radius: 0.5rem;
   color: var(--text-color);
-  font-size: 0.875rem;
+  font-size: 1rem;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: all var(--transition-fast);
 }
 
 .trigger:hover {
@@ -29,13 +29,17 @@
 }
 
 .listbox {
-  background-color: var(--surface-color);
+  width: var(--anchor-width);
+  max-width: calc(100vw - 2rem);
+  background-color: rgba(21, 21, 21, 0.95);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   border: 1px solid var(--border-color);
   border-radius: 0.5rem;
   padding: 0.5rem;
   max-height: 300px;
   overflow-y: auto;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  box-shadow: var(--shadow-lg);
   z-index: 1001;
 }
 
@@ -43,9 +47,9 @@
   padding: 0.5rem 0.75rem;
   cursor: pointer;
   border-radius: 0.25rem;
-  font-size: 0.875rem;
+  font-size: 1rem;
   color: var(--text-color);
-  transition: background-color 0.15s ease;
+  transition: background-color var(--transition-fast);
 }
 
 .option:hover {

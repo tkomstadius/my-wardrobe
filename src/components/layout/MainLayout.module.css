@@ -13,9 +13,12 @@
   position: sticky;
   top: 0;
   z-index: 100;
-  background-color: var(--base-color);
+  background-color: rgba(15, 15, 15, 0.75);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   padding: 1rem 1rem 0.25rem;
   color: var(--text-color);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
 }
 
 .name {
@@ -42,6 +45,6 @@
   max-width: 768px;
   margin: 0 auto;
   padding: 1rem;
-  padding-bottom: calc(9rem + env(safe-area-inset-bottom));
+  padding-bottom: calc(5rem + env(safe-area-inset-bottom));
   position: relative;
 }

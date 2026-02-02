@@ -225,94 +225,105 @@ export function EditItemPage() {
             </Callout.Root>
           )}
 
-          <TextInput
-            label="Brand"
-            name={BRAND_NAME}
-            placeholder="e.g., Ganni, Hope"
-            defaultValue={item.brand || ''}
-            suggestions={brands}
-          />
-
-          <SelectInput
-            label="Category"
-            name={CATEGORY_NAME}
-            options={CATEGORIES.map((category) => ({
-              id: category.id,
-              title: category.title,
-            }))}
-            defaultValue={validCategory}
-            onValueChange={(value) => setSelectedCategory(value as ItemCategory)}
-          />
-
-          <SelectInput
-            label="Sub category"
-            name={SUBCATEGORY_NAME}
-            options={availableSubCategories.map((subCategory) => ({
-              id: subCategory,
-              title: subCategory,
-            }))}
-            defaultValue={item.subCategory || undefined}
-          />
-
-          <TextInput
-            label="Price"
-            name={PRICE_NAME}
-            placeholder="e.g., 499"
-            defaultValue={item.price?.toString() || ''}
-          />
-
-          <Flex direction="column" gap="1">
-            <Text as="label" size="2" weight="bold">
-              Purchase Date
-            </Text>
-            <TextField.Root size="3">
-              <TextField.Input
-                name={PURCHASE_DATE_NAME}
-                type="date"
-                defaultValue={
-                  item.purchaseDate ? new Date(item.purchaseDate).toISOString().split('T')[0] : ''
-                }
-              />
-            </TextField.Root>
-          </Flex>
-
-          <Flex direction="column" gap="1">
-            <Text as="label" size="2" weight="bold">
-              Initial Wear Count
-            </Text>
-            <TextField.Root size="3">
-              <TextField.Input
-                name={INITIAL_WEAR_COUNT_NAME}
-                type="number"
-                placeholder="0"
-                defaultValue={(item.initialWearCount ?? 0).toString()}
-              />
-            </TextField.Root>
-          </Flex>
-
-          <Flex direction="column" gap="1">
-            <Text as="label" size="2" weight="bold">
-              Notes
-            </Text>
-            <TextArea
-              variant="soft"
-              name={NOTES_NAME}
-              placeholder="e.g., favorite jeans, scratched"
-              rows={2}
-              defaultValue={item.notes || ''}
-              size="3"
+          <fieldset className={styles.fieldSection}>
+            <legend>Details</legend>
+            <TextInput
+              label="Brand"
+              name={BRAND_NAME}
+              placeholder="e.g., Ganni, Hope"
+              defaultValue={item.brand || ''}
+              suggestions={brands}
             />
-          </Flex>
 
-          <CheckboxField
-            name="isSecondHand"
-            defaultChecked={item.isSecondHand}
-            label="Second Hand / Thrifted"
-          />
+            <SelectInput
+              label="Category"
+              name={CATEGORY_NAME}
+              options={CATEGORIES.map((category) => ({
+                id: category.id,
+                title: category.title,
+              }))}
+              defaultValue={validCategory}
+              onValueChange={(value) => setSelectedCategory(value as ItemCategory)}
+            />
 
-          <CheckboxField name="isDogCasual" defaultChecked={item.isDogCasual} label="Dog casual" />
+            <SelectInput
+              label="Sub category"
+              name={SUBCATEGORY_NAME}
+              options={availableSubCategories.map((subCategory) => ({
+                id: subCategory,
+                title: subCategory,
+              }))}
+              defaultValue={item.subCategory || undefined}
+            />
+          </fieldset>
 
-          <CheckboxField name="isHandmade" defaultChecked={item.isHandmade} label="Handmade" />
+          <fieldset className={styles.fieldSection}>
+            <legend>Metadata</legend>
+            <TextInput
+              label="Price"
+              name={PRICE_NAME}
+              placeholder="e.g., 499"
+              defaultValue={item.price?.toString() || ''}
+            />
+
+            <Flex direction="column" gap="1">
+              <Text as="label" size="2" weight="bold">
+                Purchase Date
+              </Text>
+              <TextField.Root size="3">
+                <TextField.Input
+                  name={PURCHASE_DATE_NAME}
+                  type="date"
+                  defaultValue={
+                    item.purchaseDate ? new Date(item.purchaseDate).toISOString().split('T')[0] : ''
+                  }
+                />
+              </TextField.Root>
+            </Flex>
+
+            <Flex direction="column" gap="1">
+              <Text as="label" size="2" weight="bold">
+                Initial Wear Count
+              </Text>
+              <TextField.Root size="3">
+                <TextField.Input
+                  name={INITIAL_WEAR_COUNT_NAME}
+                  type="number"
+                  placeholder="0"
+                  defaultValue={(item.initialWearCount ?? 0).toString()}
+                />
+              </TextField.Root>
+            </Flex>
+
+            <Flex direction="column" gap="1">
+              <Text as="label" size="2" weight="bold">
+                Notes
+              </Text>
+              <TextArea
+                variant="soft"
+                name={NOTES_NAME}
+                placeholder="e.g., favorite jeans, scratched"
+                rows={2}
+                defaultValue={item.notes || ''}
+                size="3"
+              />
+            </Flex>
+          </fieldset>
+
+          <fieldset className={styles.fieldSection}>
+            <legend>Properties</legend>
+            <CheckboxField
+              name="isSecondHand"
+              defaultChecked={item.isSecondHand}
+              label="Second Hand / Thrifted"
+            />
+            <CheckboxField
+              name="isDogCasual"
+              defaultChecked={item.isDogCasual}
+              label="Dog casual"
+            />
+            <CheckboxField name="isHandmade" defaultChecked={item.isHandmade} label="Handmade" />
+          </fieldset>
 
           <Flex direction="column" gap="2">
             <Text size="2" weight="bold">

@@ -14,20 +14,21 @@
   color-scheme: dark;
 
   --background-color: rgb(10, 10, 10);
-  --base-color: rgb(15, 15, 15);
-  --surface-color: rgb(21, 21, 21);
-  --border-color: rgb(31, 31, 31);
+  --base-color: rgba(15, 15, 15, 0.85);
+  --surface-color: rgba(21, 21, 21, 0.8);
+  --border-color: rgba(255, 255, 255, 0.06);
 
   --items-color: oklch(0.558 0.288 302.321014);
   --destructive-color: oklch(63.7% 0.237 25.331);
 
-  --border-radius: 16px;
+  --border-radius: 12px;
   --small-border-radius: 8px;
 
   /* Theme colors */
-  --accent-color: #34495e;
-  --accent-hover: #4f46e5;
-  --accent-action-color: #243342;
+  --accent-color: oklch(0.6 0.25 280);
+  --accent-hover: oklch(0.55 0.28 280);
+  --accent-action-color: oklch(0.2 0.05 280);
+  --accent-subtle: oklch(0.2 0.05 280);
   --text-color: #fff;
   --text-secondary: #9ca3af;
   --complimentary-color: #aad3f1;
@@ -56,6 +57,19 @@
   /* Radius tokens */
   --radius-2: 6px;
   --radius-3: 8px;
+
+  /* Shadow tokens */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.5);
+
+  /* Transition tokens */
+  --transition-fast: 0.15s ease;
+  --transition-normal: 0.2s ease;
+
+  /* Gradient tokens */
+  --gradient-surface: linear-gradient(135deg, rgba(21, 21, 21, 0.9) 0%, rgba(28, 28, 28, 0.8) 100%);
+  --gradient-accent: linear-gradient(135deg, oklch(0.45 0.25 280) 0%, oklch(0.4 0.2 300) 100%);
 
   /* Alias */
   --color-background: var(--background-color);

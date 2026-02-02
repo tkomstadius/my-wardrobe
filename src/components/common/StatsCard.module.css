@@ -1,17 +1,22 @@
 .container {
   padding: 12px;
-  background: var(--accent-9);
+  background: var(--gradient-accent);
   border-radius: var(--border-radius);
   display: flex;
   flex-direction: column;
   gap: 4px;
   text-align: center;
+  box-shadow: var(--shadow-sm);
 }
 
 .title {
   color: var(--complimentary-color);
+  font-size: 0.75rem;
+  font-weight: 500;
 }
 
 .value {
   color: var(--text-color);
+  font-size: 1.5rem;
+  font-weight: 700;
 }

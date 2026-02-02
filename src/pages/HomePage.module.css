@@ -4,8 +4,8 @@
 
 .quickStatsGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-  gap: 0.75rem;
+  grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+  gap: 0.5rem;
 }
 
 .tabTrigger {
@@ -13,12 +13,15 @@
   border: none;
   border-bottom: 2px solid transparent;
   cursor: pointer;
-  transition: all 0.2s ease;
-  color: var(--text-color);
+  transition: all var(--transition-normal);
+  color: var(--text-secondary);
+  font-weight: 500;
+  padding: 0.5rem 0;
 }
 
 .tabTrigger[data-state="active"] {
   color: var(--complimentary-color);
+  border-bottom-color: var(--complimentary-color);
 }
 
 .tabContent {
@@ -31,10 +34,11 @@
 }
 
 .emptySection {
-  background-color: var(--accent-9);
+  background: var(--gradient-accent);
   padding: 2rem;
   text-align: center;
   border-radius: var(--border-radius);
+  box-shadow: var(--shadow-sm);
 }
 
 .itemWrapper {

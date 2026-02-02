@@ -5,7 +5,7 @@
   border: 1px solid var(--border-color);
   border-radius: 0.5rem;
   color: var(--text-color);
-  font-size: 0.875rem;
+  font-size: 1rem;
   font-family: inherit;
   resize: vertical;
   min-height: 80px;

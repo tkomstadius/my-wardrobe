@@ -1,7 +1,9 @@
 .backdrop {
   position: fixed;
   inset: 0;
-  background-color: rgba(0, 0, 0, 0.6);
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   z-index: 1000;
   display: flex;
   align-items: center;
@@ -10,16 +12,16 @@
 }
 
 .content {
-  background-color: var(--surface-color);
+  background-color: rgba(21, 21, 21, 0.95);
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius);
   padding: 1.5rem;
   max-width: 500px;
   width: 100%;
-  max-height: 90vh;
+  max-height: 85dvh;
   overflow-y: auto;
   position: relative;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+  box-shadow: var(--shadow-lg);
 }
 
 .title {
@@ -48,6 +50,7 @@
   align-items: center;
   justify-content: center;
   border-radius: 0.25rem;
+  transition: all var(--transition-fast);
 }
 
 .closeButton:hover {

@@ -20,9 +20,11 @@
   padding-top: 1rem;
   border-top: 1px solid var(--gray-6);
   position: sticky;
-  bottom: 0;
+  bottom: calc(4rem + env(safe-area-inset-bottom));
   padding-bottom: 1rem;
   margin-top: auto;
+  background-color: var(--background-color);
+  z-index: 10;
 }
 
 .callout {
@@ -71,7 +73,7 @@
 
 .photoPreview img {
   max-width: 100%;
-  max-height: 400px;
+  max-height: 300px;
   border-radius: var(--radius-3);
   object-fit: contain;
   background: var(--gray-2);
@@ -131,7 +133,7 @@
   background: var(--gray-2);
   border-radius: var(--radius-2);
   border: 1px solid var(--gray-6);
-  transition: all 0.2s ease;
+  transition: all var(--transition-normal);
 }
 
 .matchRow.rejected {

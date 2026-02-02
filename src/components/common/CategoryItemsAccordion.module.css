@@ -25,7 +25,7 @@
 }
 
 .chevron {
-  transition: transform 0.2s ease;
+  transition: transform var(--transition-normal);
 }
 
 .accordionTrigger[data-state="open"] .chevron {
@@ -41,13 +41,16 @@
   border-radius: var(--border-radius);
   cursor: pointer;
   background-color: var(--accent-a3);
-  border: 1px solid transparent;
+  border: 2px solid transparent;
   position: relative;
+  transition:
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast);
 }
 
 .selectableItem:hover:not(.disabled) {
-  background-color: var(--text-color);
-  color: var(--accent-a3);
+  border-color: var(--items-color);
+  box-shadow: 0 0 12px rgba(99, 102, 241, 0.15);
 }
 
 .selectableItem.disabled {
@@ -76,8 +79,8 @@
 }
 
 .itemImage {
-  width: 90px;
-  height: 90px;
+  width: 100%;
+  aspect-ratio: 1;
   object-fit: cover;
   border-radius: 50%;
 }
