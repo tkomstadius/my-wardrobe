@@ -19,6 +19,31 @@
   padding: 1rem 1rem 0.25rem;
   color: var(--text-color);
   border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  overflow: hidden;
+}
+
+.progressBar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 2px;
+  background: var(--items-color);
+  animation: progress 1.5s ease-in-out infinite;
+}
+
+@keyframes progress {
+  0% {
+    left: 0;
+    width: 0;
+  }
+  50% {
+    left: 0;
+    width: 70%;
+  }
+  100% {
+    left: 100%;
+    width: 0;
+  }
 }
 
 .name {

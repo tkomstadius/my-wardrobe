@@ -1,4 +1,5 @@
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import { Spinner } from './components/common/ui/Spinner';
 import { MainLayout } from './components/layout/MainLayout';
 import { useAuth } from './contexts/AuthContext';
 import {
@@ -90,7 +91,19 @@ function App() {
   const { isAuthenticated, isLoading } = useAuth();
 
   if (isLoading) {
-    return null;
+    return (
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          minHeight: '100vh',
+          backgroundColor: 'var(--background-color)',
+        }}
+      >
+        <Spinner size="4" />
+      </div>
+    );
   }
 
   if (!isAuthenticated) {
