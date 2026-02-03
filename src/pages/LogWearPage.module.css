@@ -18,7 +18,7 @@
   gap: 1rem;
   justify-content: flex-end;
   padding-top: 1rem;
-  border-top: 1px solid var(--gray-6);
+  border-top: 1px solid var(--border-color);
   position: sticky;
   bottom: calc(4rem + env(safe-area-inset-bottom));
   padding-bottom: 1rem;
@@ -73,10 +73,10 @@
 
 .photoPreview img {
   max-width: 100%;
-  max-height: 300px;
+  max-height: 280px;
   border-radius: var(--radius-3);
   object-fit: contain;
-  background: var(--gray-2);
+  background: var(--gradient-surface);
   display: block;
 }
 
@@ -130,15 +130,15 @@
   align-items: center;
   gap: 1rem;
   padding: 0.75rem;
-  background: var(--gray-2);
+  background: var(--gradient-surface);
   border-radius: var(--radius-2);
-  border: 1px solid var(--gray-6);
+  border: 1px solid var(--border-color);
   transition: all var(--transition-normal);
 }
 
 .matchRow.rejected {
   opacity: 0.5;
-  background: var(--gray-3);
+  background: var(--surface-color);
 }
 
 .matchThumbnail {
@@ -147,7 +147,7 @@
   flex-shrink: 0;
   border-radius: var(--radius-2);
   object-fit: cover;
-  background: var(--gray-4);
+  background: var(--surface-color);
 }
 
 .matchDetails {

@@ -20,16 +20,20 @@
   font-weight: 500;
   cursor: pointer;
   position: relative;
-  transition: color 0.15s ease;
+  transition: all 0.15s ease;
   white-space: nowrap;
+  border-radius: var(--small-border-radius);
 }
 
-.trigger:hover {
-  color: var(--text-color);
+@media (hover: hover) {
+  .trigger:hover {
+    color: var(--text-color);
+  }
 }
 
 .trigger[data-selected] {
-  color: var(--accent-color);
+  color: var(--items-color);
+  background-color: rgba(99, 102, 241, 0.08);
 }
 
 .trigger[data-selected]::after {
@@ -39,7 +43,7 @@
   left: 0;
   right: 0;
   height: 2px;
-  background-color: var(--accent-color);
+  background-color: var(--items-color);
 }
 
 .content {

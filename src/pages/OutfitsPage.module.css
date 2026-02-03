@@ -41,25 +41,32 @@
   overflow: hidden;
   cursor: pointer;
   padding: 8px;
+  transition: all var(--transition-normal);
 }
 
-.outfitCard:hover {
-  border-color: var(--text-color);
+@media (hover: hover) {
+  .outfitCard:hover {
+    border-color: var(--text-color);
+  }
+}
+
+.outfitCard:active {
+  transform: scale(0.98);
 }
 
 .outfitImage {
   position: relative;
   width: 100%;
-  aspect-ratio: 1;
+  aspect-ratio: 3 / 4;
   background: var(--accent-a3);
   overflow: hidden;
-  border-radius: 50%;
+  border-radius: var(--border-radius);
 }
 
 .outfitImage img {
   width: 100%;
   height: 100%;
-  object-fit: contain;
+  object-fit: cover;
   background: var(--accent-a3);
 }
 

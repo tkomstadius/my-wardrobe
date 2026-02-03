@@ -18,9 +18,11 @@
   white-space: nowrap;
 }
 
-.filterButton:hover {
-  background-color: var(--gray-4);
-  border-color: var(--gray-7);
+@media (hover: hover) {
+  .filterButton:hover {
+    background-color: var(--gray-4);
+    border-color: var(--gray-7);
+  }
 }
 
 .filterButtonActive {
@@ -29,9 +31,11 @@
   border-color: var(--accent-9);
 }
 
-.filterButtonActive:hover {
-  background-color: var(--accent-10);
-  border-color: var(--accent-10);
+@media (hover: hover) {
+  .filterButtonActive:hover {
+    background-color: var(--accent-10);
+    border-color: var(--accent-10);
+  }
 }
 
 .count {

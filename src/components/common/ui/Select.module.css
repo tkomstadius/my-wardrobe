@@ -15,8 +15,10 @@
   transition: all var(--transition-fast);
 }
 
-.trigger:hover {
-  background-color: var(--accent-action-color);
+@media (hover: hover) {
+  .trigger:hover {
+    background-color: var(--accent-action-color);
+  }
 }
 
 .trigger:disabled {
@@ -52,8 +54,10 @@
   transition: background-color var(--transition-fast);
 }
 
-.option:hover {
-  background-color: var(--accent-action-color);
+@media (hover: hover) {
+  .option:hover {
+    background-color: var(--accent-action-color);
+  }
 }
 
 .option[data-selected] {

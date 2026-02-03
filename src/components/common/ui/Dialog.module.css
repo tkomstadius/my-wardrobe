@@ -53,7 +53,9 @@
   transition: all var(--transition-fast);
 }
 
-.closeButton:hover {
-  background-color: var(--accent-action-color);
-  color: var(--text-color);
+@media (hover: hover) {
+  .closeButton:hover {
+    background-color: var(--accent-action-color);
+    color: var(--text-color);
+  }
 }

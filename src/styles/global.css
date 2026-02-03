@@ -14,12 +14,16 @@
   color-scheme: dark;
 
   --background-color: rgb(10, 10, 10);
-  --base-color: rgba(15, 15, 15, 0.85);
-  --surface-color: rgba(21, 21, 21, 0.8);
-  --border-color: rgba(255, 255, 255, 0.06);
+  --base-color: rgba(20, 20, 20, 0.85);
+  --surface-color: rgba(30, 30, 30, 0.8);
+  --border-color: rgba(255, 255, 255, 0.08);
 
   --items-color: oklch(0.558 0.288 302.321014);
   --destructive-color: oklch(63.7% 0.237 25.331);
+
+  --glass-bg: rgba(20, 20, 20, 0.8);
+  --glass-border: rgba(255, 255, 255, 0.06);
+  --glass-blur: blur(16px);
 
   --border-radius: 12px;
   --small-border-radius: 8px;
@@ -111,8 +115,24 @@ html {
   -webkit-text-size-adjust: 100%;
 }
 
+/* Remove tap highlight on all elements */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
 /* Better button touch targets for mobile */
 button {
   all: unset;
   cursor: pointer;
+}
+
+/* Respect user motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms;
+    animation-iteration-count: 1;
+    transition-duration: 0.01ms;
+  }
 }

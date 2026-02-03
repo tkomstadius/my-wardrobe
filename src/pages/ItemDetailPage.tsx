@@ -215,9 +215,9 @@ export function ItemDetailPage() {
 
           <Flex direction="column" gap="2">
             {!showDatePicker ? (
-              <Flex gap="2" direction="column">
+              <Flex gap="2">
                 <Button onClick={handleMarkAsWorn} className={styles.wornButton}>
-                  Mark as Worn Today
+                  Worn Today
                 </Button>
                 <Button
                   onClick={() => {
@@ -227,7 +227,7 @@ export function ItemDetailPage() {
                   }}
                   className={styles.wornButton}
                 >
-                  Log Wear on Different Date
+                  Log Past Wear
                 </Button>
               </Flex>
             ) : (

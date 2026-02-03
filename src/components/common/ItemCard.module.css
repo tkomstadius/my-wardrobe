@@ -25,7 +25,7 @@
 
 .imageContainer {
   overflow: hidden;
-  background: var(--accent-9);
+  background: var(--surface-color);
   position: relative;
   flex-shrink: 0;
 }
@@ -35,7 +35,7 @@
   height: 70px;
   object-fit: cover;
   display: block;
-  border-radius: 50%;
+  border-radius: var(--border-radius);
   box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.08);
 }
 

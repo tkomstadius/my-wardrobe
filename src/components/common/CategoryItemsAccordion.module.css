@@ -48,9 +48,11 @@
     box-shadow var(--transition-fast);
 }
 
-.selectableItem:hover:not(.disabled) {
-  border-color: var(--items-color);
-  box-shadow: 0 0 12px rgba(99, 102, 241, 0.15);
+@media (hover: hover) {
+  .selectableItem:hover:not(.disabled) {
+    border-color: var(--items-color);
+    box-shadow: 0 0 12px rgba(99, 102, 241, 0.15);
+  }
 }
 
 .selectableItem.disabled {
@@ -82,5 +84,5 @@
   width: 100%;
   aspect-ratio: 1;
   object-fit: cover;
-  border-radius: 50%;
+  border-radius: var(--border-radius);
 }

@@ -1,13 +1,13 @@
 .button {
   position: fixed;
-  bottom: calc(100px + env(safe-area-inset-bottom));
+  bottom: calc(5.5rem + env(safe-area-inset-bottom));
   right: 1.5rem;
   width: 56px;
   height: 56px;
   border-radius: 50%;
   background-color: var(--items-color);
   color: var(--text-color);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  box-shadow: var(--shadow-md);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -15,9 +15,11 @@
   z-index: 50;
 }
 
-.button:hover {
-  background-color: var(--surface-color);
-  transform: scale(1.1);
+@media (hover: hover) {
+  .button:hover {
+    background-color: var(--surface-color);
+    transform: scale(1.1);
+  }
 }
 
 .button:active {

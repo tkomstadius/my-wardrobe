@@ -18,17 +18,17 @@
   width: 100%;
   max-width: 500px;
   margin: 0 auto;
-  aspect-ratio: 4 / 3;
+  aspect-ratio: 3 / 4;
   border-radius: var(--border-radius);
-  border: 1px solid var(--accent-9);
-  background-color: var(--accent-9);
+  border: 1px solid var(--border-color);
+  background-color: var(--surface-color);
   overflow: hidden;
 }
 
 .imageSection img {
   width: 100%;
   height: 100%;
-  object-fit: contain;
+  object-fit: cover;
 }
 
 .category {
@@ -75,14 +75,14 @@
   flex-direction: column;
   gap: 12px;
   padding: 16px;
-  border: 1px solid var(--accent-9);
+  border: 1px solid var(--border-color);
   border-radius: var(--border-radius);
 }
 
 /* Wear History Section */
 .wearHistorySection {
   padding: 20px 0;
-  border-top: 1px solid var(--gray-6);
+  border-top: 1px solid var(--border-color);
 }
 
 .sectionHeading {
@@ -100,15 +100,18 @@
   justify-content: space-between;
   align-items: center;
   padding: 0.75rem;
-  background: var(--gray-2);
-  border: 1px solid var(--gray-6);
+  background: var(--gradient-surface);
+  border: 1px solid var(--border-color);
   border-radius: var(--radius-2);
   transition: all 0.2s ease;
 }
 
-.wearHistoryItem:hover {
-  border-color: var(--gray-7);
-  background: var(--gray-3);
+@media (hover: hover) {
+  .wearHistoryItem:hover {
+    border-color: var(--border-color);
+    background: var(--gradient-surface);
+    box-shadow: var(--shadow-sm);
+  }
 }
 
 .wearDate {
@@ -129,7 +132,7 @@
   flex-direction: column;
   gap: 16px;
   padding: 20px 0;
-  border-top: 1px solid var(--gray-6);
+  border-top: 1px solid var(--border-color);
 }
 
 .outfitHeading {
@@ -151,23 +154,30 @@
   color: inherit;
   border-radius: 8px;
   overflow: hidden;
-  background: var(--gray-3);
+  background: var(--gradient-surface);
   transition:
     transform 0.2s ease,
     box-shadow 0.2s ease;
   cursor: pointer;
 }
 
-.outfitCard:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+@media (hover: hover) {
+  .outfitCard:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+  }
+}
+
+.outfitCard:active {
+  transform: scale(0.98);
 }
 
 .outfitImage {
   width: 100%;
-  aspect-ratio: 1;
-  object-fit: contain;
+  aspect-ratio: 3 / 4;
+  object-fit: cover;
   background: var(--gray-4);
+  border-radius: var(--border-radius);
 }
 
 .outfitPlaceholder {
@@ -197,7 +207,7 @@
   display: flex;
   gap: 12px;
   padding-top: 24px;
-  border-top: 1px solid var(--gray-6);
+  border-top: 1px solid var(--border-color);
 }
 
 .editButton {
@@ -220,6 +230,5 @@
 
   .wornButton {
     width: 100%;
-    min-height: 48px; /* Better touch target for mobile */
   }
 }

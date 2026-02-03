@@ -13,13 +13,15 @@
   box-shadow: var(--shadow-sm);
 }
 
-.categoryCard:hover {
-  border-color: var(--items-color);
-  box-shadow: 0 0 16px rgba(99, 102, 241, 0.12);
+@media (hover: hover) {
+  .categoryCard:hover {
+    border-color: var(--items-color);
+    box-shadow: 0 0 16px rgba(99, 102, 241, 0.12);
+  }
 }
 
 .categoryCard:active {
-  transform: scale(0.97);
+  transform: scale(0.98);
 }
 
 .categoryTitle {
