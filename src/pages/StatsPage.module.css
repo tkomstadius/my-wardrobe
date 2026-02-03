@@ -208,6 +208,21 @@
   min-width: fit-content;
 }
 
+a.itemRow {
+  text-decoration: none;
+  color: inherit;
+}
+
+.showAllButton {
+  background: none;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-3);
+  padding: 0.5rem;
+  cursor: pointer;
+  text-align: center;
+  color: var(--accent-11);
+}
+
 /* Responsive */
 @media (min-width: 640px) {
   .statsGrid {

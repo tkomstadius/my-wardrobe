@@ -1,15 +1,81 @@
-import { useMemo } from 'react';
-import { useLoaderData } from 'react-router';
+import { useMemo, useState } from 'react';
+import { Link, useLoaderData } from 'react-router';
 import { StatsCard } from '../components/common/StatsCard';
 import { Heading } from '../components/common/ui/Heading';
 import { Text } from '../components/common/ui/Text';
+import type { WardrobeItem } from '../types/wardrobe';
 import { calculateFullStats } from '../utils/statsCalculations';
 import { loadItems } from '../utils/storageCommands';
 import styles from './StatsPage.module.css';
 
+const NEVER_WORN_DEFAULT_LIMIT = 10;
+
+function formatItemAge(createdAt: Date): string {
+  const now = new Date();
+  const diffMs = now.getTime() - createdAt.getTime();
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+  if (diffDays < 1) return 'Added today';
+  if (diffDays === 1) return 'Added 1d ago';
+  if (diffDays < 30) return `Added ${diffDays}d ago`;
+
+  const diffMonths = Math.floor(diffDays / 30);
+  if (diffMonths < 12) return `Added ${diffMonths}m ago`;
+
+  const diffYears = Math.floor(diffMonths / 12);
+  return `Added ${diffYears}y ago`;
+}
+
 export async function loader() {
   const items = await loadItems();
   return { items };
+}
+
+function NeverWornSection({ items }: { items: WardrobeItem[] }) {
+  const [showAll, setShowAll] = useState(false);
+  const hasMore = items.length > NEVER_WORN_DEFAULT_LIMIT;
+  const displayedItems = showAll ? items : items.slice(0, NEVER_WORN_DEFAULT_LIMIT);
+
+  return (
+    <div className={styles.subsection}>
+      <Text size="3" weight="medium" className={styles.subsectionTitle}>
+        Never Worn ({items.length})
+      </Text>
+      <div className={styles.itemList}>
+        {displayedItems.map((item) => (
+          <Link key={item.id} to={`/item/${item.id}`} className={styles.itemRow}>
+            <div className={styles.itemImage}>
+              <img src={item.imageUrl} alt={item.brand || 'Item'} />
+            </div>
+            <div className={styles.itemInfo}>
+              <Text size="2" weight="medium">
+                {item.brand || 'Unnamed'}
+              </Text>
+              <Text size="1" color="gray">
+                {item.category.charAt(0).toUpperCase() + item.category.slice(1)}
+              </Text>
+            </div>
+            <div className={styles.itemWears}>
+              <Text size="2" color="gray">
+                {formatItemAge(item.createdAt)}
+              </Text>
+            </div>
+          </Link>
+        ))}
+      </div>
+      {hasMore && (
+        <button
+          type="button"
+          className={styles.showAllButton}
+          onClick={() => setShowAll((prev) => !prev)}
+        >
+          <Text size="2" weight="medium">
+            {showAll ? 'Show Less' : `Show All (${items.length})`}
+          </Text>
+        </button>
+      )}
+    </div>
+  );
 }
 
 export function StatsPage() {
@@ -156,16 +222,7 @@ export function StatsPage() {
             </div>
           )}
 
-          {stats.neverWorn.length > 0 && (
-            <div className={styles.subsection}>
-              <Text size="3" weight="medium" className={styles.subsectionTitle}>
-                Never Worn ({stats.neverWorn.length})
-              </Text>
-              <Text size="2" color="gray">
-                You have {stats.neverWorn.length} items that haven't been worn yet.
-              </Text>
-            </div>
-          )}
+          {stats.neverWorn.length > 0 && <NeverWornSection items={stats.neverWorn} />}
         </section>
 
         {/* Financial Insights */}
