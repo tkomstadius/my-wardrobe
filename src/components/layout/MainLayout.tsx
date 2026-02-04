@@ -2,6 +2,7 @@ import { IoBarChartOutline, IoSettingsOutline } from 'react-icons/io5';
 import { Outlet, useNavigate, useNavigation } from 'react-router';
 import { useWeather } from '../../contexts/WeatherContext';
 import { ScrollToTop } from '../common/ScrollToTop';
+import { ErrorBoundary } from '../common/ui/ErrorBoundary';
 import { Flex } from '../common/ui/Flex';
 import { IconButton } from '../common/ui/IconButton';
 import { Text } from '../common/ui/Text';
@@ -50,7 +51,9 @@ export function MainLayout() {
       </header>
 
       <main className={styles.main}>
-        <Outlet />
+        <ErrorBoundary>
+          <Outlet />
+        </ErrorBoundary>
       </main>
       <BottomNav />
     </Flex>
