@@ -5,10 +5,11 @@ import { compressImage } from '../utils/imageCompression';
 
 interface UseImageUploadOptions {
   onError?: (error: string) => void;
+  skipBackgroundRemoval?: boolean;
 }
 
 export function useImageUpload(options: UseImageUploadOptions = {}) {
-  const { onError } = options;
+  const { onError, skipBackgroundRemoval = false } = options;
   const [imagePreview, setImagePreview] = useState<string>('');
   const [isUploading, setIsUploading] = useState(false);
 
@@ -29,7 +30,7 @@ export function useImageUpload(options: UseImageUploadOptions = {}) {
           let processedDataURL = compressedDataURL;
 
           // Step 2: Remove background after compression (optional)
-          if (ENABLE_BACKGROUND_REMOVAL) {
+          if (ENABLE_BACKGROUND_REMOVAL && !skipBackgroundRemoval) {
             try {
               processedDataURL = await removeImageBackground(compressedDataURL);
             } catch (bgError) {

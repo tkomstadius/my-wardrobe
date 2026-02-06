@@ -105,7 +105,7 @@ export function CreateOutfitPage() {
       </div>
 
       <Form method="post" className={styles.form}>
-        <ImageInput />
+        <ImageInput skipBackgroundRemoval />
 
         <Flex direction="column" gap="1">
           <Text as="label" size="2" weight="bold">

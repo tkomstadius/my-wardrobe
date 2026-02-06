@@ -7,10 +7,13 @@ import styles from './ImageInput.module.css';
 
 type ImageInputProps = {
   originalImageUrl?: string;
+  skipBackgroundRemoval?: boolean;
 };
 
-export function ImageInput({ originalImageUrl }: ImageInputProps) {
-  const { imagePreview, setImagePreview, handleImageUpload, isUploading } = useImageUpload();
+export function ImageInput({ originalImageUrl, skipBackgroundRemoval }: ImageInputProps) {
+  const { imagePreview, setImagePreview, handleImageUpload, isUploading } = useImageUpload({
+    skipBackgroundRemoval,
+  });
   const inputId = useId();
 
   useEffect(() => {
