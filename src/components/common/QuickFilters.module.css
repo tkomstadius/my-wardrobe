@@ -10,7 +10,7 @@
   gap: 6px;
   padding: 5px 10px;
   border: 1px solid var(--gray-6);
-  border-radius: 16px;
+  border-radius: var(--radius-pill);
   color: var(--text-secondary);
   font-size: 12px;
   font-weight: 500;

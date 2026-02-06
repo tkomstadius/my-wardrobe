@@ -22,3 +22,21 @@
   flex-direction: column;
   gap: 0.75rem;
 }
+
+.stickyFooter {
+  position: sticky;
+  bottom: calc(4rem + env(safe-area-inset-bottom));
+  background-color: rgba(15, 15, 15, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  padding: 1rem 0;
+  margin: 0 -1rem;
+  padding-left: 1rem;
+  padding-right: 1rem;
+  border-top: 1px solid var(--border-color);
+  z-index: 10;
+}
+
+.submitButton {
+  width: -webkit-fill-available;
+}

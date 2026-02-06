@@ -172,6 +172,6 @@
 }
 
 .submitButton {
-  width: 100%;
+  width: -webkit-fill-available;
   margin-top: 0.5rem;
 }

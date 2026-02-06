@@ -160,9 +160,15 @@ export function CreateOutfitPage() {
         {/* Hidden input to include selected items in form submission */}
         <input type="hidden" name={ITEM_IDS_NAME} value={itemIdsJson} />
 
-        <Button type="submit" disabled={isSubmitting || isLoading || selectedItems.size === 0}>
-          {isSubmitting ? 'Creating...' : 'Create Outfit'}
-        </Button>
+        <div className={styles.stickyFooter}>
+          <Button
+            type="submit"
+            className={styles.submitButton}
+            disabled={isSubmitting || isLoading || selectedItems.size === 0}
+          >
+            {isSubmitting ? 'Creating...' : 'Create Outfit'}
+          </Button>
+        </div>
       </Form>
     </section>
   );

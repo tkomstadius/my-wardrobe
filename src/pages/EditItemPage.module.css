@@ -72,11 +72,24 @@
   border-radius: 8px;
 }
 
+.stickyFooter {
+  position: sticky;
+  bottom: calc(4rem + env(safe-area-inset-bottom));
+  background-color: rgba(15, 15, 15, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  padding: 1rem 0;
+  margin: 0 -0.75rem;
+  padding-left: 0.75rem;
+  padding-right: 0.75rem;
+  border-top: 1px solid var(--border-color);
+  z-index: 10;
+}
+
 /* Actions */
 .actions {
   display: flex;
   gap: 12px;
-  margin-top: 8px;
   align-items: stretch;
 }
 

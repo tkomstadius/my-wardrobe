@@ -1,0 +1,77 @@
+.container {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.title {
+  font-size: 1.75rem;
+  font-weight: 600;
+  margin: 0 0 1.5rem 0;
+  color: var(--gray-12);
+}
+
+.menu {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.menuItem {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: var(--gradient-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  text-decoration: none;
+  color: var(--text-color);
+  transition: all var(--transition-normal);
+}
+
+@media (hover: hover) {
+  .menuItem:hover {
+    background: var(--surface-color);
+    border-color: var(--gray-6);
+  }
+}
+
+.menuItem:active {
+  transform: scale(0.98);
+}
+
+.menuIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  background: var(--accent-action-color);
+  border-radius: 12px;
+  color: var(--items-color);
+  flex-shrink: 0;
+}
+
+.menuContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.menuLabel {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-color);
+}
+
+.menuDescription {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+.chevron {
+  color: var(--text-secondary);
+  flex-shrink: 0;
+}

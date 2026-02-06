@@ -24,6 +24,12 @@
   gap: 8px;
 }
 
+@media (max-width: 360px) {
+  .selectionMode {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
 .chevron {
   transition: transform var(--transition-normal);
 }

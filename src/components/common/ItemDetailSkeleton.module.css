@@ -1,0 +1,37 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.image {
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  border-radius: var(--border-radius);
+}
+
+.actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: space-between;
+}
+
+.stats {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: space-between;
+}
+
+.details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}

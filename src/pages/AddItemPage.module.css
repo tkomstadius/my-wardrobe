@@ -46,6 +46,20 @@
   padding: 0 0.25rem;
 }
 
+.stickyFooter {
+  position: sticky;
+  bottom: calc(4rem + env(safe-area-inset-bottom));
+  background-color: rgba(15, 15, 15, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  padding: 1rem 0;
+  margin: 0 -1rem;
+  padding-left: 1rem;
+  padding-right: 1rem;
+  border-top: 1px solid var(--border-color);
+  z-index: 10;
+}
+
 .saveButton {
-  margin-top: 0.5rem;
+  width: 100%;
 }

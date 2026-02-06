@@ -153,7 +153,10 @@ export function AddItemPage() {
       </div>
 
       <Form method="post" className={styles.form}>
-        <ImageInput />
+        <fieldset className={styles.fieldSection}>
+          <legend>Photo</legend>
+          <ImageInput />
+        </fieldset>
 
         <fieldset className={styles.fieldSection}>
           <legend>Details</legend>
@@ -228,12 +231,10 @@ export function AddItemPage() {
           <CheckboxField name="isHandmade" label="Handmade" />
         </fieldset>
 
-        <Flex direction="column" gap="2">
-          <Text size="2" weight="bold">
-            Rating
-          </Text>
+        <fieldset className={styles.fieldSection}>
+          <legend>Rating</legend>
           <RatingButtons name={RATING_NAME} />
-        </Flex>
+        </fieldset>
 
         {actionData?.error && (
           <Callout.Root color="red" size="1">
@@ -241,9 +242,11 @@ export function AddItemPage() {
           </Callout.Root>
         )}
 
-        <Button type="submit" className={styles.saveButton} disabled={isSubmitting || isLoading}>
-          {isSubmitting ? 'Saving...' : 'Save Item'}
-        </Button>
+        <div className={styles.stickyFooter}>
+          <Button type="submit" className={styles.saveButton} disabled={isSubmitting || isLoading}>
+            {isSubmitting ? 'Saving...' : 'Save Item'}
+          </Button>
+        </div>
       </Form>
     </div>
   );

@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useId } from 'react';
 import { IoCameraOutline, IoPencilOutline } from 'react-icons/io5';
 import { useImageUpload } from '../../../hooks/useImageUpload';
 import { Spinner } from '../ui/Spinner';
@@ -11,6 +11,7 @@ type ImageInputProps = {
 
 export function ImageInput({ originalImageUrl }: ImageInputProps) {
   const { imagePreview, setImagePreview, handleImageUpload, isUploading } = useImageUpload();
+  const inputId = useId();
 
   useEffect(() => {
     if (originalImageUrl) {
@@ -19,19 +20,33 @@ export function ImageInput({ originalImageUrl }: ImageInputProps) {
   }, [originalImageUrl, setImagePreview]);
 
   return (
-    <div className={styles.container}>
+    <label
+      htmlFor={inputId}
+      className={`${styles.container} ${!imagePreview ? styles.clickable : ''}`}
+    >
       {isUploading && <Spinner size="3" className={styles.spinner} />}
       {imagePreview ? (
-        <img src={imagePreview} alt="Upload preview" className={styles.preview} />
+        <>
+          <img src={imagePreview} alt="Upload preview" className={styles.preview} />
+          <div className={styles.editButton}>
+            <IoPencilOutline size={20} />
+            <span className={styles.changeLabel}>Change photo</span>
+          </div>
+        </>
       ) : (
-        <div className={styles.placeholder}>{!isUploading && <p>No image selected</p>}</div>
+        <div className={styles.placeholder}>
+          {!isUploading && (
+            <div className={styles.placeholderContent}>
+              <IoCameraOutline size={48} className={styles.placeholderIcon} />
+              <span className={styles.placeholderText}>Add photo</span>
+              <span className={styles.placeholderSubtext}>Tap to take or choose</span>
+            </div>
+          )}
+        </div>
       )}
 
-      <label htmlFor="image-upload" className={styles.button}>
-        {imagePreview ? <IoPencilOutline size={24} /> : <IoCameraOutline size={24} />}
-      </label>
       <input
-        id="image-upload"
+        id={inputId}
         type="file"
         accept="image/*"
         onChange={handleImageUpload}
@@ -40,6 +55,6 @@ export function ImageInput({ originalImageUrl }: ImageInputProps) {
 
       <input type="hidden" name={IMAGE_URL_NAME} value={imagePreview || ''} />
       <input type="hidden" name={ORIGINAL_IMAGE_URL_NAME} value={originalImageUrl} />
-    </div>
+    </label>
   );
 }

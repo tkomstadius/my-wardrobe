@@ -16,7 +16,7 @@
   background-color: rgba(15, 15, 15, 0.75);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  padding: 1rem 1rem 0.25rem;
+  padding: 1rem;
   color: var(--text-color);
   border-bottom: 1px solid rgba(255, 255, 255, 0.04);
   overflow: hidden;
@@ -51,17 +51,16 @@
   font-weight: 600;
 }
 
+.weatherPill {
+  background: var(--surface-color);
+  border: 1px solid var(--border-color);
+  border-radius: 20px;
+  padding: 0.375rem 0.75rem;
+}
+
 .weatherText {
   color: var(--complimentary-color);
   white-space: nowrap;
-}
-
-.iconButton {
-  color: var(--text-color);
-}
-
-.iconButton:hover {
-  background-color: var(--accent-action-color);
 }
 
 .main {

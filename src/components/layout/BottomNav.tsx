@@ -1,6 +1,7 @@
 import {
   IoAddCircleOutline,
   IoArchiveOutline,
+  IoEllipsisHorizontalOutline,
   IoHomeOutline,
   IoOptionsOutline,
 } from 'react-icons/io5';
@@ -11,6 +12,8 @@ export function BottomNav() {
   const location = useLocation();
   const currentPath = location.pathname;
   const isOnItemsOrCategoryPage = currentPath === '/items' || currentPath.startsWith('/items/');
+  const isOnMoreSection =
+    currentPath === '/more' || currentPath === '/stats' || currentPath === '/settings';
 
   return (
     <nav className={styles.bottomNav}>
@@ -45,6 +48,11 @@ export function BottomNav() {
       >
         <IoAddCircleOutline className={styles.icon} />
         <span className={styles.label}>Log Wear</span>
+      </Link>
+
+      <Link to="/more" className={`${styles.navItem} ${isOnMoreSection ? styles.active : ''}`}>
+        <IoEllipsisHorizontalOutline className={styles.icon} />
+        <span className={styles.label}>More</span>
       </Link>
     </nav>
   );

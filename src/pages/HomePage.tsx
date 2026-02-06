@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { IoSparklesOutline } from 'react-icons/io5';
 import { useLoaderData } from 'react-router';
 import { CategoryItemsAccordion } from '../components/common/CategoryItemsAccordion';
 import { ItemCard } from '../components/common/ItemCard';
@@ -129,7 +130,10 @@ export function HomePage() {
               <Text size="2" className={styles.info}>
                 {items.length} {items.length === 1 ? 'item' : 'items'} total
               </Text>
-              <Button onClick={handleSuggestItem}>✨</Button>
+              <Button onClick={handleSuggestItem} className={styles.suggestButton}>
+                <IoSparklesOutline size={18} />
+                Suggest
+              </Button>
             </Flex>
 
             <Flex direction="column" gap="4">

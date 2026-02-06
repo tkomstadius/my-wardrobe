@@ -28,6 +28,7 @@ import { ItemDetailPage, loader as itemDetailLoader } from './pages/ItemDetailPa
 import { ItemsPage, loader as itemsLoader } from './pages/ItemsPage';
 import { LoginPage } from './pages/LoginPage';
 import { LogWearPage, loader as logWearLoader } from './pages/LogWearPage';
+import { MorePage } from './pages/MorePage';
 import { OutfitDetailPage, loader as outfitDetailLoader } from './pages/OutfitDetailPage';
 import { OutfitsPage, loader as outfitsLoader } from './pages/OutfitsPage';
 import { SettingsPage, loader as settingsLoader } from './pages/SettingsPage';
@@ -83,6 +84,7 @@ const router = createBrowserRouter([
       },
       { path: 'stats', element: <StatsPage />, loader: statsLoader },
       { path: 'settings', element: <SettingsPage />, loader: settingsLoader },
+      { path: 'more', element: <MorePage /> },
     ],
   },
 ]);

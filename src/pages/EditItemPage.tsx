@@ -217,7 +217,10 @@ export function EditItemPage() {
         </div>
       ) : (
         <Form method="post" className={styles.form}>
-          <ImageInput originalImageUrl={item.imageUrl} />
+          <fieldset className={styles.fieldSection}>
+            <legend>Photo</legend>
+            <ImageInput originalImageUrl={item.imageUrl} />
+          </fieldset>
 
           {categoryWarning && (
             <Callout.Root color="orange" size="1">
@@ -325,12 +328,10 @@ export function EditItemPage() {
             <CheckboxField name="isHandmade" defaultChecked={item.isHandmade} label="Handmade" />
           </fieldset>
 
-          <Flex direction="column" gap="2">
-            <Text size="2" weight="bold">
-              Rating
-            </Text>
+          <fieldset className={styles.fieldSection}>
+            <legend>Rating</legend>
             <RatingButtons name={RATING_NAME} defaultValue={item.rating} />
-          </Flex>
+          </fieldset>
 
           {actionData?.error && (
             <Callout.Root color="red" size="1">
@@ -338,23 +339,25 @@ export function EditItemPage() {
             </Callout.Root>
           )}
 
-          <div className={styles.actions}>
-            <Button type="submit" disabled={isSubmitting} className={styles.saveButton}>
-              {isSubmitting ? 'Saving...' : 'Save Changes'}
-            </Button>
+          <div className={styles.stickyFooter}>
+            <div className={styles.actions}>
+              <Button type="submit" disabled={isSubmitting} className={styles.saveButton}>
+                {isSubmitting ? 'Saving...' : 'Save Changes'}
+              </Button>
 
-            <DeleteConfirmDialog
-              title="Delete Item"
-              description="Are you sure you want to delete this item? This action cannot be undone."
-              onConfirm={handleDelete}
-              isDeleting={isDeleting}
-              triggerButton={
-                <Button type="button" variant="destructive">
-                  <IoTrashOutline />
-                  Delete
-                </Button>
-              }
-            />
+              <DeleteConfirmDialog
+                title="Delete Item"
+                description="Are you sure you want to delete this item? This action cannot be undone."
+                onConfirm={handleDelete}
+                isDeleting={isDeleting}
+                triggerButton={
+                  <Button type="button" variant="destructive">
+                    <IoTrashOutline />
+                    Delete
+                  </Button>
+                }
+              />
+            </div>
           </div>
         </Form>
       )}
