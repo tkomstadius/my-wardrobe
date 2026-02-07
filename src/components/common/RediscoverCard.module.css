@@ -1,0 +1,115 @@
+.card {
+  background: var(--gradient-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  padding: 1rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.title {
+  color: var(--complimentary-color);
+}
+
+.headerActions {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.featuredLink {
+  text-decoration: none;
+  color: inherit;
+}
+
+.featuredItem {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  padding: 0.5rem;
+  border-radius: var(--border-radius);
+  transition: background var(--transition-fast);
+}
+
+.featuredItem:active {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.featuredImage {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-sm);
+}
+
+.featuredInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.brand {
+  color: var(--text-color);
+}
+
+.daysSince {
+  color: var(--complimentary-color);
+}
+
+.complementary {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.complementaryLabel {
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.complementaryItems {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.complementaryLink {
+  text-decoration: none;
+  display: block;
+}
+
+.complementaryImage {
+  width: 56px;
+  height: 56px;
+  object-fit: cover;
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--transition-fast);
+}
+
+.complementaryImage:active {
+  transform: scale(0.95);
+}
+
+.actions {
+  margin-top: 1rem;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.logWearButton {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}

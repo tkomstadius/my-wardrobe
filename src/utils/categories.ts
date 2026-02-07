@@ -65,3 +65,18 @@ export type ItemSubCategory =
   | (typeof SUBCATEGORIES.bags)[number]
   | (typeof SUBCATEGORIES.jewelry)[number]
   | (typeof SUBCATEGORIES.accessories)[number];
+
+/**
+ * Category pairings for outfit suggestions
+ * Maps each category to complementary categories that complete an outfit
+ */
+export const CATEGORY_PAIRINGS: Record<ItemCategory, readonly ItemCategory[]> = {
+  tops: ['bottoms', 'shoes', 'accessories'],
+  bottoms: ['tops', 'shoes', 'accessories'],
+  dresses: ['shoes', 'accessories', 'bags', 'outerwear'],
+  outerwear: ['tops', 'bottoms', 'shoes'],
+  shoes: [], // Don't suggest items to go with shoes
+  bags: [],
+  jewelry: [],
+  accessories: [],
+};

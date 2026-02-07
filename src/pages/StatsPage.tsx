@@ -4,11 +4,20 @@ import { StatsCard } from '../components/common/StatsCard';
 import { Heading } from '../components/common/ui/Heading';
 import { Text } from '../components/common/ui/Text';
 import type { WardrobeItem } from '../types/wardrobe';
-import { calculateFullStats } from '../utils/statsCalculations';
+import { calculateFullStats, type Season } from '../utils/statsCalculations';
 import { loadItems } from '../utils/storageCommands';
 import styles from './StatsPage.module.css';
 
+const SEASON_EMOJI: Record<Season, string> = {
+  winter: '\u2744\uFE0F',
+  spring: '\uD83C\uDF38',
+  summer: '\u2600\uFE0F',
+  fall: '\uD83C\uDF42',
+};
+
 const NEVER_WORN_DEFAULT_LIMIT = 10;
+
+type WearPatternView = 'most' | 'least' | 'never';
 
 function formatItemAge(createdAt: Date): string {
   const now = new Date();
@@ -81,6 +90,9 @@ function NeverWornSection({ items }: { items: WardrobeItem[] }) {
 export function StatsPage() {
   const { items } = useLoaderData<typeof loader>();
   const stats = useMemo(() => calculateFullStats(items), [items]);
+  const [wearView, setWearView] = useState<WearPatternView>('most');
+  const [showFinancial, setShowFinancial] = useState(false);
+  const [showSeasonal, setShowSeasonal] = useState(false);
 
   if (items.length === 0) {
     return (
@@ -102,74 +114,116 @@ export function StatsPage() {
       <div className={styles.header}>
         <Heading size="6">Statistics</Heading>
         <Text size="2" color="gray">
-          Insights into your wardrobe
+          Your wardrobe at a glance
         </Text>
       </div>
 
       <div className={styles.content}>
-        <section className={styles.section}>
-          <div className={styles.statsGrid}>
-            <StatsCard title="Total Items" value={stats.totalItems} />
-            <StatsCard title="Total Wears" value={stats.totalWears} />
-            <StatsCard title="Avg Wears/Item" value={stats.averageWears.toFixed(1)} />
-            <StatsCard title="Never Worn" value={stats.neverWorn.length} />
-          </div>
-        </section>
-
-        {/* Personal Style Insights */}
-        <section className={styles.section}>
-          <Heading size="4" className={styles.sectionTitle}>
-            Personal Style Insights
-          </Heading>
-
-          <div className={styles.subsection}>
-            <Text size="3" weight="medium" className={styles.subsectionTitle}>
-              Category Preferences
-            </Text>
-            <div className={styles.categoryList}>
-              {stats.categoryWears.map((cat) => (
-                <div key={cat.category} className={styles.categoryItem}>
-                  <div className={styles.categoryInfo}>
-                    <Text size="2" weight="medium">
-                      {cat.category}
-                    </Text>
-                    <Text size="1" color="gray">
-                      {cat.count} {cat.count === 1 ? 'item' : 'items'}
-                    </Text>
-                  </div>
-                  <div className={styles.categoryWears}>
-                    <Text size="2" weight="bold">
-                      {cat.wears}
-                    </Text>
-                    <Text size="1" color="gray">
-                      wears
-                    </Text>
-                  </div>
-                </div>
-              ))}
+        {/* Hero Stats - Focus on key metrics */}
+        <section className={styles.heroSection}>
+          <div className={styles.heroStats}>
+            <div className={styles.heroStat}>
+              <Text size="1" className={styles.heroLabel}>
+                Total Items
+              </Text>
+              <div className={styles.heroValue}>{stats.totalItems}</div>
+            </div>
+            <div className={styles.heroStat}>
+              <Text size="1" className={styles.heroLabel}>
+                Total Wears
+              </Text>
+              <div className={styles.heroValue}>{stats.totalWears}</div>
+            </div>
+            <div className={styles.heroStat}>
+              <Text size="1" className={styles.heroLabel}>
+                Never Worn
+              </Text>
+              <div
+                className={`${styles.heroValue} ${stats.neverWorn.length > 0 ? styles.heroValueWarning : ''}`}
+              >
+                {stats.neverWorn.length}
+              </div>
             </div>
           </div>
+          <div className={styles.secondaryStats}>
+            <StatsCard title="Avg Wears/Item" value={stats.averageWears.toFixed(1)} />
+          </div>
         </section>
 
-        {/* Wear Patterns */}
+        {/* Wardrobe Insights - Combined section */}
         <section className={styles.section}>
           <Heading size="4" className={styles.sectionTitle}>
-            Wear Patterns
+            Wardrobe Insights
           </Heading>
 
-          {stats.mostWorn.length > 0 && (
-            <div className={styles.subsection}>
-              <Text size="3" weight="medium" className={styles.subsectionTitle}>
-                Most Worn Items
-              </Text>
-              <div className={styles.itemList}>
-                {stats.mostWorn.map((item, index) => (
-                  <div key={item.id} className={styles.itemRow}>
-                    <div className={styles.itemRank}>
-                      <Text size="2" weight="bold" color="gray">
-                        #{index + 1}
+          {/* Category Preferences with visual bars */}
+          <div className={styles.subsection}>
+            <Text size="3" weight="medium" className={styles.subsectionTitle}>
+              Category Activity
+            </Text>
+            <div className={styles.categoryList}>
+              {stats.categoryWears.map((cat) => {
+                const percentage = (cat.wears / stats.totalWears) * 100;
+                return (
+                  <div key={cat.category} className={styles.categoryItem}>
+                    <div className={styles.categoryInfo}>
+                      <Text size="2" weight="medium">
+                        {cat.category}
+                      </Text>
+                      <Text size="1" color="gray">
+                        {cat.count} {cat.count === 1 ? 'item' : 'items'} · {cat.wears} wears
                       </Text>
                     </div>
+                    <div className={styles.categoryBar}>
+                      <div className={styles.categoryBarFill} style={{ width: `${percentage}%` }} />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Wear Patterns - Tabbed view */}
+          <div className={styles.subsection}>
+            <div className={styles.wearPatternHeader}>
+              <Text size="3" weight="medium" className={styles.subsectionTitle}>
+                Item Activity
+              </Text>
+              <div className={styles.wearPatternTabs}>
+                <button
+                  type="button"
+                  className={`${styles.tab} ${wearView === 'most' ? styles.tabActive : ''}`}
+                  onClick={() => setWearView('most')}
+                >
+                  <Text size="1" weight="medium">
+                    Most Worn
+                  </Text>
+                </button>
+                <button
+                  type="button"
+                  className={`${styles.tab} ${wearView === 'least' ? styles.tabActive : ''}`}
+                  onClick={() => setWearView('least')}
+                >
+                  <Text size="1" weight="medium">
+                    Least Worn
+                  </Text>
+                </button>
+                <button
+                  type="button"
+                  className={`${styles.tab} ${wearView === 'never' ? styles.tabActive : ''}`}
+                  onClick={() => setWearView('never')}
+                >
+                  <Text size="1" weight="medium">
+                    Never Worn ({stats.neverWorn.length})
+                  </Text>
+                </button>
+              </div>
+            </div>
+
+            <div className={styles.itemList}>
+              {wearView === 'most' &&
+                stats.mostWorn.map((item) => (
+                  <Link key={item.id} to={`/item/${item.id}`} className={styles.itemRow}>
                     <div className={styles.itemImage}>
                       <img src={item.imageUrl} alt={item.brand || 'Item'} />
                     </div>
@@ -186,20 +240,12 @@ export function StatsPage() {
                         {item.wearCount}×
                       </Text>
                     </div>
-                  </div>
+                  </Link>
                 ))}
-              </div>
-            </div>
-          )}
 
-          {stats.leastWorn.length > 0 && (
-            <div className={styles.subsection}>
-              <Text size="3" weight="medium" className={styles.subsectionTitle}>
-                Least Worn Items
-              </Text>
-              <div className={styles.itemList}>
-                {stats.leastWorn.map((item) => (
-                  <div key={item.id} className={styles.itemRow}>
+              {wearView === 'least' &&
+                stats.leastWorn.map((item) => (
+                  <Link key={item.id} to={`/item/${item.id}`} className={styles.itemRow}>
                     <div className={styles.itemImage}>
                       <img src={item.imageUrl} alt={item.brand || 'Item'} />
                     </div>
@@ -216,40 +262,22 @@ export function StatsPage() {
                         {item.wearCount}×
                       </Text>
                     </div>
-                  </div>
+                  </Link>
                 ))}
-              </div>
+
+              {wearView === 'never' && <NeverWornSection items={stats.neverWorn} />}
             </div>
-          )}
-
-          {stats.neverWorn.length > 0 && <NeverWornSection items={stats.neverWorn} />}
-        </section>
-
-        {/* Financial Insights */}
-        <section className={styles.section}>
-          <Heading size="4" className={styles.sectionTitle}>
-            Financial Insights
-          </Heading>
-
-          <div className={styles.statsGrid}>
-            <StatsCard title="Total Value" value={stats.totalValue.toFixed(0)} />
-            <StatsCard
-              title="Avg Cost/Wear"
-              value={
-                stats.avgCostPerWear !== null ? `${stats.avgCostPerWear.toFixed(2)} kr` : 'N/A'
-              }
-            />
-            <StatsCard title="Second-Hand" value={stats.secondHandPercentage.toFixed(0)} />
           </div>
 
-          {stats.bestValue.length > 0 && (
+          {/* Category Favorites - More actionable than overall favorites */}
+          {stats.categoryFavorites.length > 0 && (
             <div className={styles.subsection}>
               <Text size="3" weight="medium" className={styles.subsectionTitle}>
-                Best Value Items
+                Top Item per Category
               </Text>
               <div className={styles.itemList}>
-                {stats.bestValue.map(({ item, costPerWear }) => (
-                  <div key={item.id} className={styles.itemRow}>
+                {stats.categoryFavorites.map(({ category, item, wearRate }) => (
+                  <Link key={item.id} to={`/item/${item.id}`} className={styles.itemRow}>
                     <div className={styles.itemImage}>
                       <img src={item.imageUrl} alt={item.brand || 'Item'} />
                     </div>
@@ -258,21 +286,179 @@ export function StatsPage() {
                         {item.brand || 'Unnamed'}
                       </Text>
                       <Text size="1" color="gray">
-                        {item.wearCount} wears
+                        {category}
                       </Text>
                     </div>
                     <div className={styles.itemWears}>
-                      <Text size="3" weight="bold" color="green">
-                        {costPerWear.toFixed(2)} kr
+                      <Text size="2" weight="bold">
+                        {wearRate.toFixed(1)}×
                       </Text>
                       <Text size="1" color="gray">
-                        per wear
+                        /mo
                       </Text>
                     </div>
-                  </div>
+                  </Link>
                 ))}
               </div>
             </div>
+          )}
+        </section>
+
+        {/* Seasonal Wear - Collapsible */}
+        {stats.seasonalWears.some((s) => s.wearCount > 0) && (
+          <section className={styles.section}>
+            <button
+              type="button"
+              className={styles.sectionToggle}
+              onClick={() => setShowSeasonal(!showSeasonal)}
+            >
+              <Heading size="4" className={styles.sectionTitle}>
+                Seasonal Breakdown
+              </Heading>
+              <Text size="2" className={styles.toggleIcon}>
+                {showSeasonal ? '\u2212' : '+'}
+              </Text>
+            </button>
+
+            {showSeasonal && (
+              <>
+                <div className={styles.seasonGrid}>
+                  {stats.seasonalWears.map((season) => (
+                    <div key={season.season} className={styles.seasonCard}>
+                      <Text size="4">{SEASON_EMOJI[season.season]}</Text>
+                      <Text size="1" weight="medium">
+                        {season.label}
+                      </Text>
+                      <Text size="3" weight="bold">
+                        {season.wearCount}
+                      </Text>
+                      <Text size="1" color="gray">
+                        {season.percentage.toFixed(0)}%
+                      </Text>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Top 3 items per season */}
+                {(['winter', 'spring', 'summer', 'fall'] as Season[]).map((seasonKey) => {
+                  const seasonLabel =
+                    stats.seasonalWears.find((s) => s.season === seasonKey)?.label || seasonKey;
+                  const seasonalItems = stats.seasonalItems
+                    .filter((si) => si.dominantSeason === seasonKey)
+                    .map((si) => {
+                      const totalWears = Object.values(si.seasonCounts).reduce((a, b) => a + b, 0);
+                      const seasonPercentage = Math.round(
+                        (si.seasonCounts[seasonKey] / totalWears) * 100,
+                      );
+                      return { ...si, seasonPercentage };
+                    })
+                    .sort((a, b) => b.seasonPercentage - a.seasonPercentage)
+                    .slice(0, 3);
+
+                  if (seasonalItems.length === 0) return null;
+
+                  return (
+                    <div key={seasonKey} className={styles.subsection}>
+                      <Text size="2" weight="medium" className={styles.subsectionTitle}>
+                        {SEASON_EMOJI[seasonKey]} {seasonLabel}
+                      </Text>
+                      <div className={styles.itemList}>
+                        {seasonalItems.map(({ item, seasonCounts, seasonPercentage }) => (
+                          <Link key={item.id} to={`/item/${item.id}`} className={styles.itemRow}>
+                            <div className={styles.itemImage}>
+                              <img src={item.imageUrl} alt={item.brand || 'Item'} />
+                            </div>
+                            <div className={styles.itemInfo}>
+                              <Text size="2" weight="medium">
+                                {item.brand || 'Unnamed'}
+                              </Text>
+                              <Text size="1" color="gray">
+                                {item.category.charAt(0).toUpperCase() + item.category.slice(1)}
+                              </Text>
+                            </div>
+                            <div className={styles.itemWears}>
+                              <Text size="2" weight="bold">
+                                {seasonPercentage}%
+                              </Text>
+                              <Text size="1" color="gray">
+                                ({seasonCounts[seasonKey]}×)
+                              </Text>
+                            </div>
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
+              </>
+            )}
+          </section>
+        )}
+
+        {/* Financial Insights - Collapsible */}
+        <section className={styles.section}>
+          <button
+            type="button"
+            className={styles.sectionToggle}
+            onClick={() => setShowFinancial(!showFinancial)}
+          >
+            <Heading size="4" className={styles.sectionTitle}>
+              Financial Insights
+            </Heading>
+            <Text size="2" className={styles.toggleIcon}>
+              {showFinancial ? '\u2212' : '+'}
+            </Text>
+          </button>
+
+          {showFinancial && (
+            <>
+              <div className={styles.statsGrid}>
+                <StatsCard title="Total Value" value={`${stats.totalValue.toFixed(0)} kr`} />
+                <StatsCard
+                  title="Avg Cost/Wear"
+                  value={
+                    stats.avgCostPerWear !== null ? `${stats.avgCostPerWear.toFixed(2)} kr` : 'N/A'
+                  }
+                />
+                <StatsCard
+                  title="Second-Hand"
+                  value={`${stats.secondHandPercentage.toFixed(0)}%`}
+                />
+              </div>
+
+              {stats.bestValue.length > 0 && (
+                <div className={styles.subsection}>
+                  <Text size="2" weight="medium" className={styles.subsectionTitle}>
+                    Best Value Items
+                  </Text>
+                  <div className={styles.itemList}>
+                    {stats.bestValue.map(({ item, costPerWear }) => (
+                      <Link key={item.id} to={`/item/${item.id}`} className={styles.itemRow}>
+                        <div className={styles.itemImage}>
+                          <img src={item.imageUrl} alt={item.brand || 'Item'} />
+                        </div>
+                        <div className={styles.itemInfo}>
+                          <Text size="2" weight="medium">
+                            {item.brand || 'Unnamed'}
+                          </Text>
+                          <Text size="1" color="gray">
+                            {item.wearCount} wears
+                          </Text>
+                        </div>
+                        <div className={styles.itemWears}>
+                          <Text size="2" weight="bold" color="green">
+                            {costPerWear.toFixed(2)} kr
+                          </Text>
+                          <Text size="1" color="gray">
+                            /wear
+                          </Text>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </section>
       </div>
