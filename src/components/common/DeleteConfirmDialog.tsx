@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import type { ReactElement, ReactNode } from 'react';
 import { IoTrashOutline } from 'react-icons/io5';
 import { AlertDialog } from './ui/AlertDialog';
 import { Button } from './ui/Button';
@@ -10,7 +10,7 @@ interface DeleteConfirmDialogProps {
   onConfirm: () => void | Promise<void>;
   isDeleting?: boolean;
   confirmText?: string;
-  triggerButton?: ReactNode;
+  triggerButton?: ReactElement;
 }
 
 export function DeleteConfirmDialog({
@@ -32,16 +32,14 @@ export function DeleteConfirmDialog({
       </AlertDialog.Trigger>
       <AlertDialog.Content maxWidth="450px">
         <AlertDialog.Title>{title}</AlertDialog.Title>
-        <AlertDialog.Description size="2">{description}</AlertDialog.Description>
+        <AlertDialog.Description>{description}</AlertDialog.Description>
         <Flex gap="3" style={{ marginTop: '1rem' }} justify="end">
-          <AlertDialog.Cancel>
+          <AlertDialog.Close>
             <Button>Cancel</Button>
-          </AlertDialog.Cancel>
-          <AlertDialog.Action>
-            <Button variant="destructive" onClick={onConfirm} disabled={isDeleting}>
-              {isDeleting ? 'Deleting...' : confirmText}
-            </Button>
-          </AlertDialog.Action>
+          </AlertDialog.Close>
+          <Button variant="destructive" onClick={onConfirm} disabled={isDeleting}>
+            {isDeleting ? 'Deleting...' : confirmText}
+          </Button>
         </Flex>
       </AlertDialog.Content>
     </AlertDialog.Root>

@@ -23,7 +23,7 @@ function SelectRoot({
   return (
     <BaseSelect.Root
       name={name}
-      onValueChange={(val: string | null) => onValueChange?.(val)}
+      onValueChange={onValueChange}
       disabled={disabled}
       defaultValue={defaultValue}
       value={value}
@@ -35,7 +35,6 @@ function SelectRoot({
 
 interface SelectTriggerProps {
   placeholder?: string;
-  variant?: string;
   className?: string;
 }
 
@@ -43,11 +42,11 @@ function SelectTrigger({ placeholder, className }: SelectTriggerProps) {
   return (
     <BaseSelect.Trigger className={`${styles.trigger} ${className || ''}`}>
       <BaseSelect.Value>
-        {(value: string | null) => value || placeholder || 'Select an option'}
+        {(value) => (value as string) || placeholder || 'Select...'}
       </BaseSelect.Value>
-      <div className={styles.icon}>
+      <BaseSelect.Icon className={styles.icon}>
         <IoChevronDown size={16} />
-      </div>
+      </BaseSelect.Icon>
     </BaseSelect.Trigger>
   );
 }
@@ -59,8 +58,8 @@ interface SelectContentProps {
 function SelectContent({ children }: SelectContentProps) {
   return (
     <BaseSelect.Portal>
-      <BaseSelect.Positioner>
-        <BaseSelect.Popup className={styles.listbox}>{children}</BaseSelect.Popup>
+      <BaseSelect.Positioner className={styles.positioner} sideOffset={4}>
+        <BaseSelect.Popup className={styles.popup}>{children}</BaseSelect.Popup>
       </BaseSelect.Positioner>
     </BaseSelect.Portal>
   );
@@ -74,7 +73,7 @@ interface SelectItemProps {
 function SelectItem({ value, children }: SelectItemProps) {
   return (
     <BaseSelect.Item value={value} className={styles.option}>
-      {children}
+      <BaseSelect.ItemText>{children}</BaseSelect.ItemText>
     </BaseSelect.Item>
   );
 }

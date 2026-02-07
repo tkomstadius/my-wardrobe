@@ -1,5 +1,5 @@
 import { Dialog as BaseDialog } from '@base-ui/react/dialog';
-import type { ReactNode } from 'react';
+import type { ReactElement, ReactNode } from 'react';
 import { IoClose } from 'react-icons/io5';
 import styles from './Dialog.module.css';
 
@@ -51,27 +51,26 @@ interface DialogDescriptionProps {
   size?: '1' | '2' | '3';
   color?: string;
   mb?: string;
-  style?: React.CSSProperties;
 }
 
-function DialogDescription({ children, size = '2', color, mb, style }: DialogDescriptionProps) {
+function DialogDescription({ children, size = '2', mb }: DialogDescriptionProps) {
+  const sizeClass = size === '1' ? styles.descriptionSm : size === '3' ? styles.descriptionLg : '';
   return (
     <BaseDialog.Description
-      className={styles.description}
-      style={{
-        fontSize: size === '1' ? '0.75rem' : size === '2' ? '0.875rem' : '1rem',
-        color: color,
-        marginBottom: mb,
-        ...style,
-      }}
+      className={`${styles.description} ${sizeClass}`}
+      style={{ marginBottom: mb }}
     >
       {children}
     </BaseDialog.Description>
   );
 }
 
-function DialogClose({ children }: { children: ReactNode }) {
-  return <>{children}</>;
+interface DialogCloseProps {
+  children: ReactElement;
+}
+
+function DialogClose({ children }: DialogCloseProps) {
+  return <BaseDialog.Close render={children} />;
 }
 
 export const Dialog = {

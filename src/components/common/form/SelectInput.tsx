@@ -30,7 +30,7 @@ export function SelectInput({
         disabled={disabled}
         defaultValue={defaultValue}
       >
-        <Select.Trigger placeholder="Select an option" variant="soft" />
+        <Select.Trigger placeholder="Select an option" />
         <Select.Content>
           {options.map(({ title, id }) => (
             <Select.Item key={id} value={id}>

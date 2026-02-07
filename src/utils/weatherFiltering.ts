@@ -4,7 +4,7 @@ import type { WardrobeItem } from '../types/wardrobe';
 /**
  * Parse temperature from weather string (e.g., "20°C" -> 20)
  */
-export function parseTemperature(tempString: string): number | null {
+function parseTemperature(tempString: string): number | null {
   const match = tempString.match(/^(-?\d+(?:\.\d+)?)/);
   if (!match || !match[1]) return null;
   return parseFloat(match[1]);
@@ -25,7 +25,7 @@ const HOT_WEATHER_EXCLUDE = new Set(['sweater', 'boots', 'hoodie', 'sweatshirt']
  * Check if an item is appropriate for the current weather
  * Only filters obvious seasonal items - most items are year-round
  */
-export function isItemAppropriateForWeather(item: WardrobeItem, temperature: number): boolean {
+function isItemAppropriateForWeather(item: WardrobeItem, temperature: number): boolean {
   const subCategory = item.subCategory?.toLowerCase() || '';
   const category = item.category;
 

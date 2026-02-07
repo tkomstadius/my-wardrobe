@@ -82,7 +82,7 @@ function selectFeaturedItem(
 /**
  * Find complementary items to complete an outfit with the featured item
  */
-export function findComplementaryItems(
+function findComplementaryItems(
   featuredItem: WardrobeItem,
   allItems: WardrobeItem[],
   count: number = 3,

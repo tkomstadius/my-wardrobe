@@ -48,7 +48,7 @@ export function OutfitsPage() {
         <Heading size="6">My Outfits</Heading>
         {sortedOutfits.length > 0 && (
           <Select.Root value={sortBy} onValueChange={(value) => setSortBy(value as SortOption)}>
-            <Select.Trigger variant="soft" className={styles.sortTrigger} />
+            <Select.Trigger className={styles.sortTrigger} />
             <Select.Content>
               <Select.Item value="date">Date (Newest)</Select.Item>
               <Select.Item value="score">Score (Highest)</Select.Item>

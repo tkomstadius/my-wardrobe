@@ -37,6 +37,14 @@
   margin: 0 0 1rem 0;
 }
 
+.descriptionSm {
+  font-size: 0.75rem;
+}
+
+.descriptionLg {
+  font-size: 1rem;
+}
+
 .closeButton {
   position: absolute;
   top: 1rem;

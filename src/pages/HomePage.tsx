@@ -1,11 +1,10 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { IoSparklesOutline } from 'react-icons/io5';
 import { useLoaderData } from 'react-router';
 import { CategoryItemsAccordion } from '../components/common/CategoryItemsAccordion';
 import { ItemCard } from '../components/common/ItemCard';
 import { ItemSuggestionDialog } from '../components/common/ItemSuggestionDialog';
 import { OutfitRatingPrompt } from '../components/common/OutfitRatingPrompt';
-import { RediscoverCard } from '../components/common/RediscoverCard';
 import { StatsCard } from '../components/common/StatsCard';
 import { Button } from '../components/common/ui/Button';
 import { Flex } from '../components/common/ui/Flex';
@@ -13,14 +12,12 @@ import { Tabs } from '../components/common/ui/Tabs';
 import { Text } from '../components/common/ui/Text';
 import { useWeather } from '../contexts/WeatherContext';
 import type { Outfit, OutfitRating } from '../types/outfit';
-import type { WardrobeItem } from '../types/wardrobe';
 import { NEGLECTED_ITEMS_THRESHOLD_DAYS, THIS_WEEK_DAYS } from '../utils/config';
 import { getDaysAgo } from '../utils/dateFormatter';
-import { suggestItem } from '../utils/itemSuggestion';
 import { findUnratedOutfits } from '../utils/outfitRatingPrompt';
 import { type OutfitSuggestion, suggestRediscoverOutfit } from '../utils/outfitSuggestion';
 import { calculateQuickStats } from '../utils/statsCalculations';
-import { incrementWearCount, loadItems, loadOutfits, updateOutfit } from '../utils/storageCommands';
+import { loadItems, loadOutfits, updateOutfit } from '../utils/storageCommands';
 import {
   getItemsWornInPeriod,
   getItemsWornToday,
@@ -46,12 +43,8 @@ export function HomePage() {
   const [unratedOutfits, setUnratedOutfits] = useState<Outfit[]>([]);
   const [currentOutfitIndex, setCurrentOutfitIndex] = useState(0);
   const [suggestionDialogOpen, setSuggestionDialogOpen] = useState(false);
-  const [suggestedItem, setSuggestedItem] = useState<WardrobeItem | null>(null);
-
-  // Rediscover feature state
+  const [suggestion, setSuggestion] = useState<OutfitSuggestion | null>(null);
   const [dismissedIds, setDismissedIds] = useState<Set<string>>(new Set());
-  const [rediscoverSuggestion, setRediscoverSuggestion] = useState<OutfitSuggestion | null>(null);
-  const [isLoggingWear, setIsLoggingWear] = useState(false);
 
   const todayItems = useMemo(() => getItemsWornToday(items), [items]);
   const weekItems = useMemo(() => getItemsWornInPeriod(items, getDaysAgo(THIS_WEEK_DAYS)), [items]);
@@ -61,19 +54,6 @@ export function HomePage() {
   );
 
   const quickStats = useMemo(() => calculateQuickStats(items), [items]);
-
-  // Compute rediscover suggestion
-  const computeRediscoverSuggestion = useCallback(() => {
-    const suggestion = suggestRediscoverOutfit(items, weatherData, dismissedIds);
-    setRediscoverSuggestion(suggestion);
-  }, [items, weatherData, dismissedIds]);
-
-  // Initialize rediscover suggestion
-  useEffect(() => {
-    if (hasItems) {
-      computeRediscoverSuggestion();
-    }
-  }, [hasItems, computeRediscoverSuggestion]);
 
   // Find unrated outfits when component mounts or outfits change
   useEffect(() => {
@@ -102,49 +82,18 @@ export function HomePage() {
   };
 
   const handleSuggestItem = () => {
-    const suggestion = suggestItem(items, weatherData);
-    setSuggestedItem(suggestion);
+    const newSuggestion = suggestRediscoverOutfit(items, weatherData, dismissedIds);
+    setSuggestion(newSuggestion);
     setSuggestionDialogOpen(true);
   };
 
   const handleTryAnother = () => {
-    const suggestion = suggestItem(items, weatherData);
-    setSuggestedItem(suggestion);
-  };
-
-  // Rediscover handlers
-  const handleRediscoverDismiss = () => {
-    if (rediscoverSuggestion) {
-      setDismissedIds((prev) => new Set([...prev, rediscoverSuggestion.featuredItem.id]));
-    }
-  };
-
-  const handleRediscoverTryAnother = () => {
-    if (rediscoverSuggestion) {
-      // Add current to dismissed and compute new suggestion
-      setDismissedIds((prev) => new Set([...prev, rediscoverSuggestion.featuredItem.id]));
-    }
-  };
-
-  const handleRediscoverLogWear = async () => {
-    if (!rediscoverSuggestion) return;
-
-    setIsLoggingWear(true);
-    try {
-      // Log wear for featured item and all complementary items
-      const itemsToLog = [
-        rediscoverSuggestion.featuredItem,
-        ...rediscoverSuggestion.complementaryItems,
-      ];
-
-      await Promise.all(itemsToLog.map((item) => incrementWearCount(item.id)));
-
-      // Clear the suggestion after logging
-      setRediscoverSuggestion(null);
-    } catch (err) {
-      console.error('Failed to log wear:', err);
-    } finally {
-      setIsLoggingWear(false);
+    // Add current suggestion to dismissed and get a new one
+    if (suggestion) {
+      const newDismissed = new Set([...dismissedIds, suggestion.featuredItem.id]);
+      setDismissedIds(newDismissed);
+      const newSuggestion = suggestRediscoverOutfit(items, weatherData, newDismissed);
+      setSuggestion(newSuggestion);
     }
   };
 
@@ -172,7 +121,7 @@ export function HomePage() {
       <ItemSuggestionDialog
         open={suggestionDialogOpen}
         onOpenChange={setSuggestionDialogOpen}
-        suggestedItem={suggestedItem}
+        suggestion={suggestion}
         onTryAnother={handleTryAnother}
       />
       <Flex direction="column" gap="4">
@@ -202,18 +151,6 @@ export function HomePage() {
                   )}
                 </div>
               </section>
-
-              {rediscoverSuggestion && (
-                <section>
-                  <RediscoverCard
-                    suggestion={rediscoverSuggestion}
-                    onDismiss={handleRediscoverDismiss}
-                    onTryAnother={handleRediscoverTryAnother}
-                    onLogWear={handleRediscoverLogWear}
-                    isLogging={isLoggingWear}
-                  />
-                </section>
-              )}
 
               <Tabs.Root defaultValue="today">
                 <Tabs.List className={styles.tabsList}>

@@ -1,5 +1,5 @@
 import { Dialog as BaseDialog } from '@base-ui/react/dialog';
-import type { ReactNode } from 'react';
+import type { ReactElement, ReactNode } from 'react';
 import { useState } from 'react';
 import styles from './AlertDialog.module.css';
 
@@ -18,11 +18,11 @@ function AlertDialogRoot({ children }: AlertDialogRootProps) {
 }
 
 interface AlertDialogTriggerProps {
-  children: ReactNode;
+  children: ReactElement;
 }
 
 function AlertDialogTrigger({ children }: AlertDialogTriggerProps) {
-  return <BaseDialog.Trigger>{children}</BaseDialog.Trigger>;
+  return <BaseDialog.Trigger render={children} />;
 }
 
 interface AlertDialogContentProps {
@@ -52,28 +52,18 @@ function AlertDialogTitle({ children }: AlertDialogTitleProps) {
 
 interface AlertDialogDescriptionProps {
   children: ReactNode;
-  size?: '1' | '2' | '3';
 }
 
-function AlertDialogDescription({ children, size = '2' }: AlertDialogDescriptionProps) {
-  return (
-    <BaseDialog.Description
-      className={styles.description}
-      style={{
-        fontSize: size === '1' ? '0.75rem' : size === '2' ? '0.875rem' : '1rem',
-      }}
-    >
-      {children}
-    </BaseDialog.Description>
-  );
+function AlertDialogDescription({ children }: AlertDialogDescriptionProps) {
+  return <BaseDialog.Description className={styles.description}>{children}</BaseDialog.Description>;
 }
 
-function AlertDialogCancel({ children }: { children: ReactNode }) {
-  return <>{children}</>;
+interface AlertDialogCloseProps {
+  children: ReactElement;
 }
 
-function AlertDialogAction({ children }: { children: ReactNode }) {
-  return <>{children}</>;
+function AlertDialogClose({ children }: AlertDialogCloseProps) {
+  return <BaseDialog.Close render={children} />;
 }
 
 export const AlertDialog = {
@@ -82,6 +72,5 @@ export const AlertDialog = {
   Content: AlertDialogContent,
   Title: AlertDialogTitle,
   Description: AlertDialogDescription,
-  Cancel: AlertDialogCancel,
-  Action: AlertDialogAction,
+  Close: AlertDialogClose,
 };
