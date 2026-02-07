@@ -1,4 +1,5 @@
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import { RouteErrorBoundary } from './components/common/ui/RouteErrorBoundary';
 import { Spinner } from './components/common/ui/Spinner';
 import { MainLayout } from './components/layout/MainLayout';
 import { useAuth } from './contexts/AuthContext';
@@ -38,6 +39,7 @@ const router = createBrowserRouter([
   {
     path: '/',
     element: <MainLayout />,
+    errorElement: <RouteErrorBoundary />,
     children: [
       { index: true, element: <HomePage />, loader: homeLoader },
       {
