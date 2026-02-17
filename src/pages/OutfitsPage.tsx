@@ -1,46 +1,46 @@
-import { useState } from 'react'
-import { IoOptionsOutline } from 'react-icons/io5'
-import { Link, useLoaderData } from 'react-router'
-import { Fab } from '../components/common/Fab'
-import { RATING_OPTIONS } from '../components/common/form/constants'
-import { Flex } from '../components/common/ui/Flex'
-import { Heading } from '../components/common/ui/Heading'
-import { Select } from '../components/common/ui/Select'
-import { Text } from '../components/common/ui/Text'
-import type { Outfit } from '../types/outfit'
-import { loadOutfits } from '../utils/storageCommands'
-import styles from './OutfitsPage.module.css'
+import { useState } from 'react';
+import { IoOptionsOutline } from 'react-icons/io5';
+import { Link, useLoaderData } from 'react-router';
+import { Fab } from '../components/common/Fab';
+import { RATING_OPTIONS } from '../components/common/form/constants';
+import { Flex } from '../components/common/ui/Flex';
+import { Heading } from '../components/common/ui/Heading';
+import { Select } from '../components/common/ui/Select';
+import { Text } from '../components/common/ui/Text';
+import type { Outfit } from '../types/outfit';
+import { loadOutfits } from '../utils/storageCommands';
+import styles from './OutfitsPage.module.css';
 
-type SortOption = 'date' | 'score'
+type SortOption = 'date' | 'score';
 
 const getSortedOutfits = (outfits: Outfit[], sortBy: SortOption) => {
   return [...outfits].sort((a, b) => {
     if (sortBy === 'score') {
       // Sort by rating (1 > 0 > -1), then by date if no rating
-      const ratingA = a.rating ?? -2 // -2 is lower than -1, so unrated items sort last
-      const ratingB = b.rating ?? -2
+      const ratingA = a.rating ?? -2; // -2 is lower than -1, so unrated items sort last
+      const ratingB = b.rating ?? -2;
       if (ratingB !== ratingA) {
-        return ratingB - ratingA
+        return ratingB - ratingA;
       }
       // If ratings are equal, sort by date
-      return b.createdAt.getTime() - a.createdAt.getTime()
+      return b.createdAt.getTime() - a.createdAt.getTime();
     } else {
       // Sort by date (newest first)
-      return b.createdAt.getTime() - a.createdAt.getTime()
+      return b.createdAt.getTime() - a.createdAt.getTime();
     }
-  })
-}
+  });
+};
 
 export async function loader() {
-  const outfits = await loadOutfits()
-  return { outfits }
+  const outfits = await loadOutfits();
+  return { outfits };
 }
 
 export function OutfitsPage() {
-  const { outfits } = useLoaderData<typeof loader>()
-  const [sortBy, setSortBy] = useState<SortOption>('date')
+  const { outfits } = useLoaderData<typeof loader>();
+  const [sortBy, setSortBy] = useState<SortOption>('date');
 
-  const sortedOutfits = getSortedOutfits(outfits, sortBy)
+  const sortedOutfits = getSortedOutfits(outfits, sortBy);
 
   return (
     <>
@@ -58,7 +58,13 @@ export function OutfitsPage() {
       </div>
 
       {sortedOutfits.length === 0 ? (
-        <Flex direction="column" align="center" justify="center" gap="2" className={styles.emptyState}>
+        <Flex
+          direction="column"
+          align="center"
+          justify="center"
+          gap="2"
+          className={styles.emptyState}
+        >
           <IoOptionsOutline className={styles.emptyIcon} />
           <Heading size="4">No outfits yet</Heading>
           <Text color="gray">Create outfit combinations for inspiration and planning</Text>
@@ -88,7 +94,9 @@ export function OutfitsPage() {
                 </Flex>
                 {outfit.notes && (
                   <p className={styles.outfitNotes}>
-                    {outfit.notes.length > 40 ? `${outfit.notes.substring(0, 40)}...` : outfit.notes}
+                    {outfit.notes.length > 40
+                      ? `${outfit.notes.substring(0, 40)}...`
+                      : outfit.notes}
                   </p>
                 )}
               </Flex>
@@ -99,5 +107,5 @@ export function OutfitsPage() {
 
       <Fab path="/create-outfit" />
     </>
-  )
+  );
 }

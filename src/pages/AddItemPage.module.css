@@ -67,5 +67,6 @@
 
 .saveButton {
   width: 100%;
-  max-width: calc(768px - 2rem);
+  max-width: min(calc(768px - 2rem), calc(100vw - 2rem));
+  box-sizing: border-box;
 }
