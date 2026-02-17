@@ -1,19 +1,15 @@
-import { IoArrowBackOutline } from 'react-icons/io5';
-import { Flex } from './ui/Flex';
-import { Link } from './ui/Link';
-import { Text } from './ui/Text';
+import { IoArrowBackOutline } from 'react-icons/io5'
+import { Link } from 'react-router-dom'
+import styles from './BackLink.module.css'
 
 type BackButtonProps = {
-  to: string;
-};
+  to: string
+}
 
 export function BackLink({ to }: BackButtonProps) {
   return (
-    <Link to={to}>
-      <Flex gap="2" align="center">
-        <IoArrowBackOutline />
-        <Text size="2">Back</Text>
-      </Flex>
+    <Link to={to} className={styles.link}>
+      <IoArrowBackOutline />
     </Link>
-  );
+  )
 }

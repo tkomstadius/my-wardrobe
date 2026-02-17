@@ -67,6 +67,8 @@ export function Flex({
         justifyContent: justifyMap[justify],
         gap: gapMap[gap],
         flexWrap: wrap,
+        minWidth: 0,
+        maxWidth: '100%',
         ...marginStyles,
         ...style,
       }}
