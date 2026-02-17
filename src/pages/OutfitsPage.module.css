@@ -42,6 +42,8 @@
   cursor: pointer;
   padding: 8px;
   transition: all var(--transition-normal);
+  text-decoration: none;
+  color: inherit;
 }
 
 @media (hover: hover) {
@@ -61,6 +63,7 @@
   background: var(--accent-a3);
   overflow: hidden;
   border-radius: var(--border-radius);
+  margin-bottom: 0.5rem;
 }
 
 .outfitImage img {
