@@ -4,8 +4,13 @@ import { StatsCard } from '../components/common/StatsCard';
 import { Heading } from '../components/common/ui/Heading';
 import { Text } from '../components/common/ui/Text';
 import type { WardrobeItem } from '../types/wardrobe';
-import { calculateFullStats, type Season } from '../utils/statsCalculations';
-import { loadItems } from '../utils/storageCommands';
+import {
+  calculateFullStats,
+  calculateOutfitSeasonalStats,
+  calculateYearlySpending,
+  type Season,
+} from '../utils/statsCalculations';
+import { loadItems, loadOutfits } from '../utils/storageCommands';
 import styles from './StatsPage.module.css';
 
 const SEASON_EMOJI: Record<Season, string> = {
@@ -36,8 +41,8 @@ function formatItemAge(createdAt: Date): string {
 }
 
 export async function loader() {
-  const items = await loadItems();
-  return { items };
+  const [items, outfits] = await Promise.all([loadItems(), loadOutfits()]);
+  return { items, outfits };
 }
 
 function NeverWornSection({ items }: { items: WardrobeItem[] }) {
@@ -88,11 +93,14 @@ function NeverWornSection({ items }: { items: WardrobeItem[] }) {
 }
 
 export function StatsPage() {
-  const { items } = useLoaderData<typeof loader>();
+  const { items, outfits } = useLoaderData<typeof loader>();
   const stats = useMemo(() => calculateFullStats(items), [items]);
+  const outfitSeasons = useMemo(() => calculateOutfitSeasonalStats(outfits), [outfits]);
+  const yearlySpending = useMemo(() => calculateYearlySpending(items), [items]);
   const [wearView, setWearView] = useState<WearPatternView>('most');
   const [showFinancial, setShowFinancial] = useState(false);
-  const [showSeasonal, setShowSeasonal] = useState(false);
+  const [expandedSeason, setExpandedSeason] = useState<Season | null>(null);
+  const [expandedYear, setExpandedYear] = useState<number | null>(null);
 
   if (items.length === 0) {
     return (
@@ -155,33 +163,6 @@ export function StatsPage() {
           <Heading size="4" className={styles.sectionTitle}>
             Wardrobe Insights
           </Heading>
-
-          {/* Category Preferences with visual bars */}
-          <div className={styles.subsection}>
-            <Text size="3" weight="medium" className={styles.subsectionTitle}>
-              Category Activity
-            </Text>
-            <div className={styles.categoryList}>
-              {stats.categoryWears.map((cat) => {
-                const percentage = (cat.wears / stats.totalWears) * 100;
-                return (
-                  <div key={cat.category} className={styles.categoryItem}>
-                    <div className={styles.categoryInfo}>
-                      <Text size="2" weight="medium">
-                        {cat.category}
-                      </Text>
-                      <Text size="1" color="gray">
-                        {cat.count} {cat.count === 1 ? 'item' : 'items'} · {cat.wears} wears
-                      </Text>
-                    </div>
-                    <div className={styles.categoryBar}>
-                      <div className={styles.categoryBarFill} style={{ width: `${percentage}%` }} />
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
 
           {/* Wear Patterns - Tabbed view */}
           <div className={styles.subsection}>
@@ -304,96 +285,62 @@ export function StatsPage() {
           )}
         </section>
 
-        {/* Seasonal Wear - Collapsible */}
-        {stats.seasonalWears.some((s) => s.wearCount > 0) && (
-          <section className={styles.section}>
-            <button
-              type="button"
-              className={styles.sectionToggle}
-              onClick={() => setShowSeasonal(!showSeasonal)}
-            >
-              <Heading size="4" className={styles.sectionTitle}>
-                Seasonal Breakdown
-              </Heading>
-              <Text size="2" className={styles.toggleIcon}>
-                {showSeasonal ? '\u2212' : '+'}
-              </Text>
-            </button>
+        {/* Seasonal Outfits */}
+        <section className={styles.section}>
+          <Heading size="4" className={styles.sectionTitle}>
+            Seasonal Outfits
+          </Heading>
 
-            {showSeasonal && (
-              <>
-                <div className={styles.seasonGrid}>
-                  {stats.seasonalWears.map((season) => (
-                    <div key={season.season} className={styles.seasonCard}>
-                      <Text size="4">{SEASON_EMOJI[season.season]}</Text>
-                      <Text size="1" weight="medium">
-                        {season.label}
-                      </Text>
-                      <Text size="3" weight="bold">
-                        {season.wearCount}
-                      </Text>
-                      <Text size="1" color="gray">
-                        {season.percentage.toFixed(0)}%
-                      </Text>
-                    </div>
-                  ))}
-                </div>
+          <div className={styles.seasonGrid}>
+            {outfitSeasons.map((season) => (
+              <button
+                key={season.season}
+                type="button"
+                className={`${styles.seasonCard} ${expandedSeason === season.season ? styles.seasonCardActive : ''}`}
+                onClick={() =>
+                  setExpandedSeason((prev) => (prev === season.season ? null : season.season))
+                }
+                disabled={season.count === 0}
+              >
+                <Text size="4">{SEASON_EMOJI[season.season]}</Text>
+                <Text size="1" weight="medium">
+                  {season.label}
+                </Text>
+                <Text size="3" weight="bold">
+                  {season.count}
+                </Text>
+              </button>
+            ))}
+          </div>
 
-                {/* Top 3 items per season */}
-                {(['winter', 'spring', 'summer', 'fall'] as Season[]).map((seasonKey) => {
-                  const seasonLabel =
-                    stats.seasonalWears.find((s) => s.season === seasonKey)?.label || seasonKey;
-                  const seasonalItems = stats.seasonalItems
-                    .filter((si) => si.dominantSeason === seasonKey)
-                    .map((si) => {
-                      const totalWears = Object.values(si.seasonCounts).reduce((a, b) => a + b, 0);
-                      const seasonPercentage = Math.round(
-                        (si.seasonCounts[seasonKey] / totalWears) * 100,
-                      );
-                      return { ...si, seasonPercentage };
-                    })
-                    .sort((a, b) => b.seasonPercentage - a.seasonPercentage)
-                    .slice(0, 3);
-
-                  if (seasonalItems.length === 0) return null;
-
-                  return (
-                    <div key={seasonKey} className={styles.subsection}>
-                      <Text size="2" weight="medium" className={styles.subsectionTitle}>
-                        {SEASON_EMOJI[seasonKey]} {seasonLabel}
-                      </Text>
-                      <div className={styles.itemList}>
-                        {seasonalItems.map(({ item, seasonCounts, seasonPercentage }) => (
-                          <Link key={item.id} to={`/item/${item.id}`} className={styles.itemRow}>
-                            <div className={styles.itemImage}>
-                              <img src={item.imageUrl} alt={item.brand || 'Item'} />
-                            </div>
-                            <div className={styles.itemInfo}>
-                              <Text size="2" weight="medium">
-                                {item.brand || 'Unnamed'}
-                              </Text>
-                              <Text size="1" color="gray">
-                                {item.category.charAt(0).toUpperCase() + item.category.slice(1)}
-                              </Text>
-                            </div>
-                            <div className={styles.itemWears}>
-                              <Text size="2" weight="bold">
-                                {seasonPercentage}%
-                              </Text>
-                              <Text size="1" color="gray">
-                                ({seasonCounts[seasonKey]}×)
-                              </Text>
-                            </div>
-                          </Link>
-                        ))}
+          {expandedSeason !== null &&
+            (() => {
+              const season = outfitSeasons.find((s) => s.season === expandedSeason);
+              if (!season || season.outfits.length === 0) return null;
+              return (
+                <div className={styles.subsection}>
+                  <Text size="2" weight="medium" className={styles.subsectionTitle}>
+                    {SEASON_EMOJI[season.season]} {season.label}
+                  </Text>
+                  <div className={styles.outfitStrip}>
+                    {season.outfits.map((outfit) => (
+                      <div key={outfit.id} className={styles.outfitThumb}>
+                        {outfit.photo ? (
+                          <img src={outfit.photo} alt={`Outfit from ${season.label}`} />
+                        ) : (
+                          <div className={styles.outfitThumbPlaceholder}>
+                            <Text size="3" color="gray">
+                              ?
+                            </Text>
+                          </div>
+                        )}
                       </div>
-                    </div>
-                  );
-                })}
-              </>
-            )}
-          </section>
-        )}
+                    ))}
+                  </div>
+                </div>
+              );
+            })()}
+        </section>
 
         {/* Financial Insights - Collapsible */}
         <section className={styles.section}>
@@ -454,6 +401,76 @@ export function StatsPage() {
                           </Text>
                         </div>
                       </Link>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {yearlySpending.length > 0 && (
+                <div className={styles.subsection}>
+                  <Text size="2" weight="medium" className={styles.subsectionTitle}>
+                    Spending by Year
+                  </Text>
+                  <div className={styles.yearlyList}>
+                    {yearlySpending.map((row) => (
+                      <div key={row.year}>
+                        <button
+                          type="button"
+                          className={`${styles.yearlyRow} ${expandedYear === row.year ? styles.yearlyRowActive : ''}`}
+                          onClick={() =>
+                            setExpandedYear((prev) => (prev === row.year ? null : row.year))
+                          }
+                        >
+                          <Text size="2" weight="medium" className={styles.yearlyYear}>
+                            {row.year}
+                          </Text>
+                          <div className={styles.yearlyMeta}>
+                            <Text size="1" color="gray">
+                              {row.itemCount} {row.itemCount === 1 ? 'item' : 'items'}
+                            </Text>
+                          </div>
+                          <Text size="2" weight="medium" className={styles.yearlyAmount}>
+                            {row.itemsWithPrice > 0 ? `${row.totalSpent.toFixed(0)} kr` : '—'}
+                          </Text>
+                          <Text size="1" color="gray" className={styles.yearlyChevron}>
+                            {expandedYear === row.year ? '▲' : '▼'}
+                          </Text>
+                        </button>
+                        {expandedYear === row.year && (
+                          <div className={styles.yearlyItems}>
+                            {row.items.map((item) => (
+                              <Link
+                                key={item.id}
+                                to={`/item/${item.id}`}
+                                className={styles.itemRow}
+                              >
+                                <div className={styles.itemImage}>
+                                  <img src={item.imageUrl} alt={item.brand || 'Item'} />
+                                </div>
+                                <div className={styles.itemInfo}>
+                                  <Text size="2" weight="medium">
+                                    {item.brand || 'Unnamed'}
+                                  </Text>
+                                  <Text size="1" color="gray">
+                                    {item.category.charAt(0).toUpperCase() + item.category.slice(1)}
+                                  </Text>
+                                </div>
+                                <div className={styles.itemWears}>
+                                  {item.price !== undefined && item.price > 0 ? (
+                                    <Text size="2" weight="medium">
+                                      {item.price.toFixed(0)} kr
+                                    </Text>
+                                  ) : (
+                                    <Text size="2" color="gray">
+                                      —
+                                    </Text>
+                                  )}
+                                </div>
+                              </Link>
+                            ))}
+                          </div>
+                        )}
+                      </div>
                     ))}
                   </div>
                 </div>

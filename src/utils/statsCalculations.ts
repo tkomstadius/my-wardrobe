@@ -1,3 +1,4 @@
+import type { Outfit } from '../types/outfit';
 import type { WardrobeItem } from '../types/wardrobe';
 import { CATEGORIES } from './categories';
 
@@ -13,7 +14,7 @@ export type Season = 'winter' | 'spring' | 'summer' | 'fall';
 /**
  * Determine the season for a given date
  */
-function getSeason(date: Date): Season {
+export function getSeason(date: Date): Season {
   const month = date.getMonth(); // 0-11
   if (month >= 2 && month <= 4) return 'spring'; // Mar, Apr, May
   if (month >= 5 && month <= 7) return 'summer'; // Jun, Jul, Aug
@@ -34,19 +35,6 @@ function getWearRatePerMonth(item: WardrobeItem): number {
 
   // Minimum 0.5 months to avoid division issues for very new items
   return wears / Math.max(monthsOwned, 0.5);
-}
-
-export interface SeasonalStats {
-  season: Season;
-  label: string;
-  wearCount: number;
-  percentage: number;
-}
-
-export interface ItemWithSeasonalData {
-  item: WardrobeItem;
-  dominantSeason: Season | null;
-  seasonCounts: Record<Season, number>;
 }
 
 export interface CategoryFavorite {
@@ -76,10 +64,6 @@ export interface FullStats extends QuickStats {
   favorites: Array<{ item: WardrobeItem; wearRate: number }>;
   // Favorite item per category
   categoryFavorites: CategoryFavorite[];
-  // Seasonal wear distribution
-  seasonalWears: SeasonalStats[];
-  // Items with their dominant season
-  seasonalItems: ItemWithSeasonalData[];
   totalValue: number;
   avgCostPerWear: number;
   bestValue: Array<{ item: WardrobeItem; costPerWear: number }>;
@@ -187,67 +171,6 @@ export function calculateFullStats(items: WardrobeItem[]): FullStats {
     }
   }
 
-  // Seasonal wear analysis
-  // Excludes: dog casual, accessories, jewelry
-  const seasonalExcludedCategories = ['accessories', 'jewelry'];
-  const seasonLabels: Record<Season, string> = {
-    winter: 'Winter',
-    spring: 'Spring',
-    summer: 'Summer',
-    fall: 'Fall',
-  };
-
-  const allSeasonCounts: Record<Season, number> = {
-    winter: 0,
-    spring: 0,
-    summer: 0,
-    fall: 0,
-  };
-
-  const seasonalItems: ItemWithSeasonalData[] = items
-    .filter(
-      (item) =>
-        getAppTrackedWears(item) > 0 &&
-        !item.isDogCasual &&
-        !seasonalExcludedCategories.includes(item.category),
-    )
-    .map((item) => {
-      const seasonCounts: Record<Season, number> = {
-        winter: 0,
-        spring: 0,
-        summer: 0,
-        fall: 0,
-      };
-
-      for (const wearDate of item.wearHistory || []) {
-        const season = getSeason(new Date(wearDate));
-        seasonCounts[season]++;
-        allSeasonCounts[season]++;
-      }
-
-      // Find dominant season (the one with most wears)
-      let dominantSeason: Season | null = null;
-      let maxCount = 0;
-      for (const s of ['winter', 'spring', 'summer', 'fall'] as Season[]) {
-        if (seasonCounts[s] > maxCount) {
-          maxCount = seasonCounts[s];
-          dominantSeason = s;
-        }
-      }
-
-      return { item, dominantSeason, seasonCounts };
-    });
-
-  const totalSeasonalWears = Object.values(allSeasonCounts).reduce((a, b) => a + b, 0);
-  const seasonalWears: SeasonalStats[] = (['winter', 'spring', 'summer', 'fall'] as Season[]).map(
-    (season) => ({
-      season,
-      label: seasonLabels[season],
-      wearCount: allSeasonCounts[season],
-      percentage: totalSeasonalWears > 0 ? (allSeasonCounts[season] / totalSeasonalWears) * 100 : 0,
-    }),
-  );
-
   // Financial stats
   const itemsWithPrice = items.filter((item) => item.price !== undefined && item.price > 0);
   const totalValue = itemsWithPrice.reduce((sum, item) => sum + (item.price || 0), 0);
@@ -281,12 +204,94 @@ export function calculateFullStats(items: WardrobeItem[]): FullStats {
     neverWorn,
     favorites,
     categoryFavorites,
-    seasonalWears,
-    seasonalItems,
     totalValue,
     avgCostPerWear,
     bestValue,
     secondHandCount,
     secondHandPercentage,
   };
+}
+
+export interface YearlySpendingStat {
+  year: number;
+  itemCount: number;
+  totalSpent: number;
+  itemsWithPrice: number;
+  items: WardrobeItem[];
+}
+
+/**
+ * Calculate spending and purchases broken down by year.
+ * Uses purchaseDate when set, falls back to createdAt.
+ */
+export function calculateYearlySpending(items: WardrobeItem[]): YearlySpendingStat[] {
+  const yearMap = new Map<
+    number,
+    { itemCount: number; totalSpent: number; itemsWithPrice: number; items: WardrobeItem[] }
+  >();
+
+  for (const item of items) {
+    const date = item.purchaseDate ?? item.createdAt;
+    const year = new Date(date).getFullYear();
+
+    if (!yearMap.has(year)) {
+      yearMap.set(year, { itemCount: 0, totalSpent: 0, itemsWithPrice: 0, items: [] });
+    }
+    const entry = yearMap.get(year)!;
+    entry.itemCount++;
+    entry.items.push(item);
+    if (item.price !== undefined && item.price > 0) {
+      entry.totalSpent += item.price;
+      entry.itemsWithPrice++;
+    }
+  }
+
+  return Array.from(yearMap.entries())
+    .map(([year, data]) => ({ year, ...data }))
+    .sort((a, b) => b.year - a.year);
+}
+
+export interface OutfitSeasonalStat {
+  season: Season;
+  label: string;
+  count: number;
+  outfits: Outfit[];
+}
+
+const SEASON_LABELS: Record<Season, string> = {
+  winter: 'Winter',
+  spring: 'Spring',
+  summer: 'Summer',
+  fall: 'Fall',
+};
+
+/**
+ * Calculate outfit counts per season based on createdAt date
+ */
+export function calculateOutfitSeasonalStats(outfits: Outfit[]): OutfitSeasonalStat[] {
+  const seasonMap: Record<Season, Outfit[]> = {
+    winter: [],
+    spring: [],
+    summer: [],
+    fall: [],
+  };
+
+  for (const outfit of outfits) {
+    const season = getSeason(outfit.createdAt);
+    seasonMap[season].push(outfit);
+  }
+
+  // Sort each season's outfits by createdAt descending (most recent first)
+  for (const season of Object.keys(seasonMap) as Season[]) {
+    seasonMap[season].sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+  }
+
+  return (['winter', 'spring', 'summer', 'fall'] as Season[])
+    .map((season) => ({
+      season,
+      label: SEASON_LABELS[season],
+      count: seasonMap[season].length,
+      outfits: seasonMap[season],
+    }))
+    .sort((a, b) => b.count - a.count);
 }

@@ -91,6 +91,7 @@ export function ItemDetailPage() {
     try {
       const newCount = await incrementWearCount(item.id);
       setNewWearCount(newCount);
+      revalidator.revalidate();
     } catch (error) {
       console.error('Failed to mark as worn:', error);
       alert('Failed to update wear count. Please try again.');
@@ -140,6 +141,16 @@ export function ItemDetailPage() {
 
   const costPerWear =
     item.price !== undefined && item.wearCount > 0 ? item.price / item.wearCount : null;
+
+  const today = new Date();
+  const alreadyWornToday = item.wearHistory.some((date) => {
+    const d = new Date(date);
+    return (
+      d.getFullYear() === today.getFullYear() &&
+      d.getMonth() === today.getMonth() &&
+      d.getDate() === today.getDate()
+    );
+  });
 
   return (
     <div className={styles.container}>
@@ -216,8 +227,12 @@ export function ItemDetailPage() {
           <Flex direction="column" gap="2">
             {!showDatePicker ? (
               <Flex gap="2">
-                <Button onClick={handleMarkAsWorn} className={styles.wornButton}>
-                  Worn Today
+                <Button
+                  onClick={handleMarkAsWorn}
+                  className={styles.wornButton}
+                  disabled={alreadyWornToday}
+                >
+                  {alreadyWornToday ? 'Logged Today ✓' : 'Worn Today'}
                 </Button>
                 <Button
                   onClick={() => {
