@@ -93,7 +93,11 @@ export function OutfitDetailPage() {
               <Text color="gray">No items found in this outfit</Text>
             </div>
           ) : (
-            outfitItems.map((item) => <ItemCard key={item.id} item={item} />)
+            <div className={styles.itemsGrid}>
+              {outfitItems.map((item) => (
+                <ItemCard key={item.id} item={item} />
+              ))}
+            </div>
           )}
         </section>
 

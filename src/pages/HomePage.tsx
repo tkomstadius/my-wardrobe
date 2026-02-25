@@ -176,11 +176,11 @@ export function HomePage() {
                       </Text>
                     </div>
                   ) : (
-                    <Flex direction="column" gap="2">
+                    <div className={styles.itemsGrid}>
                       {todayItems.map((item) => (
                         <ItemCard item={item} key={item.id} />
                       ))}
-                    </Flex>
+                    </div>
                   )}
                 </Tabs.Content>
 

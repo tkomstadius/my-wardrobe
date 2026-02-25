@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { IoAddOutline, IoPencilOutline } from 'react-icons/io5';
 import { Link, useNavigate } from 'react-router';
 import type { WardrobeItem } from '../../types/wardrobe';
-import { formatItemAge } from '../../utils/dateFormatter';
 import { incrementWearCount } from '../../utils/storageCommands';
 import { isWornToday } from '../../utils/wardrobeFilters';
 import styles from './ItemCard.module.css';
@@ -26,7 +25,6 @@ export function ItemCard({ item }: ItemCardProps) {
   const handleQuickWear = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-
     try {
       const newCount = await incrementWearCount(item.id);
       setNewWearCount(newCount);
@@ -38,46 +36,48 @@ export function ItemCard({ item }: ItemCardProps) {
   const costPerWear =
     item.price !== undefined && item.wearCount > 0 ? item.price / item.wearCount : null;
 
+  const tags = [
+    item.isSecondHand && 'Thrifted',
+    item.isDogCasual && 'Casual',
+    item.isHandmade && 'Handmade',
+  ].filter(Boolean);
+
   return (
     <Link to={`/item/${item.id}`} className={styles.cardLink}>
-      <div className={styles.card} role="button" tabIndex={0}>
+      <div className={styles.card}>
         <div className={styles.imageContainer}>
           <img src={item.imageUrl} alt={item.brand || 'Wardrobe item'} className={styles.image} />
         </div>
 
-        <div className={styles.content}>
-          {item.brand && <p className={styles.brand}>{item.brand}</p>}
-          <p className={styles.wearCount}>Worn {newWearCount ?? item.wearCount}×</p>
-          <div className={styles.metadata}>
-            {item.isSecondHand && <p>Thrifted</p>}
-            {item.isDogCasual && <p>Casual</p>}
-            {item.isHandmade && <p>Handmade</p>}
+        <div className={styles.footer}>
+          <div className={styles.info}>
+            {item.brand && <p className={styles.brand}>{item.brand}</p>}
+            <p className={styles.meta}>
+              Worn {newWearCount ?? item.wearCount}×{tags.length > 0 && ` · ${tags.join(' · ')}`}
+              {costPerWear !== null && ` · ${costPerWear.toFixed(2)} kr/w`}
+            </p>
           </div>
-          {item.purchaseDate && (
-            <p className={styles.itemAge}>{formatItemAge(item.purchaseDate)}</p>
-          )}
-        </div>
-        {costPerWear !== null && (
-          <p className={styles.costPerWear}>{costPerWear?.toFixed(2)} kr/wear</p>
-        )}
-        <button
-          type="button"
-          className={styles.quickEditButton}
-          onClick={handleQuickEdit}
-          title={'Edit item'}
-        >
-          <IoPencilOutline />
-        </button>
 
-        <button
-          type="button"
-          className={`${styles.quickWearButton} ${wornToday ? styles.disabled : ''}`}
-          onClick={handleQuickWear}
-          disabled={!!newWearCount}
-          title={wornToday ? 'Already worn today' : 'Mark as worn'}
-        >
-          <IoAddOutline />
-        </button>
+          <div className={styles.actions}>
+            <button
+              type="button"
+              className={styles.quickEditButton}
+              onClick={handleQuickEdit}
+              title="Edit item"
+            >
+              <IoPencilOutline />
+            </button>
+            <button
+              type="button"
+              className={`${styles.quickWearButton} ${wornToday ? styles.disabled : ''}`}
+              onClick={handleQuickWear}
+              disabled={!!newWearCount}
+              title={wornToday ? 'Already worn today' : 'Mark as worn'}
+            >
+              <IoAddOutline />
+            </button>
+          </div>
+        </div>
       </div>
     </Link>
   );

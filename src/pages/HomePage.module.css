@@ -47,6 +47,12 @@
   gap: 0.5rem;
 }
 
+.itemsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 0.75rem;
+}
+
 .suggestButton {
   display: flex;
   align-items: center;
