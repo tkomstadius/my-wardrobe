@@ -2,9 +2,21 @@ import { Link, useLoaderData } from 'react-router';
 import { Fab } from '../components/common/Fab';
 import { Grid } from '../components/common/ui/Grid';
 import { Text } from '../components/common/ui/Text';
+import type { ItemCategory } from '../types/wardrobe';
 import { CATEGORIES } from '../utils/categories';
 import { loadItems } from '../utils/storageCommands';
 import styles from './ItemsPage.module.css';
+
+const CATEGORY_EMOJI: Record<ItemCategory, string> = {
+  tops: '👕',
+  bottoms: '👖',
+  dresses: '👗',
+  outerwear: '🧥',
+  shoes: '👟',
+  bags: '👜',
+  jewelry: '💍',
+  accessories: '🧢',
+};
 
 export async function loader() {
   try {
@@ -19,8 +31,8 @@ export async function loader() {
 export function ItemsPage() {
   const { items, error } = useLoaderData<typeof loader>();
 
-  const getItemsByCategory = (categoryId: string) =>
-    items.filter((item) => item.category === categoryId);
+  const countByCategory = (categoryId: string) =>
+    items.filter((item) => item.category === categoryId).length;
 
   if (error) {
     return (
@@ -34,34 +46,14 @@ export function ItemsPage() {
     <>
       <Grid columns="2" gap="3">
         {CATEGORIES.map((category) => {
-          const categoryItems = getItemsByCategory(category.id);
-          const previewItems = categoryItems
-            .sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime())
-            .slice(0, 4);
-
+          const count = countByCategory(category.id);
           return (
             <Link key={category.id} to={`/items/${category.id}`} className={styles.categoryCard}>
+              <span className={styles.categoryIcon}>{CATEGORY_EMOJI[category.id]}</span>
               <h2 className={styles.categoryTitle}>{category.title}</h2>
-
-              <div className={styles.categoryPreview}>
-                {previewItems.length > 0 ? (
-                  <div className={styles.previewGrid}>
-                    {previewItems.map((item) => (
-                      <div key={item.id} className={styles.previewItem}>
-                        <img
-                          src={item.imageUrl}
-                          alt={category.title}
-                          className={styles.previewImage}
-                        />
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className={styles.emptyPreview}>
-                    <span className={styles.emptyIcon}>📦</span>
-                  </div>
-                )}
-              </div>
+              <Text size="1" color="gray">
+                {count} {count === 1 ? 'item' : 'items'}
+              </Text>
             </Link>
           );
         })}
