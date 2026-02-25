@@ -69,6 +69,6 @@
   max-width: 768px;
   margin: 0 auto;
   padding: 1rem;
-  padding-bottom: calc(5rem + env(safe-area-inset-bottom));
+  padding-bottom: calc(8rem + env(safe-area-inset-bottom));
   position: relative;
 }
