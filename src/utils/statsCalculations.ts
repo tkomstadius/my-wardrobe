@@ -67,6 +67,7 @@ export interface FullStats extends QuickStats {
   totalValue: number;
   avgCostPerWear: number;
   bestValue: Array<{ item: WardrobeItem; costPerWear: number }>;
+  worstValue: Array<{ item: WardrobeItem; costPerWear: number }>;
   secondHandCount: number;
   secondHandPercentage: number;
 }
@@ -184,12 +185,16 @@ export function calculateFullStats(items: WardrobeItem[]): FullStats {
         ) / itemsWithCostPerWear.length
       : 0;
 
-  const bestValue = [...itemsWithCostPerWear]
+  const costPerWearItems = itemsWithPrice
+    .filter((item) => item.wearCount > 0)
     .map((item) => ({
       item,
-      costPerWear: (item.price || 0) / getAppTrackedWears(item),
-    }))
-    .sort((a, b) => a.costPerWear - b.costPerWear)
+      costPerWear: (item.price || 0) / item.wearCount,
+    }));
+
+  const bestValue = [...costPerWearItems].sort((a, b) => a.costPerWear - b.costPerWear).slice(0, 5);
+  const worstValue = [...costPerWearItems]
+    .sort((a, b) => b.costPerWear - a.costPerWear)
     .slice(0, 5);
 
   const secondHandCount = items.filter((item) => item.isSecondHand).length;
@@ -207,13 +212,14 @@ export function calculateFullStats(items: WardrobeItem[]): FullStats {
     totalValue,
     avgCostPerWear,
     bestValue,
+    worstValue,
     secondHandCount,
     secondHandPercentage,
   };
 }
 
 export interface YearlySpendingStat {
-  year: number;
+  year: number | null;
   itemCount: number;
   totalSpent: number;
   itemsWithPrice: number;
@@ -222,17 +228,16 @@ export interface YearlySpendingStat {
 
 /**
  * Calculate spending and purchases broken down by year.
- * Uses purchaseDate when set, falls back to createdAt.
+ * Only uses purchaseDate — items without one are grouped under year: null.
  */
 export function calculateYearlySpending(items: WardrobeItem[]): YearlySpendingStat[] {
   const yearMap = new Map<
-    number,
+    number | null,
     { itemCount: number; totalSpent: number; itemsWithPrice: number; items: WardrobeItem[] }
   >();
 
   for (const item of items) {
-    const date = item.purchaseDate ?? item.createdAt;
-    const year = new Date(date).getFullYear();
+    const year = item.purchaseDate ? new Date(item.purchaseDate).getFullYear() : null;
 
     if (!yearMap.has(year)) {
       yearMap.set(year, { itemCount: 0, totalSpent: 0, itemsWithPrice: 0, items: [] });
@@ -246,9 +251,17 @@ export function calculateYearlySpending(items: WardrobeItem[]): YearlySpendingSt
     }
   }
 
-  return Array.from(yearMap.entries())
-    .map(([year, data]) => ({ year, ...data }))
-    .sort((a, b) => b.year - a.year);
+  const known: YearlySpendingStat[] = Array.from(yearMap.entries())
+    .filter(([year]) => year !== null)
+    .map(([year, data]) => ({ year: year as number, ...data }))
+    .sort((a, b) => (b.year as number) - (a.year as number));
+
+  const unknown = yearMap.get(null);
+  if (unknown) {
+    known.push({ year: null, ...unknown });
+  }
+
+  return known;
 }
 
 export interface OutfitSeasonalStat {
