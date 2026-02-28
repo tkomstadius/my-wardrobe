@@ -18,11 +18,15 @@ import {
 } from '../utils/aiLearning';
 import { importBackup, isShareSupported, parseBackupFile, shareBackup } from '../utils/backup';
 import { diagnoseAllItems, repairWearCountMismatches } from '../utils/repairData';
-import { loadItems, loadOutfits, updateItemEmbedding } from '../utils/storageCommands';
+import {
+  loadItemsWithEmbeddings,
+  loadOutfits,
+  updateItemEmbedding,
+} from '../utils/storageCommands';
 import styles from './SettingsPage.module.css';
 
 export async function loader() {
-  const items = await loadItems();
+  const items = await loadItemsWithEmbeddings();
   const outfits = await loadOutfits();
 
   return { items, outfits };

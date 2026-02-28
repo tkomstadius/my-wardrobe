@@ -6,6 +6,12 @@ import { deleteImage, getSignedUrl, getSignedUrls } from './supabaseStorage';
 
 // ========== Helpers ==========
 
+// All wardrobe_items columns except the 512-dim embedding vector.
+// Embedding is large (~2KB/item) and only needed for AI features.
+const ITEM_COLUMNS =
+  'id, image_url, notes, brand, category, sub_category, wear_count, initial_wear_count, wear_history, price, is_second_hand, is_dog_casual, is_handmade, rating, purchase_date, created_at, updated_at, user_id, archived_at, archive_reason, archive_notes';
+const ITEM_COLUMNS_WITH_EMBEDDING = `${ITEM_COLUMNS}, embedding`;
+
 export function generateId(): string {
   return `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
 }
@@ -108,7 +114,8 @@ export async function saveItems(items: WardrobeItem[]): Promise<void> {
     is_handmade: item.isHandmade ?? false,
     rating: item.rating ?? null,
     purchase_date: item.purchaseDate?.toISOString() ?? null,
-    embedding: item.embedding ?? null,
+    // Only include embedding if explicitly set — omitting it preserves the existing DB value on upsert
+    ...(item.embedding !== undefined && { embedding: item.embedding }),
     archived_at: item.archivedAt?.toISOString() ?? null,
     archive_reason: item.archiveReason ?? null,
     archive_notes: item.archiveNotes ?? null,
@@ -131,7 +138,10 @@ export async function saveItem(item: WardrobeItem): Promise<void> {
 export async function loadItems(): Promise<WardrobeItem[]> {
   try {
     const userId = await getCurrentUserId();
-    const { data, error } = await supabase.from('wardrobe_items').select('*').eq('user_id', userId);
+    const { data, error } = await supabase
+      .from('wardrobe_items')
+      .select(ITEM_COLUMNS)
+      .eq('user_id', userId);
 
     if (error) throw error;
     if (!data) return [];
@@ -144,12 +154,31 @@ export async function loadItems(): Promise<WardrobeItem[]> {
   }
 }
 
+export async function loadItemsWithEmbeddings(): Promise<WardrobeItem[]> {
+  try {
+    const userId = await getCurrentUserId();
+    const { data, error } = await supabase
+      .from('wardrobe_items')
+      .select(ITEM_COLUMNS_WITH_EMBEDDING)
+      .eq('user_id', userId);
+
+    if (error) throw error;
+    if (!data) return [];
+
+    const items = data.map(mapRowToItem);
+    return resolveItemImageUrls(items);
+  } catch (error) {
+    console.error('Failed to load items with embeddings:', error);
+    return [];
+  }
+}
+
 export async function getItemById(id: string): Promise<WardrobeItem | null> {
   try {
     const userId = await getCurrentUserId();
     const { data, error } = await supabase
       .from('wardrobe_items')
-      .select('*')
+      .select(ITEM_COLUMNS)
       .eq('id', id)
       .eq('user_id', userId)
       .single();
@@ -171,7 +200,7 @@ export async function getItemsByIds(ids: string[]): Promise<WardrobeItem[]> {
     const userId = await getCurrentUserId();
     const { data, error } = await supabase
       .from('wardrobe_items')
-      .select('*')
+      .select(ITEM_COLUMNS)
       .eq('user_id', userId)
       .in('id', ids);
 
@@ -191,7 +220,7 @@ export async function getItemsByCategory(category: ItemCategory): Promise<Wardro
     const userId = await getCurrentUserId();
     const { data, error } = await supabase
       .from('wardrobe_items')
-      .select('*')
+      .select(ITEM_COLUMNS)
       .eq('user_id', userId)
       .eq('category', category);
 
@@ -286,7 +315,7 @@ export async function loadArchivedItems(): Promise<WardrobeItem[]> {
     const userId = await getCurrentUserId();
     const { data, error } = await supabase
       .from('wardrobe_items')
-      .select('*')
+      .select(ITEM_COLUMNS)
       .eq('user_id', userId)
       .not('archived_at', 'is', null);
 

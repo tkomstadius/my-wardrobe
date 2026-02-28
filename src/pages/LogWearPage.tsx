@@ -22,11 +22,11 @@ import {
   updatePreferencesFromFeedback,
 } from '../utils/aiLearning';
 import { findMatchingItems, type ItemMatch } from '../utils/aiMatching';
-import { addOutfit, incrementWearCount, loadItems } from '../utils/storageCommands';
+import { addOutfit, incrementWearCount, loadItemsWithEmbeddings } from '../utils/storageCommands';
 import styles from './LogWearPage.module.css';
 
 export async function loader() {
-  const items = await loadItems();
+  const items = await loadItemsWithEmbeddings();
   return { items };
 }
 

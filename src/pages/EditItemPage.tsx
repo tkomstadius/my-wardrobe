@@ -106,14 +106,14 @@ export async function clientAction({ request, params }: ActionFunctionArgs) {
 
     const imageChanged = imageUrl.startsWith('data:');
 
-    // Regenerate embedding if image has changed
-    let embedding = existingItem.embedding;
+    // Generate fresh embedding only when image has changed.
+    // When image is unchanged, embedding stays undefined — saveItem will preserve the existing DB value.
+    let embedding: number[] | undefined;
     if (imageChanged) {
       try {
         embedding = await getImageEmbedding(imageUrl);
       } catch (error) {
         console.error('Failed to generate embedding:', error);
-        // Continue without updating embedding
       }
     }
 
