@@ -1,5 +1,7 @@
 import type { OutfitRating } from './outfit';
 
+export type ArchiveReason = 'thrown_away' | 'donated' | 'sold';
+
 export type ItemCategory =
   | 'tops'
   | 'bottoms'
@@ -31,6 +33,9 @@ export type WardrobeItem = {
   createdAt: Date;
   updatedAt: Date;
   embedding?: number[]; // CLIP embedding vector (512 dimensions) for AI matching
+  archivedAt?: Date;
+  archiveReason?: ArchiveReason;
+  archiveNotes?: string;
 };
 
 export type NewWardrobeItem = Omit<

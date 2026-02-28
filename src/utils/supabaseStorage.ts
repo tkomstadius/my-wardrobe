@@ -2,6 +2,25 @@ import { supabase } from './supabase';
 
 const BUCKET = 'wardrobe-images';
 const SIGNED_URL_EXPIRY = 3600; // 1 hour in seconds
+const CACHE_TTL_MS = 55 * 60 * 1000; // 55 minutes — refresh 5min before expiry
+
+type CacheEntry = { url: string; expiresAt: number };
+const urlCache = new Map<string, CacheEntry>();
+
+function getCached(path: string): string | null {
+  const entry = urlCache.get(path);
+  if (entry && Date.now() < entry.expiresAt) return entry.url;
+  urlCache.delete(path);
+  return null;
+}
+
+function setCache(path: string, url: string): void {
+  urlCache.set(path, { url, expiresAt: Date.now() + CACHE_TTL_MS });
+}
+
+export function invalidateUrlCache(path: string): void {
+  urlCache.delete(path);
+}
 
 /**
  * Upload an item image to Supabase Storage.
@@ -18,6 +37,7 @@ export async function uploadItemImage(userId: string, itemId: string, blob: Blob
     throw new Error(`Failed to upload item image: ${error.message}`);
   }
 
+  invalidateUrlCache(path);
   return path;
 }
 
@@ -40,6 +60,7 @@ export async function uploadOutfitPhoto(
     throw new Error(`Failed to upload outfit photo: ${error.message}`);
   }
 
+  invalidateUrlCache(path);
   return path;
 }
 
@@ -52,6 +73,8 @@ export async function deleteImage(path: string): Promise<void> {
   if (error) {
     throw new Error(`Failed to delete image: ${error.message}`);
   }
+
+  invalidateUrlCache(path);
 }
 
 /**
@@ -59,6 +82,9 @@ export async function deleteImage(path: string): Promise<void> {
  * Returns the signed URL for use in <img src>.
  */
 export async function getSignedUrl(path: string): Promise<string> {
+  const cached = getCached(path);
+  if (cached) return cached;
+
   const { data, error } = await supabase.storage
     .from(BUCKET)
     .createSignedUrl(path, SIGNED_URL_EXPIRY);
@@ -67,6 +93,7 @@ export async function getSignedUrl(path: string): Promise<string> {
     throw new Error(`Failed to get signed URL: ${error?.message ?? 'No URL returned'}`);
   }
 
+  setCache(path, data.signedUrl);
   return data.signedUrl;
 }
 
@@ -75,21 +102,33 @@ export async function getSignedUrl(path: string): Promise<string> {
  * Returns a map of path → signed URL.
  */
 export async function getSignedUrls(paths: string[]): Promise<Map<string, string>> {
-  if (paths.length === 0) {
-    return new Map();
+  if (paths.length === 0) return new Map();
+
+  const urlMap = new Map<string, string>();
+  const uncached: string[] = [];
+
+  for (const path of paths) {
+    const cached = getCached(path);
+    if (cached) {
+      urlMap.set(path, cached);
+    } else {
+      uncached.push(path);
+    }
   }
+
+  if (uncached.length === 0) return urlMap;
 
   const { data, error } = await supabase.storage
     .from(BUCKET)
-    .createSignedUrls(paths, SIGNED_URL_EXPIRY);
+    .createSignedUrls(uncached, SIGNED_URL_EXPIRY);
 
   if (error || !data) {
     throw new Error(`Failed to get signed URLs: ${error?.message ?? 'No data returned'}`);
   }
 
-  const urlMap = new Map<string, string>();
   for (const item of data) {
     if (item.signedUrl && item.path) {
+      setCache(item.path, item.signedUrl);
       urlMap.set(item.path, item.signedUrl);
     }
   }

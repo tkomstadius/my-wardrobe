@@ -33,6 +33,9 @@ export const wardrobeItems = pgTable('wardrobe_items', {
   rating: smallint('rating'), // 1 = good, 0 = meh, -1 = nope
   purchaseDate: timestamp('purchase_date', { withTimezone: true, mode: 'date' }),
   embedding: real('embedding').array(), // 512-dim FashionCLIP vector
+  archivedAt: timestamp('archived_at', { withTimezone: true, mode: 'date' }),
+  archiveReason: text('archive_reason'), // 'thrown_away' | 'donated' | 'sold'
+  archiveNotes: text('archive_notes'),
   createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).defaultNow().notNull(),
   updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'date' }).defaultNow().notNull(),
   userId: uuid('user_id').notNull(),

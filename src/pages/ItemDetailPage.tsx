@@ -8,6 +8,7 @@ import {
   useNavigate,
   useRevalidator,
 } from 'react-router';
+import { ArchiveDialog } from '../components/common/ArchiveDialog';
 import { BackLink } from '../components/common/BackLink';
 import { DeleteConfirmDialog } from '../components/common/DeleteConfirmDialog';
 import { RATING_OPTIONS } from '../components/common/form/constants';
@@ -17,6 +18,7 @@ import { Grid } from '../components/common/ui/Grid';
 import { Heading } from '../components/common/ui/Heading';
 import { Text } from '../components/common/ui/Text';
 import { TextField } from '../components/common/ui/TextField';
+import type { ArchiveReason } from '../types/wardrobe';
 import {
   formatDate,
   formatDateDisplay,
@@ -25,12 +27,14 @@ import {
   normalizeToNoon,
 } from '../utils/dateFormatter';
 import {
+  archiveItem,
   getItemById,
   getOutfitsWithItemId,
   incrementWearCount,
   logWearOnDate,
   removeItem,
   removeWear,
+  unarchiveItem,
 } from '../utils/storageCommands';
 import styles from './ItemDetailPage.module.css';
 
@@ -65,6 +69,8 @@ export function ItemDetailPage() {
   const revalidator = useRevalidator();
   const { item, outfits: outfitsWithItem } = useLoaderData<typeof loader>();
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isArchiving, setIsArchiving] = useState(false);
+  const [isUnarchiving, setIsUnarchiving] = useState(false);
   const [deletingWearIndex, setDeletingWearIndex] = useState<number | null>(null);
   const [showAllWears, setShowAllWears] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -82,6 +88,35 @@ export function ItemDetailPage() {
       console.error('Failed to delete item:', error);
       alert('Failed to delete item. Please try again.');
       setIsDeleting(false);
+    }
+  };
+
+  const handleArchive = async (reason: ArchiveReason, notes: string) => {
+    if (!item) return;
+
+    setIsArchiving(true);
+    try {
+      await archiveItem(item.id, reason, notes || undefined);
+      navigate(`/items/${item.category}`);
+    } catch (error) {
+      console.error('Failed to archive item:', error);
+      alert('Failed to archive item. Please try again.');
+      setIsArchiving(false);
+    }
+  };
+
+  const handleUnarchive = async () => {
+    if (!item) return;
+
+    setIsUnarchiving(true);
+    try {
+      await unarchiveItem(item.id);
+      revalidator.revalidate();
+    } catch (error) {
+      console.error('Failed to unarchive item:', error);
+      alert('Failed to unarchive item. Please try again.');
+    } finally {
+      setIsUnarchiving(false);
     }
   };
 
@@ -163,6 +198,34 @@ export function ItemDetailPage() {
           <img src={item.imageUrl} alt={item.notes || item.brand || 'Item'} />
         </div>
 
+        {item.archivedAt && (
+          <div className={styles.archiveBanner}>
+            <div className={styles.archiveBannerInfo}>
+              <Text size="2" weight="bold">
+                Archived ·{' '}
+                {item.archiveReason === 'thrown_away'
+                  ? 'Thrown Away'
+                  : item.archiveReason === 'donated'
+                    ? 'Donated'
+                    : item.archiveReason === 'sold'
+                      ? 'Sold'
+                      : ''}
+              </Text>
+              <Text size="1" color="gray">
+                {formatDateDisplay(item.archivedAt)}
+              </Text>
+              {item.archiveNotes && (
+                <Text size="2" color="gray" className={styles.archiveNotes}>
+                  &ldquo;{item.archiveNotes}&rdquo;
+                </Text>
+              )}
+            </div>
+            <Button onClick={handleUnarchive} disabled={isUnarchiving}>
+              {isUnarchiving ? 'Restoring...' : 'Unarchive'}
+            </Button>
+          </div>
+        )}
+
         <section>
           <Grid columns="2" gap="3">
             <Flex direction="column" gap="1">
@@ -224,58 +287,60 @@ export function ItemDetailPage() {
             </Flex>
           </Flex>
 
-          <Flex direction="column" gap="2">
-            {!showDatePicker ? (
-              <Flex gap="2">
-                <Button
-                  onClick={handleMarkAsWorn}
-                  className={styles.wornButton}
-                  disabled={alreadyWornToday}
-                >
-                  {alreadyWornToday ? 'Logged Today ✓' : 'Worn Today'}
-                </Button>
-                <Button
-                  onClick={() => {
-                    const dateStr = formatDate(new Date());
-                    setSelectedDate(dateStr);
-                    setShowDatePicker(true);
-                  }}
-                  className={styles.wornButton}
-                >
-                  Log Past Wear
-                </Button>
-              </Flex>
-            ) : (
-              <div className={styles.datePickerContainer}>
-                <Text size="2" weight="medium">
-                  Select the date you wore this item:
-                </Text>
-                <TextField.Root size="3">
-                  <TextField.Input
-                    type="date"
-                    value={selectedDate}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                      setSelectedDate(e.target.value)
-                    }
-                    max={formatDate(new Date())}
-                  />
-                </TextField.Root>
-                <Flex gap="2" justify="end">
+          {!item.archivedAt && (
+            <Flex direction="column" gap="2">
+              {!showDatePicker ? (
+                <Flex gap="2">
+                  <Button
+                    onClick={handleMarkAsWorn}
+                    className={styles.wornButton}
+                    disabled={alreadyWornToday}
+                  >
+                    {alreadyWornToday ? 'Logged Today ✓' : 'Worn Today'}
+                  </Button>
                   <Button
                     onClick={() => {
-                      setShowDatePicker(false);
-                      setSelectedDate('');
+                      const dateStr = formatDate(new Date());
+                      setSelectedDate(dateStr);
+                      setShowDatePicker(true);
                     }}
+                    className={styles.wornButton}
                   >
-                    Cancel
-                  </Button>
-                  <Button onClick={handleLogWearOnDate} disabled={!selectedDate}>
-                    Log Wear
+                    Log Past Wear
                   </Button>
                 </Flex>
-              </div>
-            )}
-          </Flex>
+              ) : (
+                <div className={styles.datePickerContainer}>
+                  <Text size="2" weight="medium">
+                    Select the date you wore this item:
+                  </Text>
+                  <TextField.Root size="3">
+                    <TextField.Input
+                      type="date"
+                      value={selectedDate}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                        setSelectedDate(e.target.value)
+                      }
+                      max={formatDate(new Date())}
+                    />
+                  </TextField.Root>
+                  <Flex gap="2" justify="end">
+                    <Button
+                      onClick={() => {
+                        setShowDatePicker(false);
+                        setSelectedDate('');
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                    <Button onClick={handleLogWearOnDate} disabled={!selectedDate}>
+                      Log Wear
+                    </Button>
+                  </Flex>
+                </div>
+              )}
+            </Flex>
+          )}
         </section>
 
         {/* Wear History */}
@@ -353,7 +418,7 @@ export function ItemDetailPage() {
           </section>
         )}
 
-        {/* Edit and Delete Actions */}
+        {/* Edit, Archive and Delete Actions */}
         <section className={styles.bottomActions}>
           <DeleteConfirmDialog
             title="Delete Item"
@@ -366,6 +431,14 @@ export function ItemDetailPage() {
               </Button>
             }
           />
+
+          {!item.archivedAt && (
+            <ArchiveDialog
+              onConfirm={handleArchive}
+              isArchiving={isArchiving}
+              triggerButton={<Button className={styles.archiveButton}>Archive</Button>}
+            />
+          )}
 
           <Button onClick={() => navigate(`/edit-item/${item.id}`)} className={styles.editButton}>
             <IoPencilOutline /> Edit Item

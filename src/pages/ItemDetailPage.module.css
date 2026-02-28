@@ -202,6 +202,29 @@
   white-space: nowrap;
 }
 
+/* Archive Banner */
+.archiveBanner {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+  background-color: var(--amber-2, #fffbeb);
+  border: 1px solid var(--amber-6, #f5c842);
+  border-radius: var(--border-radius);
+}
+
+.archiveBannerInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.archiveNotes {
+  font-style: italic;
+  margin-top: 2px;
+}
+
 /* Bottom Actions */
 .bottomActions {
   display: flex;
@@ -211,6 +234,10 @@
 }
 
 .editButton {
+  flex: 1;
+}
+
+.archiveButton {
   flex: 1;
 }
 

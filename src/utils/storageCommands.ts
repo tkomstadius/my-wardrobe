@@ -1,6 +1,6 @@
 import { compareAsc } from 'date-fns';
 import type { NewOutfit, Outfit, OutfitRating } from '../types/outfit';
-import type { ItemCategory, WardrobeItem } from '../types/wardrobe';
+import type { ArchiveReason, ItemCategory, WardrobeItem } from '../types/wardrobe';
 import { getCurrentUserId, supabase } from './supabase';
 import { deleteImage, getSignedUrl, getSignedUrls } from './supabaseStorage';
 
@@ -33,6 +33,9 @@ function mapRowToItem(row: Record<string, unknown>): WardrobeItem {
     createdAt: new Date(row.created_at as string),
     updatedAt: new Date(row.updated_at as string),
     embedding: (row.embedding as number[]) ?? undefined,
+    archivedAt: row.archived_at ? new Date(row.archived_at as string) : undefined,
+    archiveReason: (row.archive_reason as ArchiveReason) ?? undefined,
+    archiveNotes: (row.archive_notes as string) ?? undefined,
   };
 }
 
@@ -106,6 +109,9 @@ export async function saveItems(items: WardrobeItem[]): Promise<void> {
     rating: item.rating ?? null,
     purchase_date: item.purchaseDate?.toISOString() ?? null,
     embedding: item.embedding ?? null,
+    archived_at: item.archivedAt?.toISOString() ?? null,
+    archive_reason: item.archiveReason ?? null,
+    archive_notes: item.archiveNotes ?? null,
     created_at: item.createdAt.toISOString(),
     updated_at: item.updatedAt.toISOString(),
     user_id: userId,
@@ -232,6 +238,66 @@ export async function removeItem(id: string): Promise<void> {
   } catch (error) {
     console.error('Failed to delete item:', error);
     throw new Error('Failed to delete item.');
+  }
+}
+
+export async function archiveItem(
+  id: string,
+  reason: ArchiveReason,
+  notes?: string,
+): Promise<void> {
+  const userId = await getCurrentUserId();
+  const { error } = await supabase
+    .from('wardrobe_items')
+    .update({
+      archived_at: new Date().toISOString(),
+      archive_reason: reason,
+      archive_notes: notes ?? null,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', id)
+    .eq('user_id', userId);
+
+  if (error) {
+    throw new Error('Failed to archive item.');
+  }
+}
+
+export async function unarchiveItem(id: string): Promise<void> {
+  const userId = await getCurrentUserId();
+  const { error } = await supabase
+    .from('wardrobe_items')
+    .update({
+      archived_at: null,
+      archive_reason: null,
+      archive_notes: null,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', id)
+    .eq('user_id', userId);
+
+  if (error) {
+    throw new Error('Failed to unarchive item.');
+  }
+}
+
+export async function loadArchivedItems(): Promise<WardrobeItem[]> {
+  try {
+    const userId = await getCurrentUserId();
+    const { data, error } = await supabase
+      .from('wardrobe_items')
+      .select('*')
+      .eq('user_id', userId)
+      .not('archived_at', 'is', null);
+
+    if (error) throw error;
+    if (!data) return [];
+
+    const items = data.map(mapRowToItem);
+    return resolveItemImageUrls(items);
+  } catch (error) {
+    console.error('Failed to load archived items:', error);
+    return [];
   }
 }
 

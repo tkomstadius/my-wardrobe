@@ -8,6 +8,7 @@ import {
   clientAction as addItemAction,
   clientLoader as addItemLoader,
 } from './pages/AddItemPage';
+import { ArchivedItemsPage, loader as archivedItemsLoader } from './pages/ArchivedItemsPage';
 import {
   CreateOutfitPage,
   action as createOutfitAction,
@@ -49,6 +50,7 @@ const router = createBrowserRouter([
         action: addItemAction,
       },
       { path: 'items', element: <ItemsPage />, loader: itemsLoader },
+      { path: 'items/archived', element: <ArchivedItemsPage />, loader: archivedItemsLoader },
       { path: 'log-wear', element: <LogWearPage />, loader: logWearLoader },
       {
         path: 'items/:category',
