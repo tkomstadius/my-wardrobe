@@ -9,7 +9,7 @@ import { Button } from '../components/common/ui/Button';
 import { Callout } from '../components/common/ui/Callout';
 import { Card } from '../components/common/ui/Card';
 import { Text } from '../components/common/ui/Text';
-import { clearModelStorage, getImageEmbedding, getModelCacheSize } from '../utils/aiEmbedding';
+import { getImageEmbedding } from '../utils/aiEmbedding';
 import {
   clearAllFeedback,
   getFeedbackStats,
@@ -57,8 +57,6 @@ export function SettingsPage() {
   } | null>(null);
   const [isUpdatingPreferences, setIsUpdatingPreferences] = useState(false);
   const [isResettingLearning, setIsResettingLearning] = useState(false);
-  const [isClearingCache, setIsClearingCache] = useState(false);
-  const [cacheSize, setCacheSize] = useState<number | null>(null);
 
   // Count items without embeddings
   const itemsNeedingEmbeddings = items.filter((item) => !item.embedding);
@@ -77,16 +75,6 @@ export function SettingsPage() {
     }
     loadStats();
 
-    // Load cache size
-    async function loadCacheSize() {
-      try {
-        const size = await getModelCacheSize();
-        setCacheSize(size);
-      } catch (error) {
-        console.error('Failed to load cache size:', error);
-      }
-    }
-    loadCacheSize();
   }, []);
 
   const handleExport = async () => {
@@ -277,35 +265,6 @@ export function SettingsPage() {
     }
   };
 
-  const handleClearModelCache = async () => {
-    if (
-      !confirm(
-        'Clear AI model cache? This will free up storage space (~200-500MB) but models will need to be re-downloaded on next use. Your item embeddings will not be affected.',
-      )
-    ) {
-      return;
-    }
-
-    setIsClearingCache(true);
-    setMessage(null);
-
-    try {
-      await clearModelStorage();
-      setCacheSize(0);
-      setMessage({
-        type: 'success',
-        text: '✅ AI model cache cleared! Models will be re-downloaded when needed.',
-      });
-    } catch (error) {
-      console.error('Failed to clear cache:', error);
-      setMessage({
-        type: 'error',
-        text: 'Failed to clear model cache. Please try again.',
-      });
-    } finally {
-      setIsClearingCache(false);
-    }
-  };
 
   const handleGenerateEmbeddings = async (regenerateAll = false) => {
     setIsGeneratingEmbeddings(true);
@@ -589,21 +548,6 @@ export function SettingsPage() {
                 </Text>
               </div>
 
-              {/* Model Cache Management */}
-              <div className={styles.buttonGroup} style={{ marginTop: '1.5rem' }}>
-                <Button onClick={handleClearModelCache} disabled={isClearingCache}>
-                  {isClearingCache
-                    ? 'Clearing Cache...'
-                    : `Clear Model Cache${cacheSize !== null ? ` (~${cacheSize}MB)` : ''}`}
-                </Button>
-              </div>
-              <div className={styles.helpText} style={{ marginTop: '0.5rem' }}>
-                <Text size="2" color="gray">
-                  <strong>Clear cache:</strong> Free up storage space by removing cached AI models
-                  (~200-500MB). Models will be re-downloaded automatically when needed. Your item
-                  embeddings are not affected.
-                </Text>
-              </div>
             </div>
           </Card>
         </section>
@@ -731,8 +675,8 @@ export function SettingsPage() {
                   for best results.
                 </Text>
                 <Text size="2" color="gray">
-                  <strong>Privacy:</strong> All learning happens locally on your device. No data is
-                  sent anywhere.
+                  <strong>Privacy:</strong> Preference learning happens locally. Images are sent to
+                  a private HF Space only for embedding generation.
                 </Text>
               </div>
             </div>

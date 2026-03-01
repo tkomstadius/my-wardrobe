@@ -15,3 +15,4 @@ export const BEST_VALUE_LIMIT = 5;
 
 // Image processing
 export const ENABLE_BACKGROUND_REMOVAL = true; // Set to true to enable AI background removal
+
