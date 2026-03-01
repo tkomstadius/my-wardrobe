@@ -1,20 +1,20 @@
-import { Button as BaseButton } from '@base-ui/react/button';
-import type { ReactNode } from 'react';
-import styles from './Button.module.css';
+import { Button as BaseButton } from '@base-ui/react/button'
+import type { ReactNode } from 'react'
+import styles from './Button.module.css'
 
 interface ButtonProps {
-  children: ReactNode;
-  onClick?: () => void;
-  variant?: 'primary' | 'destructive';
-  disabled?: boolean;
-  type?: 'button' | 'submit';
-  className?: string;
+  children: ReactNode
+  onClick?: () => void
+  variant?: 'default' | 'outline' | 'destructive'
+  disabled?: boolean
+  type?: 'button' | 'submit'
+  className?: string
 }
 
 export function Button({
   children,
   onClick,
-  variant = 'primary',
+  variant = 'default',
   disabled = false,
   type = 'button',
   className = '',
@@ -29,5 +29,5 @@ export function Button({
     >
       {children}
     </BaseButton>
-  );
+  )
 }

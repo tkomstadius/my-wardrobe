@@ -1,13 +1,14 @@
 .button {
+  min-width: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
   border-radius: 10px;
-  padding: 0.5rem 1rem;
-  min-height: 40px;
+  padding: 0.75rem 0.5rem;
   font-weight: 600;
   font-size: 0.875rem;
+  border: 1px solid transparent;
   transition:
     opacity var(--transition-fast),
     transform var(--transition-fast),
@@ -29,11 +30,21 @@
   transform: scale(0.97);
 }
 
-.primary {
-  background-color: var(--items-color);
-  box-shadow: var(--shadow-sm);
+.default {
+  background-color: var(--accent-color);
+}
+
+.outline {
+  background-color: transparent;
+  border: 1px solid var(--accent-color);
 }
 
 .destructive {
   background-color: var(--destructive-color);
+}
+
+.wornButton {
+  flex: 1;
+  min-width: 0; /* Allow flex items to shrink below content size */
+  white-space: normal; /* Allow text to wrap if needed */
 }

@@ -12,6 +12,10 @@
   -moz-osx-font-smoothing: grayscale;
 
   color-scheme: dark;
+  /* NEW VARIABLES */
+  --destructive-color: oklch(45.777% 0.17857 26.758);
+  --accent-color: oklch(0.4 0.2 300);
+  /* END NEW VARIABLES */
 
   --background-color: rgb(10, 10, 10);
   --base-color: rgba(20, 20, 20, 0.85);
@@ -19,7 +23,6 @@
   --border-color: rgba(255, 255, 255, 0.08);
 
   --items-color: oklch(0.558 0.288 302.321014);
-  --destructive-color: oklch(63.7% 0.237 25.331);
 
   --glass-bg: rgba(20, 20, 20, 0.8);
   --glass-border: rgba(255, 255, 255, 0.06);
@@ -29,7 +32,6 @@
   --small-border-radius: 8px;
 
   /* Theme colors */
-  --accent-color: oklch(0.6 0.25 280);
   --accent-hover: oklch(0.55 0.28 280);
   --accent-action-color: oklch(0.2 0.05 280);
   --accent-subtle: oklch(0.2 0.05 280);

@@ -14,6 +14,10 @@
   gap: 16px;
 }
 
+.imageContainer {
+  margin-top: 1rem;
+}
+
 .imageSection {
   width: 100%;
   max-width: 500px;
@@ -36,7 +40,7 @@
 }
 
 .divider {
-  border-bottom: 1px solid var(--complimentary-color);
+  border-bottom: 1px solid var(--border-color);
   margin: 16px 0;
 }
 
@@ -64,10 +68,8 @@
   color: var(--blue-11);
 }
 
-.wornButton {
-  flex: 1;
-  min-width: 0; /* Allow flex items to shrink below content size */
-  white-space: normal; /* Allow text to wrap if needed */
+.attributes {
+  margin-bottom: 1rem;
 }
 
 .datePickerContainer {

@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { IoPencilOutline, IoTrashOutline } from 'react-icons/io5';
+import { useState } from 'react'
+import { IoPencilOutline, IoTrashOutline } from 'react-icons/io5'
 import {
   type ActionFunctionArgs,
   Link,
@@ -7,25 +7,19 @@ import {
   useLoaderData,
   useNavigate,
   useRevalidator,
-} from 'react-router';
-import { ArchiveDialog } from '../components/common/ArchiveDialog';
-import { BackLink } from '../components/common/BackLink';
-import { DeleteConfirmDialog } from '../components/common/DeleteConfirmDialog';
-import { RATING_OPTIONS } from '../components/common/form/constants';
-import { Button } from '../components/common/ui/Button';
-import { Flex } from '../components/common/ui/Flex';
-import { Grid } from '../components/common/ui/Grid';
-import { Heading } from '../components/common/ui/Heading';
-import { Text } from '../components/common/ui/Text';
-import { TextField } from '../components/common/ui/TextField';
-import type { ArchiveReason } from '../types/wardrobe';
-import {
-  formatDate,
-  formatDateDisplay,
-  formatItemAge,
-  formatLastWorn,
-  normalizeToNoon,
-} from '../utils/dateFormatter';
+} from 'react-router'
+import { ArchiveDialog } from '../components/common/ArchiveDialog'
+import { BackLink } from '../components/common/BackLink'
+import { DeleteConfirmDialog } from '../components/common/DeleteConfirmDialog'
+import { RATING_OPTIONS } from '../components/common/form/constants'
+import { Button } from '../components/common/ui/Button'
+import { Flex } from '../components/common/ui/Flex'
+import { Grid } from '../components/common/ui/Grid'
+import { Heading } from '../components/common/ui/Heading'
+import { Text } from '../components/common/ui/Text'
+import { TextField } from '../components/common/ui/TextField'
+import type { ArchiveReason } from '../types/wardrobe'
+import { formatDate, formatDateDisplay, formatItemAge, formatLastWorn, normalizeToNoon } from '../utils/dateFormatter'
 import {
   archiveItem,
   getItemById,
@@ -35,133 +29,133 @@ import {
   removeItem,
   removeWear,
   unarchiveItem,
-} from '../utils/storageCommands';
-import styles from './ItemDetailPage.module.css';
+} from '../utils/storageCommands'
+import styles from './ItemDetailPage.module.css'
 
 export async function loader({ params }: LoaderFunctionArgs) {
-  const { id } = params;
+  const { id } = params
 
   if (!id) {
-    return { item: null, outfits: [] };
+    return { item: null, outfits: [] }
   }
 
-  const [item, outfits] = await Promise.all([getItemById(id), getOutfitsWithItemId(id)]);
+  const [item, outfits] = await Promise.all([getItemById(id), getOutfitsWithItemId(id)])
 
-  return { item, outfits };
+  return { item, outfits }
 }
 
 export async function clientAction({ request }: ActionFunctionArgs) {
-  const formData = await request.formData();
-  const intent = formData.get('intent') as string;
+  const formData = await request.formData()
+  const intent = formData.get('intent') as string
 
   if (intent === 'delete') {
-    return { error: 'Item ID is required' };
+    return { error: 'Item ID is required' }
   }
 
-  return { success: true };
+  return { success: true }
 }
 
 // TODO maybe handle delete differently using a form action instead
 // TODO add outfits it is included in
 
 export function ItemDetailPage() {
-  const navigate = useNavigate();
-  const revalidator = useRevalidator();
-  const { item, outfits: outfitsWithItem } = useLoaderData<typeof loader>();
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [isArchiving, setIsArchiving] = useState(false);
-  const [isUnarchiving, setIsUnarchiving] = useState(false);
-  const [deletingWearIndex, setDeletingWearIndex] = useState<number | null>(null);
-  const [showAllWears, setShowAllWears] = useState(false);
-  const [showDatePicker, setShowDatePicker] = useState(false);
-  const [selectedDate, setSelectedDate] = useState('');
-  const [newWearCount, setNewWearCount] = useState<number>();
+  const navigate = useNavigate()
+  const revalidator = useRevalidator()
+  const { item, outfits: outfitsWithItem } = useLoaderData<typeof loader>()
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [isArchiving, setIsArchiving] = useState(false)
+  const [isUnarchiving, setIsUnarchiving] = useState(false)
+  const [deletingWearIndex, setDeletingWearIndex] = useState<number | null>(null)
+  const [showAllWears, setShowAllWears] = useState(false)
+  const [showDatePicker, setShowDatePicker] = useState(false)
+  const [selectedDate, setSelectedDate] = useState('')
+  const [newWearCount, setNewWearCount] = useState<number>()
 
   const handleDelete = async () => {
-    if (!item) return;
+    if (!item) return
 
-    setIsDeleting(true);
+    setIsDeleting(true)
     try {
-      await removeItem(item.id);
-      navigate(`/items/${item.category}`);
+      await removeItem(item.id)
+      navigate(`/items/${item.category}`)
     } catch (error) {
-      console.error('Failed to delete item:', error);
-      alert('Failed to delete item. Please try again.');
-      setIsDeleting(false);
+      console.error('Failed to delete item:', error)
+      alert('Failed to delete item. Please try again.')
+      setIsDeleting(false)
     }
-  };
+  }
 
   const handleArchive = async (reason: ArchiveReason, notes: string) => {
-    if (!item) return;
+    if (!item) return
 
-    setIsArchiving(true);
+    setIsArchiving(true)
     try {
-      await archiveItem(item.id, reason, notes || undefined);
-      navigate(`/items/${item.category}`);
+      await archiveItem(item.id, reason, notes || undefined)
+      navigate(`/items/${item.category}`)
     } catch (error) {
-      console.error('Failed to archive item:', error);
-      alert('Failed to archive item. Please try again.');
-      setIsArchiving(false);
+      console.error('Failed to archive item:', error)
+      alert('Failed to archive item. Please try again.')
+      setIsArchiving(false)
     }
-  };
+  }
 
   const handleUnarchive = async () => {
-    if (!item) return;
+    if (!item) return
 
-    setIsUnarchiving(true);
+    setIsUnarchiving(true)
     try {
-      await unarchiveItem(item.id);
-      revalidator.revalidate();
+      await unarchiveItem(item.id)
+      revalidator.revalidate()
     } catch (error) {
-      console.error('Failed to unarchive item:', error);
-      alert('Failed to unarchive item. Please try again.');
+      console.error('Failed to unarchive item:', error)
+      alert('Failed to unarchive item. Please try again.')
     } finally {
-      setIsUnarchiving(false);
+      setIsUnarchiving(false)
     }
-  };
+  }
 
   const handleMarkAsWorn = async () => {
-    if (!item) return;
+    if (!item) return
 
     try {
-      const newCount = await incrementWearCount(item.id);
-      setNewWearCount(newCount);
-      revalidator.revalidate();
+      const newCount = await incrementWearCount(item.id)
+      setNewWearCount(newCount)
+      revalidator.revalidate()
     } catch (error) {
-      console.error('Failed to mark as worn:', error);
-      alert('Failed to update wear count. Please try again.');
+      console.error('Failed to mark as worn:', error)
+      alert('Failed to update wear count. Please try again.')
     }
-  };
+  }
 
   const handleLogWearOnDate = async () => {
-    if (!item || !selectedDate) return;
+    if (!item || !selectedDate) return
 
     try {
-      const date = normalizeToNoon(selectedDate);
-      await logWearOnDate(item.id, date);
-      setShowDatePicker(false);
-      setSelectedDate('');
-      revalidator.revalidate(); // Reload data to show updated wear history
+      const date = normalizeToNoon(selectedDate)
+      await logWearOnDate(item.id, date)
+      setShowDatePicker(false)
+      setSelectedDate('')
+      revalidator.revalidate() // Reload data to show updated wear history
     } catch (error) {
-      console.error('Failed to log wear:', error);
-      alert('Failed to log wear. Please try again.');
+      console.error('Failed to log wear:', error)
+      alert('Failed to log wear. Please try again.')
     }
-  };
+  }
 
   const handleRemoveWear = async (wearIndex: number) => {
-    if (!item) return;
+    if (!item) return
 
-    setDeletingWearIndex(wearIndex);
+    setDeletingWearIndex(wearIndex)
     try {
-      await removeWear(item.id, wearIndex);
-      revalidator.revalidate(); // Reload data to show updated wear history
+      await removeWear(item.id, wearIndex)
+      revalidator.revalidate() // Reload data to show updated wear history
     } catch (error) {
-      console.error('Failed to remove wear:', error);
-      alert('Failed to remove wear. Please try again.');
+      console.error('Failed to remove wear:', error)
+      alert('Failed to remove wear. Please try again.')
     } finally {
-      setDeletingWearIndex(null);
+      setDeletingWearIndex(null)
     }
-  };
+  }
 
   if (!item) {
     return (
@@ -171,21 +165,18 @@ export function ItemDetailPage() {
           <BackLink to={'/items'} />
         </div>
       </div>
-    );
+    )
   }
 
-  const costPerWear =
-    item.price !== undefined && item.wearCount > 0 ? item.price / item.wearCount : null;
+  const costPerWear = item.price !== undefined && item.wearCount > 0 ? item.price / item.wearCount : null
 
-  const today = new Date();
+  const today = new Date()
   const alreadyWornToday = item.wearHistory.some((date) => {
-    const d = new Date(date);
+    const d = new Date(date)
     return (
-      d.getFullYear() === today.getFullYear() &&
-      d.getMonth() === today.getMonth() &&
-      d.getDate() === today.getDate()
-    );
-  });
+      d.getFullYear() === today.getFullYear() && d.getMonth() === today.getMonth() && d.getDate() === today.getDate()
+    )
+  })
 
   return (
     <div className={styles.container}>
@@ -193,7 +184,7 @@ export function ItemDetailPage() {
         <BackLink to={`/items/${item.category}`} />
       </Flex>
 
-      <Flex direction="column" gap="3">
+      <Flex direction="column" gap="3" className={styles.imageContainer}>
         <div className={styles.imageSection}>
           <img src={item.imageUrl} alt={item.notes || item.brand || 'Item'} />
         </div>
@@ -240,8 +231,7 @@ export function ItemDetailPage() {
               {item.brand && <Text size="1">{item.brand}</Text>}
               {item.purchaseDate && (
                 <Text size="1" color="gray">
-                  Purchased {formatDateDisplay(item.purchaseDate)} (
-                  {formatItemAge(item.purchaseDate)})
+                  Purchased {formatDateDisplay(item.purchaseDate)} ({formatItemAge(item.purchaseDate)})
                 </Text>
               )}
               {item.price !== undefined && (
@@ -275,14 +265,12 @@ export function ItemDetailPage() {
               </Text>
             )}
 
-            <Flex gap="2">
+            <Flex gap="2" className={styles.attributes}>
               {item.isSecondHand && <span>♻️</span>}
               {item.isDogCasual && <span>🐶</span>}
               {item.isHandmade && <span>🧶</span>}
               {item.rating !== undefined && (
-                <span className={styles.rating}>
-                  {RATING_OPTIONS.find((r) => r.value === item.rating)?.emoji}
-                </span>
+                <span className={styles.rating}>{RATING_OPTIONS.find((r) => r.value === item.rating)?.emoji}</span>
               )}
             </Flex>
           </Flex>
@@ -291,18 +279,15 @@ export function ItemDetailPage() {
             <Flex direction="column" gap="2">
               {!showDatePicker ? (
                 <Flex gap="2">
-                  <Button
-                    onClick={handleMarkAsWorn}
-                    className={styles.wornButton}
-                    disabled={alreadyWornToday}
-                  >
+                  <Button onClick={handleMarkAsWorn} className={styles.wornButton} disabled={alreadyWornToday}>
                     {alreadyWornToday ? 'Logged Today ✓' : 'Worn Today'}
                   </Button>
                   <Button
+                    variant="outline"
                     onClick={() => {
-                      const dateStr = formatDate(new Date());
-                      setSelectedDate(dateStr);
-                      setShowDatePicker(true);
+                      const dateStr = formatDate(new Date())
+                      setSelectedDate(dateStr)
+                      setShowDatePicker(true)
                     }}
                     className={styles.wornButton}
                   >
@@ -318,17 +303,15 @@ export function ItemDetailPage() {
                     <TextField.Input
                       type="date"
                       value={selectedDate}
-                      onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                        setSelectedDate(e.target.value)
-                      }
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSelectedDate(e.target.value)}
                       max={formatDate(new Date())}
                     />
                   </TextField.Root>
                   <Flex gap="2" justify="end">
                     <Button
                       onClick={() => {
-                        setShowDatePicker(false);
-                        setSelectedDate('');
+                        setShowDatePicker(false)
+                        setSelectedDate('')
                       }}
                     >
                       Cancel
@@ -354,7 +337,7 @@ export function ItemDetailPage() {
                 .reverse()
                 .slice(0, showAllWears ? item.wearHistory.length : 2)
                 .map((date, reverseIndex) => {
-                  const actualIndex = item.wearHistory!.length - 1 - reverseIndex;
+                  const actualIndex = item.wearHistory!.length - 1 - reverseIndex
                   return (
                     <div key={actualIndex} className={styles.wearHistoryItem}>
                       <div className={styles.wearDate}>
@@ -370,7 +353,7 @@ export function ItemDetailPage() {
                         {deletingWearIndex === actualIndex ? 'Removing...' : <IoTrashOutline />}
                       </Button>
                     </div>
-                  );
+                  )
                 })}
             </div>
             {item.wearHistory.length > 2 && (
@@ -387,8 +370,7 @@ export function ItemDetailPage() {
         {outfitsWithItem.length > 0 && (
           <section className={styles.outfitSection}>
             <Heading size="4" className={styles.outfitHeading}>
-              Featured in {outfitsWithItem.length}{' '}
-              {outfitsWithItem.length === 1 ? 'Outfit' : 'Outfits'}
+              Featured in {outfitsWithItem.length} {outfitsWithItem.length === 1 ? 'Outfit' : 'Outfits'}
             </Heading>
             <div className={styles.outfitGrid}>
               {outfitsWithItem.map((outfit) => (
@@ -436,7 +418,11 @@ export function ItemDetailPage() {
             <ArchiveDialog
               onConfirm={handleArchive}
               isArchiving={isArchiving}
-              triggerButton={<Button className={styles.archiveButton}>Archive</Button>}
+              triggerButton={
+                <Button variant="outline" className={styles.archiveButton}>
+                  Archive
+                </Button>
+              }
             />
           )}
 
@@ -452,5 +438,5 @@ export function ItemDetailPage() {
         </section> */}
       </Flex>
     </div>
-  );
+  )
 }
