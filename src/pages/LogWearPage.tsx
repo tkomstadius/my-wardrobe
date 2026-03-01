@@ -1,60 +1,55 @@
-import { differenceInDays } from 'date-fns';
-import { useOptimistic, useState } from 'react';
-import { IoCameraOutline } from 'react-icons/io5';
-import { useLoaderData, useNavigate } from 'react-router';
-import { CategoryItemsAccordion } from '../components/common/CategoryItemsAccordion';
-import { SearchBar } from '../components/common/SearchBar';
-import { Button } from '../components/common/ui/Button';
-import { Callout } from '../components/common/ui/Callout';
-import { Dialog } from '../components/common/ui/Dialog';
-import { Flex } from '../components/common/ui/Flex';
-import { Heading } from '../components/common/ui/Heading';
-import { Spinner } from '../components/common/ui/Spinner';
-import { Tabs } from '../components/common/ui/Tabs';
-import { Text } from '../components/common/ui/Text';
-import { useWeather } from '../contexts/WeatherContext';
-import { useImageUpload } from '../hooks/useImageUpload';
-import { useItemSearch } from '../hooks/useItemSearch';
-import {
-  hashImageData,
-  type MatchFeedback,
-  saveFeedback,
-  updatePreferencesFromFeedback,
-} from '../utils/aiLearning';
-import { findMatchingItems, type ItemMatch } from '../utils/aiMatching';
-import { addOutfit, incrementWearCount, loadItemsWithEmbeddings } from '../utils/storageCommands';
-import styles from './LogWearPage.module.css';
+import { differenceInDays } from 'date-fns'
+import { useOptimistic, useState } from 'react'
+import { IoCameraOutline } from 'react-icons/io5'
+import { useLoaderData, useNavigate } from 'react-router'
+import { CategoryItemsAccordion } from '../components/common/CategoryItemsAccordion'
+import { SearchBar } from '../components/common/SearchBar'
+import { Button } from '../components/common/ui/Button'
+import { Callout } from '../components/common/ui/Callout'
+import { Dialog } from '../components/common/ui/Dialog'
+import { Flex } from '../components/common/ui/Flex'
+import { Heading } from '../components/common/ui/Heading'
+import { Spinner } from '../components/common/ui/Spinner'
+import { Tabs } from '../components/common/ui/Tabs'
+import { Text } from '../components/common/ui/Text'
+import { useWeather } from '../contexts/WeatherContext'
+import { useImageUpload } from '../hooks/useImageUpload'
+import { useItemSearch } from '../hooks/useItemSearch'
+import { hashImageData, type MatchFeedback, saveFeedback, updatePreferencesFromFeedback } from '../utils/aiLearning'
+import { findMatchingItems, type ItemMatch } from '../utils/aiMatching'
+import { addOutfit, incrementWearCount, loadItemsWithEmbeddings } from '../utils/storageCommands'
+import styles from './LogWearPage.module.css'
 
 export async function loader() {
-  const items = await loadItemsWithEmbeddings();
-  return { items };
+  const items = await loadItemsWithEmbeddings()
+  return { items }
 }
 
 export function LogWearPage() {
-  const navigate = useNavigate();
-  const { items } = useLoaderData<typeof loader>();
-  const { weatherData } = useWeather();
-  const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
-  const [error, setError] = useState<string>('');
-  const [isAIMode, setIsAIMode] = useState(true);
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [aiMatches, setAIMatches] = useState<ItemMatch[]>([]);
-  const [acceptedItems, setAcceptedItems] = useState<Set<string>>(new Set());
-  const [rejectedItems, setRejectedItems] = useState<Set<string>>(new Set());
+  const navigate = useNavigate()
+  const { items } = useLoaderData<typeof loader>()
+  const { weatherData } = useWeather()
+  const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set())
+  const [error, setError] = useState<string>('')
+  const [isAIMode, setIsAIMode] = useState(true)
+  const [isAnalyzing, setIsAnalyzing] = useState(false)
+  const [aiMatches, setAIMatches] = useState<ItemMatch[]>([])
+  const [acceptedItems, setAcceptedItems] = useState<Set<string>>(new Set())
+  const [rejectedItems, setRejectedItems] = useState<Set<string>>(new Set())
   const [expandedSections, setExpandedSections] = useState<{
-    high: boolean;
-    medium: boolean;
-    low: boolean;
+    high: boolean
+    medium: boolean
+    low: boolean
   }>({
     high: true, // High confidence expanded by default
     medium: false,
     low: false,
-  });
-  const { imagePreview, handleImageUpload, clearImage, isUploading } = useImageUpload();
-  const { searchQuery, setSearchQuery, clearSearch, filteredItems } = useItemSearch(items);
-  const [showSaveOutfitDialog, setShowSaveOutfitDialog] = useState(false);
-  const [loggedItemIds, setLoggedItemIds] = useState<string[]>([]);
-  const [isSavingOutfit, setIsSavingOutfit] = useState(false);
+  })
+  const { imagePreview, handleImageUpload, clearImage, isUploading } = useImageUpload()
+  const { searchQuery, setSearchQuery, clearSearch, filteredItems } = useItemSearch(items)
+  const [showSaveOutfitDialog, setShowSaveOutfitDialog] = useState(false)
+  const [loggedItemIds, setLoggedItemIds] = useState<string[]>([])
+  const [isSavingOutfit, setIsSavingOutfit] = useState(false)
 
   // useOptimistic: Track items that are being logged optimistically
   // This lets us show instant UI feedback while the database updates happen
@@ -62,41 +57,41 @@ export function LogWearPage() {
     new Set(), // Initial state: no items logged yet
     (state, itemIds) => {
       // Updater function: add the items being logged to the set
-      const newSet = new Set(state);
+      const newSet = new Set(state)
       for (const id of itemIds) {
-        newSet.add(id);
+        newSet.add(id)
       }
-      return newSet;
+      return newSet
     },
-  );
+  )
 
   const toggleItemSelection = (itemId: string) => {
     // Don't allow toggling items that have already been logged
-    if (optimisticLoggedItems.has(itemId)) return;
+    if (optimisticLoggedItems.has(itemId)) return
 
     setSelectedItems((prev) => {
-      const newSet = new Set(prev);
+      const newSet = new Set(prev)
       if (newSet.has(itemId)) {
-        newSet.delete(itemId);
+        newSet.delete(itemId)
       } else {
-        newSet.add(itemId);
+        newSet.add(itemId)
       }
-      return newSet;
-    });
-  };
+      return newSet
+    })
+  }
 
   const handleAcceptItem = async (itemId: string) => {
     // Add to accepted, remove from rejected, add to selected
-    setAcceptedItems((prev) => new Set(prev).add(itemId));
+    setAcceptedItems((prev) => new Set(prev).add(itemId))
     setRejectedItems((prev) => {
-      const newSet = new Set(prev);
-      newSet.delete(itemId);
-      return newSet;
-    });
-    setSelectedItems((prev) => new Set(prev).add(itemId));
+      const newSet = new Set(prev)
+      newSet.delete(itemId)
+      return newSet
+    })
+    setSelectedItems((prev) => new Set(prev).add(itemId))
 
     // Phase 2: Record positive feedback
-    const match = aiMatches.find((m) => m.item.id === itemId);
+    const match = aiMatches.find((m) => m.item.id === itemId)
     if (match && imagePreview) {
       try {
         const feedback: MatchFeedback = {
@@ -115,38 +110,35 @@ export function LogWearPage() {
             itemAge: differenceInDays(new Date(), match.item.createdAt),
             daysSinceWorn:
               match.item.wearHistory && match.item.wearHistory.length > 0
-                ? differenceInDays(
-                    new Date(),
-                    match.item.wearHistory[match.item.wearHistory.length - 1]!,
-                  )
+                ? differenceInDays(new Date(), match.item.wearHistory[match.item.wearHistory.length - 1]!)
                 : undefined,
           },
-        };
-        await saveFeedback(feedback);
-        console.log('✓ Saved positive feedback for', itemId);
+        }
+        await saveFeedback(feedback)
+        console.log('✓ Saved positive feedback for', itemId)
       } catch (error) {
-        console.error('Failed to save feedback:', error);
+        console.error('Failed to save feedback:', error)
         // Don't block the UI on feedback errors
       }
     }
-  };
+  }
 
   const handleRejectItem = async (itemId: string) => {
     // Add to rejected, remove from accepted, remove from selected
-    setRejectedItems((prev) => new Set(prev).add(itemId));
+    setRejectedItems((prev) => new Set(prev).add(itemId))
     setAcceptedItems((prev) => {
-      const newSet = new Set(prev);
-      newSet.delete(itemId);
-      return newSet;
-    });
+      const newSet = new Set(prev)
+      newSet.delete(itemId)
+      return newSet
+    })
     setSelectedItems((prev) => {
-      const newSet = new Set(prev);
-      newSet.delete(itemId);
-      return newSet;
-    });
+      const newSet = new Set(prev)
+      newSet.delete(itemId)
+      return newSet
+    })
 
     // Phase 2: Record negative feedback
-    const match = aiMatches.find((m) => m.item.id === itemId);
+    const match = aiMatches.find((m) => m.item.id === itemId)
     if (match && imagePreview) {
       try {
         const feedback: MatchFeedback = {
@@ -165,27 +157,24 @@ export function LogWearPage() {
             itemAge: differenceInDays(new Date(), match.item.createdAt),
             daysSinceWorn:
               match.item.wearHistory && match.item.wearHistory.length > 0
-                ? differenceInDays(
-                    new Date(),
-                    match.item.wearHistory[match.item.wearHistory.length - 1]!,
-                  )
+                ? differenceInDays(new Date(), match.item.wearHistory[match.item.wearHistory.length - 1]!)
                 : undefined,
           },
-        };
-        await saveFeedback(feedback);
-        console.log('✗ Saved negative feedback for', itemId);
+        }
+        await saveFeedback(feedback)
+        console.log('✗ Saved negative feedback for', itemId)
       } catch (error) {
-        console.error('Failed to save feedback:', error);
+        console.error('Failed to save feedback:', error)
         // Don't block the UI on feedback errors
       }
     }
-  };
+  }
 
   const handleAnalyzeOutfit = async () => {
-    if (!imagePreview) return;
+    if (!imagePreview) return
 
-    setIsAnalyzing(true);
-    setError('');
+    setIsAnalyzing(true)
+    setError('')
 
     try {
       const matches = await findMatchingItems(imagePreview, items, {
@@ -195,74 +184,74 @@ export function LogWearPage() {
           medium: 5, // Show top 5 medium confidence
           low: 3, // Show top 3 low confidence
         },
-      });
+      })
 
-      setAIMatches(matches);
+      setAIMatches(matches)
 
       // Reset accepted/rejected state for new analysis
-      setAcceptedItems(new Set());
-      setRejectedItems(new Set());
-      setSelectedItems(new Set());
+      setAcceptedItems(new Set())
+      setRejectedItems(new Set())
+      setSelectedItems(new Set())
       // Reset expanded sections (high expanded by default)
-      setExpandedSections({ high: true, medium: false, low: false });
+      setExpandedSections({ high: true, medium: false, low: false })
     } catch (error) {
-      console.error('Failed to analyze outfit:', error);
-      setError('Failed to analyze photo. Please try again or use manual selection.');
+      console.error('Failed to analyze outfit:', error)
+      setError('Failed to analyze photo. Please try again or use manual selection.')
     } finally {
-      setIsAnalyzing(false);
+      setIsAnalyzing(false)
     }
-  };
+  }
 
   const handleSubmit = async () => {
-    if (selectedItems.size === 0) return;
+    if (selectedItems.size === 0) return
 
-    const itemsToLog = Array.from(selectedItems);
+    const itemsToLog = Array.from(selectedItems)
 
     // Optimistically mark these items as logged IMMEDIATELY
     // User sees instant feedback - items appear "logged" right away
-    addOptimisticLog(itemsToLog);
+    addOptimisticLog(itemsToLog)
 
     // Clear the selection immediately for better UX
-    setSelectedItems(new Set());
-    setError('');
+    setSelectedItems(new Set())
+    setError('')
 
     try {
       // Save in the background while the user sees the optimistic update
       for (const itemId of itemsToLog) {
-        await incrementWearCount(itemId);
+        await incrementWearCount(itemId)
       }
 
       // Auto-update AI learning from all the feedback just collected
       // This runs in background, doesn't block navigation
       updatePreferencesFromFeedback().catch((err) => {
-        console.error('Failed to update AI preferences:', err);
+        console.error('Failed to update AI preferences:', err)
         // Don't block user flow on learning errors
-      });
+      })
 
       // If there's a photo, offer to save as outfit
       if (imagePreview) {
-        setLoggedItemIds(itemsToLog);
-        setShowSaveOutfitDialog(true);
+        setLoggedItemIds(itemsToLog)
+        setShowSaveOutfitDialog(true)
       } else {
         // No photo, navigate back to home
-        navigate('/');
+        navigate('/')
       }
     } catch (err) {
-      console.error('Failed to log wear:', err);
+      console.error('Failed to log wear:', err)
 
       // If this fails, useOptimistic automatically rolls back!
       // The items will un-grey themselves and return to selectable state
-      setError('Failed to log wear. Please try again.');
+      setError('Failed to log wear. Please try again.')
 
       // Re-select the items that failed so user can retry
-      setSelectedItems(new Set(itemsToLog));
+      setSelectedItems(new Set(itemsToLog))
     }
-  };
+  }
 
   const handleSaveOutfit = async () => {
-    if (loggedItemIds.length === 0 || !imagePreview) return;
+    if (loggedItemIds.length === 0 || !imagePreview) return
 
-    setIsSavingOutfit(true);
+    setIsSavingOutfit(true)
     try {
       await addOutfit({
         photo: imagePreview,
@@ -275,23 +264,23 @@ export function LogWearPage() {
               precipitation: weatherData.precipitation,
             }
           : undefined,
-      });
-      setShowSaveOutfitDialog(false);
-      navigate('/outfits');
+      })
+      setShowSaveOutfitDialog(false)
+      navigate('/outfits')
     } catch (error) {
-      console.error('Failed to save outfit:', error);
-      setError('Failed to save outfit. Please try again.');
+      console.error('Failed to save outfit:', error)
+      setError('Failed to save outfit. Please try again.')
     } finally {
-      setIsSavingOutfit(false);
+      setIsSavingOutfit(false)
     }
-  };
+  }
 
   const handleSkipSaveOutfit = () => {
-    setShowSaveOutfitDialog(false);
-    navigate('/');
-  };
+    setShowSaveOutfitDialog(false)
+    navigate('/')
+  }
 
-  const isPending = optimisticLoggedItems.size > 0;
+  const isPending = optimisticLoggedItems.size > 0
 
   return (
     <Flex direction="column" gap="2">
@@ -299,33 +288,26 @@ export function LogWearPage() {
         Log Today's Outfit
       </Heading>
 
-      {error && (
-        <Callout.Root color="red" size="1" className={styles.callout}>
-          <Callout.Text>{error}</Callout.Text>
-        </Callout.Root>
-      )}
+      {error && <Callout>{error}</Callout>}
 
       {isPending && (
-        <Callout.Root color="blue" size="1" className={styles.callout}>
-          <Callout.Text>
-            Logging {optimisticLoggedItems.size}{' '}
-            {optimisticLoggedItems.size === 1 ? 'item' : 'items'}...
-          </Callout.Text>
-        </Callout.Root>
+        <Callout>
+          Logging {optimisticLoggedItems.size} {optimisticLoggedItems.size === 1 ? 'item' : 'items'}...
+        </Callout>
       )}
 
       <Tabs.Root
         value={isAIMode ? 'ai' : 'manual'}
         onValueChange={(value) => {
-          const newIsAIMode = value === 'ai';
-          setIsAIMode(newIsAIMode);
-          setSelectedItems(new Set());
-          setAcceptedItems(new Set());
-          setRejectedItems(new Set());
-          clearSearch();
+          const newIsAIMode = value === 'ai'
+          setIsAIMode(newIsAIMode)
+          setSelectedItems(new Set())
+          setAcceptedItems(new Set())
+          setRejectedItems(new Set())
+          clearSearch()
           if (!newIsAIMode) {
-            setAIMatches([]);
-            clearImage();
+            setAIMatches([])
+            clearImage()
           }
         }}
       >
@@ -339,11 +321,7 @@ export function LogWearPage() {
         <div className={styles.aiMode}>
           <Heading size="4">Upload Outfit Photo</Heading>
 
-          <Callout.Root color="blue" size="1">
-            <Callout.Text>
-              💡 Tip: Plain backgrounds and good lighting improve accuracy!
-            </Callout.Text>
-          </Callout.Root>
+          <Callout>💡 Tip: Plain backgrounds and good lighting improve accuracy!</Callout>
 
           {!imagePreview ? (
             <div className={styles.uploadButtons}>
@@ -382,8 +360,8 @@ export function LogWearPage() {
                 <Button
                   variant="destructive"
                   onClick={() => {
-                    clearImage();
-                    setAIMatches([]);
+                    clearImage()
+                    setAIMatches([])
                   }}
                 >
                   Remove Photo
@@ -401,10 +379,10 @@ export function LogWearPage() {
 
               <div className={styles.matchesByConfidence}>
                 {(['high', 'medium', 'low'] as const).map((confidenceLevel) => {
-                  const matchesAtLevel = aiMatches.filter((m) => m.confidence === confidenceLevel);
-                  if (matchesAtLevel.length === 0) return null;
+                  const matchesAtLevel = aiMatches.filter((m) => m.confidence === confidenceLevel)
+                  if (matchesAtLevel.length === 0) return null
 
-                  const isExpanded = expandedSections[confidenceLevel];
+                  const isExpanded = expandedSections[confidenceLevel]
 
                   return (
                     <div key={confidenceLevel} className={styles.confidenceGroup}>
@@ -412,8 +390,7 @@ export function LogWearPage() {
                         <Text size="2" weight="bold" color="gray">
                           {confidenceLevel === 'high' && '🟢 High Confidence'}
                           {confidenceLevel === 'medium' && '🟡 Likely Match'}
-                          {confidenceLevel === 'low' && '🟠 Possible Match'} (
-                          {matchesAtLevel.length})
+                          {confidenceLevel === 'low' && '🟠 Possible Match'} ({matchesAtLevel.length})
                         </Text>
 
                         {!isExpanded && (
@@ -446,15 +423,13 @@ export function LogWearPage() {
                       {isExpanded && (
                         <div className={styles.matchList}>
                           {matchesAtLevel.map((match) => {
-                            const isAccepted = acceptedItems.has(match.item.id);
-                            const isRejected = rejectedItems.has(match.item.id);
+                            const isAccepted = acceptedItems.has(match.item.id)
+                            const isRejected = rejectedItems.has(match.item.id)
 
                             return (
                               <div
                                 key={match.item.id}
-                                className={`${styles.matchRow} ${
-                                  isRejected || isAccepted ? styles.rejected : ''
-                                }`}
+                                className={`${styles.matchRow} ${isRejected || isAccepted ? styles.rejected : ''}`}
                               >
                                 <img
                                   src={match.item.imageUrl}
@@ -492,12 +467,12 @@ export function LogWearPage() {
                                   </Button>
                                 </Flex>
                               </div>
-                            );
+                            )
                           })}
                         </div>
                       )}
                     </div>
-                  );
+                  )
                 })}
               </div>
 
@@ -506,9 +481,7 @@ export function LogWearPage() {
                 disabled={selectedItems.size === 0 || isPending}
                 className={styles.submitButton}
               >
-                {isPending
-                  ? 'Logging...'
-                  : `Log ${selectedItems.size} ${selectedItems.size === 1 ? 'Item' : 'Items'}`}
+                {isPending ? 'Logging...' : `Log ${selectedItems.size} ${selectedItems.size === 1 ? 'Item' : 'Items'}`}
               </Button>
             </div>
           )}
@@ -584,5 +557,5 @@ export function LogWearPage() {
         </Dialog.Content>
       </Dialog.Root>
     </Flex>
-  );
+  )
 }

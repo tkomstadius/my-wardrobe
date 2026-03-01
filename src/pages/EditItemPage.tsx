@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { IoTrashOutline } from 'react-icons/io5';
+import { useEffect, useState } from 'react'
+import { IoTrashOutline } from 'react-icons/io5'
 import {
   type ActionFunctionArgs,
   Form,
@@ -9,10 +9,10 @@ import {
   useLoaderData,
   useNavigate,
   useNavigation,
-} from 'react-router';
-import { BackLink } from '../components/common/BackLink';
-import { CheckboxField } from '../components/common/CheckboxField';
-import { DeleteConfirmDialog } from '../components/common/DeleteConfirmDialog';
+} from 'react-router'
+import { BackLink } from '../components/common/BackLink'
+import { CheckboxField } from '../components/common/CheckboxField'
+import { DeleteConfirmDialog } from '../components/common/DeleteConfirmDialog'
 import {
   BRAND_NAME,
   CATEGORY_NAME,
@@ -26,111 +26,105 @@ import {
   RATING_NAME,
   SECOND_HAND_NAME,
   SUBCATEGORY_NAME,
-} from '../components/common/form/constants';
-import { ImageInput } from '../components/common/form/ImageInput';
-import { RatingButtons } from '../components/common/form/RatingButtons';
-import { SelectInput } from '../components/common/form/SelectInput';
-import { TextInput } from '../components/common/form/TextInput';
-import { Button } from '../components/common/ui/Button';
-import { Callout } from '../components/common/ui/Callout';
-import { Flex } from '../components/common/ui/Flex';
-import { Text } from '../components/common/ui/Text';
-import { TextArea } from '../components/common/ui/TextArea';
-import { TextField } from '../components/common/ui/TextField';
-import type { OutfitRating } from '../types/outfit';
-import type { ItemCategory, WardrobeItem } from '../types/wardrobe';
-import { getImageEmbedding } from '../utils/aiEmbedding';
-import { CATEGORIES, CATEGORY_IDS, getSubCategoriesForCategory } from '../utils/categories';
-import {
-  getAllBrands,
-  getItemById,
-  getItemStoragePath,
-  removeItem,
-  saveItem,
-} from '../utils/storageCommands';
-import { getCurrentUserId } from '../utils/supabase';
-import { dataUrlToBlob, uploadItemImage } from '../utils/supabaseStorage';
-import styles from './EditItemPage.module.css';
+} from '../components/common/form/constants'
+import { ImageInput } from '../components/common/form/ImageInput'
+import { RatingButtons } from '../components/common/form/RatingButtons'
+import { SelectInput } from '../components/common/form/SelectInput'
+import { TextInput } from '../components/common/form/TextInput'
+import { Button } from '../components/common/ui/Button'
+import { Callout } from '../components/common/ui/Callout'
+import { Flex } from '../components/common/ui/Flex'
+import { Text } from '../components/common/ui/Text'
+import { TextArea } from '../components/common/ui/TextArea'
+import { TextField } from '../components/common/ui/TextField'
+import type { OutfitRating } from '../types/outfit'
+import type { ItemCategory, WardrobeItem } from '../types/wardrobe'
+import { getImageEmbedding } from '../utils/aiEmbedding'
+import { CATEGORIES, CATEGORY_IDS, getSubCategoriesForCategory } from '../utils/categories'
+import { getAllBrands, getItemById, getItemStoragePath, removeItem, saveItem } from '../utils/storageCommands'
+import { getCurrentUserId } from '../utils/supabase'
+import { dataUrlToBlob, uploadItemImage } from '../utils/supabaseStorage'
+import styles from './EditItemPage.module.css'
 
 type ActionData = {
-  error?: string;
-};
+  error?: string
+}
 
 export async function clientLoader({ params }: LoaderFunctionArgs) {
-  const { id } = params;
+  const { id } = params
   if (!id) {
-    return { item: null };
+    return { item: null }
   }
 
-  const [item, brands] = await Promise.all([getItemById(id), getAllBrands()]);
+  const [item, brands] = await Promise.all([getItemById(id), getAllBrands()])
 
-  return { item, brands };
+  return { item, brands }
 }
 
 export async function clientAction({ request, params }: ActionFunctionArgs) {
-  const { id } = params;
+  const { id } = params
   if (!id) {
-    return { error: 'Item ID is required' };
+    return { error: 'Item ID is required' }
   }
 
-  const formData = await request.formData();
+  const formData = await request.formData()
 
   // Handle update action
-  const imageUrl = formData.get(IMAGE_URL_NAME) as string;
-  const brand = formData.get(BRAND_NAME) as string;
-  const category = formData.get(CATEGORY_NAME) as ItemCategory;
-  const subCategory = formData.get(SUBCATEGORY_NAME) as string;
-  const price = formData.get(PRICE_NAME) as string;
-  const purchaseDate = formData.get(PURCHASE_DATE_NAME) as string;
-  const initialWearCount = formData.get(INITIAL_WEAR_COUNT_NAME) as string;
-  const notes = formData.get(NOTES_NAME) as string;
-  const rating = formData.get(RATING_NAME) as string;
-  const isSecondHand = formData.get(SECOND_HAND_NAME) === 'on';
-  const isDogCasual = formData.get(DOG_CASUAL_NAME) === 'on';
-  const isHandmade = formData.get(HANDMADE_NAME) === 'on';
+  const imageUrl = formData.get(IMAGE_URL_NAME) as string
+  const brand = formData.get(BRAND_NAME) as string
+  const category = formData.get(CATEGORY_NAME) as ItemCategory
+  const subCategory = formData.get(SUBCATEGORY_NAME) as string
+  const price = formData.get(PRICE_NAME) as string
+  const purchaseDate = formData.get(PURCHASE_DATE_NAME) as string
+  const initialWearCount = formData.get(INITIAL_WEAR_COUNT_NAME) as string
+  const notes = formData.get(NOTES_NAME) as string
+  const rating = formData.get(RATING_NAME) as string
+  const isSecondHand = formData.get(SECOND_HAND_NAME) === 'on'
+  const isDogCasual = formData.get(DOG_CASUAL_NAME) === 'on'
+  const isHandmade = formData.get(HANDMADE_NAME) === 'on'
 
   if (!imageUrl) {
-    return { error: 'Please add an image of the item' };
+    return { error: 'Please add an image of the item' }
   }
 
   if (!category || !CATEGORY_IDS.includes(category)) {
-    return { error: 'Please select a valid category' };
+    return { error: 'Please select a valid category' }
   }
 
   try {
     // Load the existing item
-    const existingItem = await getItemById(id);
+    const existingItem = await getItemById(id)
     if (!existingItem) {
-      return { error: 'Item not found' };
+      return { error: 'Item not found' }
     }
 
-    const imageChanged = imageUrl.startsWith('data:');
+    const imageChanged = imageUrl.startsWith('data:')
 
     // Generate fresh embedding only when image has changed.
     // When image is unchanged, embedding stays undefined — saveItem will preserve the existing DB value.
-    let embedding: number[] | undefined;
+    let embedding: number[] | undefined
     if (imageChanged) {
       try {
-        embedding = await getImageEmbedding(imageUrl);
+        embedding = await getImageEmbedding(imageUrl)
       } catch (error) {
-        console.error('Failed to generate embedding:', error);
+        console.error('Failed to generate embedding:', error)
       }
     }
 
     // Resolve storage path for image
-    let storagePath: string;
+    let storagePath: string
     if (imageChanged) {
-      const userId = await getCurrentUserId();
-      const blob = dataUrlToBlob(imageUrl);
-      storagePath = await uploadItemImage(userId, id, blob);
+      const userId = await getCurrentUserId()
+      const blob = dataUrlToBlob(imageUrl)
+      storagePath = await uploadItemImage(userId, id, blob)
     } else {
       // Image unchanged — retrieve existing storage path from DB
-      storagePath = (await getItemStoragePath(id)) ?? '';
+      storagePath = (await getItemStoragePath(id)) ?? ''
     }
 
-    const newInitialWearCount = initialWearCount ? Number.parseInt(initialWearCount, 10) : 0;
+    const newInitialWearCount = initialWearCount ? Number.parseInt(initialWearCount, 10) : 0
 
-    const totalWearCount = newInitialWearCount + existingItem.wearHistory.length;
+    const totalWearCount = newInitialWearCount + existingItem.wearHistory.length
 
     const updatedItem: WardrobeItem = {
       ...existingItem,
@@ -149,58 +143,58 @@ export async function clientAction({ request, params }: ActionFunctionArgs) {
       wearCount: totalWearCount,
       embedding,
       updatedAt: new Date(),
-    };
+    }
 
-    await saveItem(updatedItem);
+    await saveItem(updatedItem)
 
-    return redirect(`/item/${existingItem.id}`);
+    return redirect(`/item/${existingItem.id}`)
   } catch (err) {
-    console.error('Failed to update item:', err);
-    return { error: 'Failed to save changes. Please try again.' };
+    console.error('Failed to update item:', err)
+    return { error: 'Failed to save changes. Please try again.' }
   }
 }
 
 // TODO maybe handle delete differently using a form action instead
 
 export function EditItemPage() {
-  const navigate = useNavigate();
-  const navigation = useNavigation();
-  const { item, brands } = useLoaderData<typeof clientLoader>();
-  const actionData = useActionData<ActionData>();
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState<ItemCategory>(item?.category || 'tops');
+  const navigate = useNavigate()
+  const navigation = useNavigation()
+  const { item, brands } = useLoaderData<typeof clientLoader>()
+  const actionData = useActionData<ActionData>()
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [selectedCategory, setSelectedCategory] = useState<ItemCategory>(item?.category || 'tops')
 
-  const isSubmitting = navigation.state === 'submitting';
+  const isSubmitting = navigation.state === 'submitting'
 
   // Update selected category when item changes
   useEffect(() => {
     if (item?.category) {
-      setSelectedCategory(item.category);
+      setSelectedCategory(item.category)
     }
-  }, [item]);
+  }, [item])
 
-  const availableSubCategories = getSubCategoriesForCategory(selectedCategory);
+  const availableSubCategories = getSubCategoriesForCategory(selectedCategory)
 
   // Validate category and show warning if needed
   const categoryWarning =
     item && !CATEGORY_IDS.includes(item.category)
       ? `Warning: This item had an invalid category "${item.category}". Please select the correct category and save.`
-      : '';
+      : ''
 
-  const validCategory = item && CATEGORY_IDS.includes(item.category) ? item.category : 'tops';
+  const validCategory = item && CATEGORY_IDS.includes(item.category) ? item.category : 'tops'
 
   const handleDelete = async () => {
-    if (!item) return;
+    if (!item) return
 
-    setIsDeleting(true);
+    setIsDeleting(true)
     try {
-      await removeItem(item.id);
-      navigate('/');
+      await removeItem(item.id)
+      navigate('/')
     } catch (err) {
-      console.error('Failed to delete item:', err);
-      setIsDeleting(false);
+      console.error('Failed to delete item:', err)
+      setIsDeleting(false)
     }
-  };
+  }
 
   return (
     <div className={styles.container}>
@@ -221,11 +215,7 @@ export function EditItemPage() {
             <ImageInput originalImageUrl={item.imageUrl} />
           </fieldset>
 
-          {categoryWarning && (
-            <Callout.Root color="orange" size="1">
-              <Callout.Text>{categoryWarning}</Callout.Text>
-            </Callout.Root>
-          )}
+          {categoryWarning && <Callout>{categoryWarning}</Callout>}
 
           <fieldset className={styles.fieldSection}>
             <TextInput
@@ -274,9 +264,7 @@ export function EditItemPage() {
                 <TextField.Input
                   name={PURCHASE_DATE_NAME}
                   type="date"
-                  defaultValue={
-                    item.purchaseDate ? new Date(item.purchaseDate).toISOString().split('T')[0] : ''
-                  }
+                  defaultValue={item.purchaseDate ? new Date(item.purchaseDate).toISOString().split('T')[0] : ''}
                 />
               </TextField.Root>
             </Flex>
@@ -311,16 +299,8 @@ export function EditItemPage() {
           </fieldset>
 
           <fieldset className={styles.fieldSection}>
-            <CheckboxField
-              name="isSecondHand"
-              defaultChecked={item.isSecondHand}
-              label="Second Hand / Thrifted"
-            />
-            <CheckboxField
-              name="isDogCasual"
-              defaultChecked={item.isDogCasual}
-              label="Dog casual"
-            />
+            <CheckboxField name="isSecondHand" defaultChecked={item.isSecondHand} label="Second Hand / Thrifted" />
+            <CheckboxField name="isDogCasual" defaultChecked={item.isDogCasual} label="Dog casual" />
             <CheckboxField name="isHandmade" defaultChecked={item.isHandmade} label="Handmade" />
           </fieldset>
 
@@ -328,11 +308,7 @@ export function EditItemPage() {
             <RatingButtons name={RATING_NAME} defaultValue={item.rating} />
           </fieldset>
 
-          {actionData?.error && (
-            <Callout.Root color="red" size="1">
-              <Callout.Text>{actionData.error}</Callout.Text>
-            </Callout.Root>
-          )}
+          {actionData?.error && <Callout>{actionData.error}</Callout>}
 
           <div className={styles.deleteSection}>
             <DeleteConfirmDialog
@@ -357,5 +333,5 @@ export function EditItemPage() {
         </Form>
       )}
     </div>
-  );
+  )
 }
