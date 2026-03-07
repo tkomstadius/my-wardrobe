@@ -17,7 +17,9 @@ import { useImageUpload } from '../hooks/useImageUpload'
 import { useItemSearch } from '../hooks/useItemSearch'
 import { hashImageData, type MatchFeedback, saveFeedback, updatePreferencesFromFeedback } from '../utils/aiLearning'
 import { findMatchingItems, type ItemMatch } from '../utils/aiMatching'
-import { addOutfit, incrementWearCount, loadItemsWithEmbeddings } from '../utils/storageCommands'
+import { addOutfit, generateId, incrementWearCount, loadItemsWithEmbeddings } from '../utils/storageCommands'
+import { getCurrentUserId } from '../utils/supabase'
+import { dataUrlToBlob, uploadOutfitPhoto } from '../utils/supabaseStorage'
 import styles from './LogWearPage.module.css'
 
 export async function loader() {
@@ -253,8 +255,15 @@ export function LogWearPage() {
 
     setIsSavingOutfit(true)
     try {
+      let photoPath: string | undefined;
+      if (imagePreview.startsWith('data:')) {
+        const userId = await getCurrentUserId();
+        const outfitId = generateId();
+        const blob = dataUrlToBlob(imagePreview);
+        photoPath = await uploadOutfitPhoto(userId, outfitId, blob);
+      }
       await addOutfit({
-        photo: imagePreview,
+        photo: photoPath,
         itemIds: loggedItemIds,
         createdAt: new Date(),
         weather: weatherData
