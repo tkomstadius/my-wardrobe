@@ -14,9 +14,18 @@ function getClient(): Promise<Client> {
   return clientPromise;
 }
 
+function toApiInput(input: string): string {
+  // HF Space expects raw base64, not a full data URL — strip the prefix
+  const base64Marker = ';base64,';
+  const markerIndex = input.indexOf(base64Marker);
+  if (markerIndex !== -1) return input.slice(markerIndex + base64Marker.length);
+  return input;
+}
+
 async function callApi(endpoint: string, input: string): Promise<unknown> {
   const client = await getClient();
-  const job = client.submit(endpoint, [input]);
+  const apiInput = toApiInput(input);
+  const job = client.submit(endpoint, [apiInput]);
   for await (const msg of job) {
     if (msg.type === 'data') {
       return (msg.data as unknown[])[0];

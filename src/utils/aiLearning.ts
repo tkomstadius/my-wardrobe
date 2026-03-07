@@ -276,13 +276,8 @@ export async function updatePreferencesFromFeedback(): Promise<UserPreferences> 
 
   // Need minimum feedback to start learning
   if (allFeedback.length < 5) {
-    console.log('Not enough feedback to learn yet (need at least 5)');
     return preferences;
   }
-
-  // Calculate weighted acceptance rates for different factors
-  const totalAccepted = allFeedback.filter((f) => f.userAction === 'accepted').length;
-  const overallAcceptRate = totalAccepted / allFeedback.length;
 
   // Recency analysis: Do recently added items get accepted more? (weighted)
   const recentItemFeedback = allFeedback.filter((f) => f.metadata.itemAge < 30);
@@ -342,18 +337,6 @@ export async function updatePreferencesFromFeedback(): Promise<UserPreferences> 
 
   // Save updated preferences
   await saveUserPreferences(preferences);
-
-  console.log('Updated AI preferences from feedback:', {
-    feedbackCount: allFeedback.length,
-    overallAcceptRate: overallAcceptRate.toFixed(2),
-    weightedRates: {
-      recent: recentWeighted.rate.toFixed(2),
-      favorites: favoriteWeighted.rate.toFixed(2),
-      highConf: highWeighted.rate.toFixed(2),
-      mediumConf: mediumWeighted.rate.toFixed(2),
-    },
-    preferences,
-  });
 
   return preferences;
 }

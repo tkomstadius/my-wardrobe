@@ -34,6 +34,7 @@ export function LogWearPage() {
   const [isAIMode, setIsAIMode] = useState(true)
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [aiMatches, setAIMatches] = useState<ItemMatch[]>([])
+  const [hasAnalyzed, setHasAnalyzed] = useState(false)
   const [acceptedItems, setAcceptedItems] = useState<Set<string>>(new Set())
   const [rejectedItems, setRejectedItems] = useState<Set<string>>(new Set())
   const [expandedSections, setExpandedSections] = useState<{
@@ -115,7 +116,6 @@ export function LogWearPage() {
           },
         }
         await saveFeedback(feedback)
-        console.log('✓ Saved positive feedback for', itemId)
       } catch (error) {
         console.error('Failed to save feedback:', error)
         // Don't block the UI on feedback errors
@@ -162,7 +162,6 @@ export function LogWearPage() {
           },
         }
         await saveFeedback(feedback)
-        console.log('✗ Saved negative feedback for', itemId)
       } catch (error) {
         console.error('Failed to save feedback:', error)
         // Don't block the UI on feedback errors
@@ -174,19 +173,20 @@ export function LogWearPage() {
     if (!imagePreview) return
 
     setIsAnalyzing(true)
+    setHasAnalyzed(false)
     setError('')
 
     try {
       const matches = await findMatchingItems(imagePreview, items, {
-        minThreshold: 0.6, // Higher threshold for better quality
+        minThreshold: 0.55,
         maxPerConfidence: {
           high: 10, // Show top 10 high confidence
           medium: 5, // Show top 5 medium confidence
           low: 3, // Show top 3 low confidence
         },
       })
-
       setAIMatches(matches)
+      setHasAnalyzed(true)
 
       // Reset accepted/rejected state for new analysis
       setAcceptedItems(new Set())
@@ -307,6 +307,7 @@ export function LogWearPage() {
           clearSearch()
           if (!newIsAIMode) {
             setAIMatches([])
+            setHasAnalyzed(false)
             clearImage()
           }
         }}
@@ -362,6 +363,7 @@ export function LogWearPage() {
                   onClick={() => {
                     clearImage()
                     setAIMatches([])
+                    setHasAnalyzed(false)
                   }}
                 >
                   Remove Photo
@@ -371,6 +373,10 @@ export function LogWearPage() {
                 </Button>
               </div>
             </div>
+          )}
+
+          {hasAnalyzed && aiMatches.length === 0 && (
+            <Callout>No matching items found. Try a photo with better lighting or a plainer background, or add items to your wardrobe first.</Callout>
           )}
 
           {aiMatches.length > 0 && (
