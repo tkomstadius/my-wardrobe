@@ -1,110 +1,105 @@
-import { useEffect, useMemo, useState } from 'react';
-import { IoSparklesOutline } from 'react-icons/io5';
-import { useLoaderData } from 'react-router';
-import { CategoryItemsAccordion } from '../components/common/CategoryItemsAccordion';
-import { ItemCard } from '../components/common/ItemCard';
-import { ItemSuggestionDialog } from '../components/common/ItemSuggestionDialog';
-import { OutfitRatingPrompt } from '../components/common/OutfitRatingPrompt';
-import { StatsCard } from '../components/common/StatsCard';
-import { Button } from '../components/common/ui/Button';
-import { Flex } from '../components/common/ui/Flex';
-import { Tabs } from '../components/common/ui/Tabs';
-import { Text } from '../components/common/ui/Text';
-import { useWeather } from '../contexts/WeatherContext';
-import type { Outfit, OutfitRating } from '../types/outfit';
-import { NEGLECTED_ITEMS_THRESHOLD_DAYS, THIS_WEEK_DAYS } from '../utils/config';
-import { getDaysAgo } from '../utils/dateFormatter';
-import { findUnratedOutfits } from '../utils/outfitRatingPrompt';
-import { type OutfitSuggestion, suggestRediscoverOutfit } from '../utils/outfitSuggestion';
-import { calculateQuickStats } from '../utils/statsCalculations';
-import { loadItems, loadOutfits, updateOutfit } from '../utils/storageCommands';
-import {
-  getItemsWornInPeriod,
-  getItemsWornToday,
-  getNeglectedItems,
-} from '../utils/wardrobeFilters';
-import styles from './HomePage.module.css';
+import { useEffect, useMemo, useState } from 'react'
+import { IoSparklesOutline } from 'react-icons/io5'
+import { useLoaderData } from 'react-router'
+import { CategoryItemsAccordion } from '../components/common/CategoryItemsAccordion'
+import { ItemCard } from '../components/common/ItemCard'
+import { ItemSuggestionDialog } from '../components/common/ItemSuggestionDialog'
+import { OutfitRatingPrompt } from '../components/common/OutfitRatingPrompt'
+import { StatsCard } from '../components/common/StatsCard'
+import { Button } from '../components/common/ui/Button'
+import { Flex } from '../components/common/ui/Flex'
+import { Tabs } from '../components/common/ui/Tabs'
+import { Text } from '../components/common/ui/Text'
+import { useWeather } from '../contexts/WeatherContext'
+import type { Outfit, OutfitRating } from '../types/outfit'
+import { NEGLECTED_ITEMS_THRESHOLD_DAYS, THIS_WEEK_DAYS } from '../utils/config'
+import { getDaysAgo } from '../utils/dateFormatter'
+import { findUnratedOutfits } from '../utils/outfitRatingPrompt'
+import { type OutfitSuggestion, suggestRediscoverOutfit } from '../utils/outfitSuggestion'
+import { calculateQuickStats } from '../utils/statsCalculations'
+import { loadItems, loadOutfits, updateOutfit } from '../utils/storageCommands'
+import { getItemsWornInPeriod, getItemsWornToday, getNeglectedItems } from '../utils/wardrobeFilters'
+import styles from './HomePage.module.css'
 
 export async function loader() {
   try {
-    const items = await loadItems();
-    const outfits = await loadOutfits();
-    return { items, outfits, error: null };
+    const items = await loadItems()
+    const outfits = await loadOutfits()
+    const activeItems = items.filter((item) => !item.archivedAt)
+
+    return { items: activeItems, outfits, error: null }
   } catch (error) {
-    console.error('Failed to load items:', error);
-    return { items: [], error: error as string };
+    console.error('Failed to load items:', error)
+    return { items: [], error: error as string }
   }
 }
 
 export function HomePage() {
-  const { items, outfits, error } = useLoaderData<typeof loader>();
-  const { weatherData } = useWeather();
-  const hasItems = items.length > 0;
-  const [unratedOutfits, setUnratedOutfits] = useState<Outfit[]>([]);
-  const [currentOutfitIndex, setCurrentOutfitIndex] = useState(0);
-  const [suggestionDialogOpen, setSuggestionDialogOpen] = useState(false);
-  const [suggestion, setSuggestion] = useState<OutfitSuggestion | null>(null);
-  const [dismissedIds, setDismissedIds] = useState<Set<string>>(new Set());
+  const { items, outfits, error } = useLoaderData<typeof loader>()
+  const { weatherData } = useWeather()
+  const hasItems = items.length > 0
+  const [unratedOutfits, setUnratedOutfits] = useState<Outfit[]>([])
+  const [currentOutfitIndex, setCurrentOutfitIndex] = useState(0)
+  const [suggestionDialogOpen, setSuggestionDialogOpen] = useState(false)
+  const [suggestion, setSuggestion] = useState<OutfitSuggestion | null>(null)
+  const [dismissedIds, setDismissedIds] = useState<Set<string>>(new Set())
 
-  const todayItems = useMemo(() => getItemsWornToday(items), [items]);
-  const weekItems = useMemo(() => getItemsWornInPeriod(items, getDaysAgo(THIS_WEEK_DAYS)), [items]);
-  const neglectedItems = useMemo(
-    () => getNeglectedItems(items, NEGLECTED_ITEMS_THRESHOLD_DAYS),
-    [items],
-  );
+  const todayItems = useMemo(() => getItemsWornToday(items), [items])
+  const weekItems = useMemo(() => getItemsWornInPeriod(items, getDaysAgo(THIS_WEEK_DAYS)), [items])
+  const neglectedItems = useMemo(() => getNeglectedItems(items, NEGLECTED_ITEMS_THRESHOLD_DAYS), [items])
 
-  const quickStats = useMemo(() => calculateQuickStats(items), [items]);
+  const quickStats = useMemo(() => calculateQuickStats(items), [items])
 
   // Find unrated outfits when component mounts or outfits change
   useEffect(() => {
-    const unrated = findUnratedOutfits(outfits);
-    setUnratedOutfits(unrated);
-    setCurrentOutfitIndex(0);
-  }, [outfits]);
+    const unrated = findUnratedOutfits(outfits)
+    setUnratedOutfits(unrated)
+    setCurrentOutfitIndex(0)
+  }, [outfits])
 
   const handleRateOutfit = async (outfitId: string, rating: OutfitRating) => {
-    await updateOutfit(outfitId, { rating });
+    await updateOutfit(outfitId, { rating })
     // Move to next outfit or close if no more
     if (currentOutfitIndex < unratedOutfits.length - 1) {
-      setCurrentOutfitIndex(currentOutfitIndex + 1);
+      setCurrentOutfitIndex(currentOutfitIndex + 1)
     } else {
-      setUnratedOutfits([]);
+      setUnratedOutfits([])
     }
-  };
+  }
 
   const handleDismissRating = () => {
     // Move to next outfit or close if no more
     if (currentOutfitIndex < unratedOutfits.length - 1) {
-      setCurrentOutfitIndex(currentOutfitIndex + 1);
+      setCurrentOutfitIndex(currentOutfitIndex + 1)
     } else {
-      setUnratedOutfits([]);
+      setUnratedOutfits([])
     }
-  };
+  }
 
   const handleSuggestItem = () => {
-    const newSuggestion = suggestRediscoverOutfit(items, weatherData, dismissedIds);
-    setSuggestion(newSuggestion);
-    setSuggestionDialogOpen(true);
-  };
+    const newSuggestion = suggestRediscoverOutfit(items, weatherData, dismissedIds)
+    setSuggestion(newSuggestion)
+    setSuggestionDialogOpen(true)
+  }
 
   const handleTryAnother = () => {
     // Add current suggestion to dismissed and get a new one
     if (suggestion) {
-      const newDismissed = new Set([...dismissedIds, suggestion.featuredItem.id]);
-      setDismissedIds(newDismissed);
-      const newSuggestion = suggestRediscoverOutfit(items, weatherData, newDismissed);
-      setSuggestion(newSuggestion);
+      const newDismissed = new Set([...dismissedIds, suggestion.featuredItem.id])
+      setDismissedIds(newDismissed)
+      const newSuggestion = suggestRediscoverOutfit(items, weatherData, newDismissed)
+      setSuggestion(newSuggestion)
     }
-  };
+  }
 
-  const currentOutfit = unratedOutfits[currentOutfitIndex];
+  const currentOutfit = unratedOutfits[currentOutfitIndex]
 
   if (error) {
     return (
       <Text size="2" color="red">
         Could not load items.
       </Text>
-    );
+    )
   }
 
   return (
@@ -216,5 +211,5 @@ export function HomePage() {
         )}
       </Flex>
     </>
-  );
+  )
 }
