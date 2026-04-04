@@ -1,4 +1,4 @@
-import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import { createBrowserRouter, Navigate, RouterProvider } from 'react-router-dom';
 import { RouteErrorBoundary } from './components/common/ui/RouteErrorBoundary';
 import { Spinner } from './components/common/ui/Spinner';
 import { MainLayout } from './components/layout/MainLayout';
@@ -27,7 +27,6 @@ import {
 import { HomePage, loader as homeLoader } from './pages/HomePage';
 import { ItemCategoryPage, loader as itemCategoryLoader } from './pages/ItemCategoryPage';
 import { ItemDetailPage, loader as itemDetailLoader } from './pages/ItemDetailPage';
-import { ItemsPage, loader as itemsLoader } from './pages/ItemsPage';
 import { LoginPage } from './pages/LoginPage';
 import { LogWearPage, loader as logWearLoader } from './pages/LogWearPage';
 import { MorePage } from './pages/MorePage';
@@ -49,7 +48,7 @@ const router = createBrowserRouter([
         loader: addItemLoader,
         action: addItemAction,
       },
-      { path: 'items', element: <ItemsPage />, loader: itemsLoader },
+      { path: 'items', element: <Navigate to="/items/tops" replace /> },
       { path: 'items/archived', element: <ArchivedItemsPage />, loader: archivedItemsLoader },
       { path: 'log-wear', element: <LogWearPage />, loader: logWearLoader },
       {

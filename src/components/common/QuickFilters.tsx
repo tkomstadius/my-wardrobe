@@ -77,7 +77,7 @@ export function QuickFilters({
 
       {/* Subcategory Filters */}
       {availableSubCategories.length > 0 && (
-        <Flex gap="1" wrap="wrap">
+        <div className={styles.subCategoryRow}>
           <button
             type="button"
             className={`${styles.filterButton} ${
@@ -105,7 +105,7 @@ export function QuickFilters({
               </button>
             );
           })}
-        </Flex>
+        </div>
       )}
     </Flex>
   );

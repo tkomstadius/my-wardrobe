@@ -1,6 +1,5 @@
 import { useMemo, useState } from 'react';
 import { Link, type LoaderFunctionArgs, useLoaderData } from 'react-router';
-import { BackLink } from '../components/common/BackLink';
 import { Fab } from '../components/common/Fab';
 import { ItemCard } from '../components/common/ItemCard';
 import { type BooleanFilter, QuickFilters } from '../components/common/QuickFilters';
@@ -9,8 +8,8 @@ import { Button } from '../components/common/ui/Button';
 import { Text } from '../components/common/ui/Text';
 import { useItemSearch } from '../hooks/useItemSearch';
 import type { ItemCategory } from '../types/wardrobe';
-import { CATEGORY_IDS, CATEGORY_TITLES, getSubCategoriesForCategory } from '../utils/categories';
-import { getItemsByCategory } from '../utils/storageCommands';
+import { CATEGORIES, CATEGORY_IDS, getSubCategoriesForCategory } from '../utils/categories';
+import { getItemCountsByCategory, getItemsByCategory } from '../utils/storageCommands';
 import styles from './ItemCategoryPage.module.css';
 
 export async function loader({ params }: LoaderFunctionArgs) {
@@ -19,21 +18,25 @@ export async function loader({ params }: LoaderFunctionArgs) {
   const isValidItemCategory = category && CATEGORY_IDS.includes(category as ItemCategory);
 
   if (!isValidItemCategory) {
-    return { items: [], category: null, title: null, isValid: false };
+    return { items: [], category: null, isValid: false, categoryCounts: {} as Partial<Record<ItemCategory, number>> };
   }
 
-  const categoryItems = await getItemsByCategory(category as ItemCategory);
+  const [categoryItems, categoryCounts] = await Promise.all([
+    getItemsByCategory(category as ItemCategory),
+    getItemCountsByCategory(),
+  ]);
 
   return {
     items: categoryItems,
     category: category as ItemCategory,
-    title: CATEGORY_TITLES[category as ItemCategory],
     isValid: true,
+    categoryCounts,
   };
 }
 
 export function ItemCategoryPage() {
-  const { items: categoryItems, category, title, isValid } = useLoaderData<typeof loader>();
+  const { items: categoryItems, category, isValid, categoryCounts } =
+    useLoaderData<typeof loader>();
 
   const [selectedBooleanFilters, setSelectedBooleanFilters] = useState<Set<BooleanFilter>>(
     new Set(),
@@ -118,31 +121,36 @@ export function ItemCategoryPage() {
 
   if (!isValid) {
     return (
-      <div className={styles.container}>
-        <div className={styles.header}>
-          <BackLink to={'/items'} />
-        </div>
-        <div className={styles.errorState}>
-          <Text size="2" color="gray">
-            Invalid category
-          </Text>
-        </div>
+      <div className={styles.errorState}>
+        <Text size="2" color="gray">
+          Invalid category
+        </Text>
       </div>
     );
   }
 
   return (
     <>
-      <div className={styles.header}>
-        <BackLink to={'/items'} />
-        <h2 className={styles.title}>{title}</h2>
-        <div className={styles.spacer} />
+      <div className={styles.categoryRow}>
+        {CATEGORIES.map((cat) => {
+          const count = categoryCounts[cat.id];
+          return (
+            <Link
+              key={cat.id}
+              to={`/items/${cat.id}`}
+              className={`${styles.categoryChip} ${category === cat.id ? styles.categoryChipActive : ''}`}
+            >
+              {cat.title}
+              {count !== undefined && <span className={styles.count}>({count})</span>}
+            </Link>
+          );
+        })}
       </div>
 
       {!hasItems && (
         <div className={styles.emptyState}>
           <Text size="2" color="gray">
-            No {title?.toLowerCase()} yet. Add your first item!
+            No items in this category yet. Add your first item!
           </Text>
           <Link to="/add-item" className={styles.addItemLink}>
             <Button>Add Item</Button>

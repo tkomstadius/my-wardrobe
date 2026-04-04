@@ -230,6 +230,29 @@ export async function getItemsByCategory(category: ItemCategory): Promise<Wardro
   }
 }
 
+export async function getItemCountsByCategory(): Promise<Partial<Record<ItemCategory, number>>> {
+  try {
+    const userId = await getCurrentUserId()
+    const { data, error } = await supabase
+      .from('wardrobe_items')
+      .select('category')
+      .eq('user_id', userId)
+
+    if (error) throw error
+    if (!data) return {}
+
+    const counts: Partial<Record<ItemCategory, number>> = {}
+    for (const row of data) {
+      const cat = row.category as ItemCategory
+      counts[cat] = (counts[cat] ?? 0) + 1
+    }
+    return counts
+  } catch (error) {
+    console.error('Failed to load item counts by category:', error)
+    return {}
+  }
+}
+
 export async function removeItem(id: string): Promise<void> {
   try {
     const userId = await getCurrentUserId()

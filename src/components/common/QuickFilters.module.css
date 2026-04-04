@@ -4,6 +4,25 @@
   gap: 6px;
 }
 
+.subCategoryRow {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 6px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.subCategoryRow::-webkit-scrollbar {
+  display: none;
+}
+
+@media (min-width: 640px) {
+  .subCategoryRow {
+    flex-wrap: wrap;
+    overflow-x: visible;
+  }
+}
+
 .filterButton {
   display: inline-flex;
   align-items: center;
