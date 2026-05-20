@@ -14,5 +14,5 @@ export const TOP_ITEMS_LIMIT = 10;
 export const BEST_VALUE_LIMIT = 5;
 
 // Image processing
-export const ENABLE_BACKGROUND_REMOVAL = true; // Set to true to enable AI background removal
+export const ENABLE_BACKGROUND_REMOVAL = false; // Set to true to enable AI background removal
 
