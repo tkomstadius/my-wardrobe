@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import {
-  IoAddCircleOutline,
   IoArchiveOutline,
   IoBarChartOutline,
   IoEllipsisHorizontalOutline,
@@ -95,14 +94,6 @@ export function BottomNav() {
         >
           <IoOptionsOutline className={styles.icon} />
           <span className={styles.label}>Outfits</span>
-        </Link>
-
-        <Link
-          to="/log-wear"
-          className={`${styles.navItem} ${currentPath === '/log-wear' ? styles.active : ''}`}
-        >
-          <IoAddCircleOutline className={styles.icon} />
-          <span className={styles.label}>Log Wear</span>
         </Link>
 
         <button

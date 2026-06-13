@@ -39,7 +39,6 @@ import { TextArea } from '../components/common/ui/TextArea'
 import { TextField } from '../components/common/ui/TextField'
 import type { OutfitRating } from '../types/outfit'
 import type { ItemCategory, WardrobeItem } from '../types/wardrobe'
-import { getImageEmbedding } from '../utils/aiEmbedding'
 import { CATEGORIES, CATEGORY_IDS, getSubCategoriesForCategory } from '../utils/categories'
 import { getAllBrands, getItemById, getItemStoragePath, removeItem, saveItem } from '../utils/storageCommands'
 import { getCurrentUserId } from '../utils/supabase'
@@ -100,20 +99,6 @@ export async function clientAction({ request, params }: ActionFunctionArgs) {
 
     const imageChanged = imageUrl.startsWith('data:')
 
-    // Generate fresh embedding only when image has changed.
-    // When image is unchanged, embedding stays undefined — saveItem will preserve the existing DB value.
-    let embedding: number[] | undefined
-    if (imageChanged) {
-      try {
-        const timeout = new Promise<never>((_, reject) =>
-          setTimeout(() => reject(new Error('Embedding timeout')), 8000),
-        )
-        embedding = await Promise.race([getImageEmbedding(imageUrl), timeout])
-      } catch (error) {
-        console.error('Failed to generate embedding:', error)
-      }
-    }
-
     // Resolve storage path for image
     let storagePath: string
     if (imageChanged) {
@@ -144,7 +129,6 @@ export async function clientAction({ request, params }: ActionFunctionArgs) {
       purchaseDate: purchaseDate ? new Date(purchaseDate) : undefined,
       initialWearCount: newInitialWearCount,
       wearCount: totalWearCount,
-      embedding,
       updatedAt: new Date(),
     }
 

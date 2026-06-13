@@ -1,7 +1,6 @@
 import { differenceInDays } from 'date-fns';
 import type { WeatherData } from '../contexts/WeatherContext';
 import type { WardrobeItem } from '../types/wardrobe';
-import { cosineSimilarity } from './aiEmbedding';
 import { CATEGORY_PAIRINGS } from './categories';
 import { NEGLECTED_ITEMS_THRESHOLD_DAYS } from './config';
 import { isWornToday } from './wardrobeFilters';
@@ -106,30 +105,7 @@ function findComplementaryItems(
     return [];
   }
 
-  // If featured item has embedding, sort by similarity
-  if (featuredItem.embedding) {
-    const withEmbeddings = candidates.filter((item) => item.embedding);
-    const withoutEmbeddings = candidates.filter((item) => !item.embedding);
-
-    // Sort items with embeddings by similarity (higher = more similar = better match)
-    const sortedByEmbedding = withEmbeddings
-      .map((item) => ({
-        item,
-        similarity: cosineSimilarity(featuredItem.embedding!, item.embedding!),
-      }))
-      .sort((a, b) => b.similarity - a.similarity)
-      .map((entry) => entry.item);
-
-    // Combine: embedding-matched items first, then others sorted by wear count
-    const sortedWithoutEmbeddings = withoutEmbeddings.sort((a, b) => b.wearCount - a.wearCount);
-
-    const allSorted = [...sortedByEmbedding, ...sortedWithoutEmbeddings];
-
-    // Try to pick from different categories for variety
-    return pickFromDifferentCategories(allSorted, count);
-  }
-
-  // Otherwise, prefer items with higher wear count (proven versatile)
+  // Prefer items with higher wear count (proven versatile)
   const sortedByWearCount = [...candidates].sort((a, b) => b.wearCount - a.wearCount);
 
   // Try to pick from different categories for variety

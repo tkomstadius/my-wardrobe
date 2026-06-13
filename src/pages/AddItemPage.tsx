@@ -28,7 +28,6 @@ import { TextArea } from '../components/common/ui/TextArea'
 import { TextField } from '../components/common/ui/TextField'
 import type { OutfitRating } from '../types/outfit'
 import type { ItemCategory, NewWardrobeItem, WardrobeItem } from '../types/wardrobe'
-import { getImageEmbedding } from '../utils/aiEmbedding'
 import { CATEGORIES, getSubCategoriesForCategory } from '../utils/categories'
 import { generateId, getAllBrands, saveItem } from '../utils/storageCommands'
 import { getCurrentUserId } from '../utils/supabase'
@@ -70,19 +69,6 @@ export async function clientAction({ request }: ActionFunctionArgs) {
   }
 
   try {
-    // Generate embedding for AI wear logging
-    let embedding: number[] | undefined
-
-    try {
-      const timeout = new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error('Embedding timeout')), 8000),
-      )
-      embedding = await Promise.race([getImageEmbedding(imageUrl), timeout])
-    } catch (error) {
-      console.error('Failed to generate embedding:', error)
-      // Continue without embedding - user can generate later in Settings
-    }
-
     const now = new Date()
     const initialCount = initialWearCount ? Number.parseInt(initialWearCount, 10) : 0
     const id = generateId()
@@ -105,7 +91,6 @@ export async function clientAction({ request }: ActionFunctionArgs) {
       rating: rating ? (Number.parseInt(rating, 10) as OutfitRating) : undefined,
       purchaseDate: purchaseDate ? new Date(purchaseDate) : undefined,
       initialWearCount: initialCount,
-      embedding,
     }
 
     const item: WardrobeItem = {

@@ -2,10 +2,8 @@ import { sql } from 'drizzle-orm';
 import {
   boolean,
   integer,
-  jsonb,
   numeric,
   pgTable,
-  real,
   smallint,
   text,
   timestamp,
@@ -32,7 +30,6 @@ export const wardrobeItems = pgTable('wardrobe_items', {
   isHandmade: boolean('is_handmade').default(false),
   rating: smallint('rating'), // 1 = good, 0 = meh, -1 = nope
   purchaseDate: timestamp('purchase_date', { withTimezone: true, mode: 'date' }),
-  embedding: real('embedding').array(), // 512-dim FashionCLIP vector
   archivedAt: timestamp('archived_at', { withTimezone: true, mode: 'date' }),
   archiveReason: text('archive_reason'), // 'thrown_away' | 'donated' | 'sold'
   archiveNotes: text('archive_notes'),
@@ -54,35 +51,3 @@ export const outfits = pgTable('outfits', {
   userId: uuid('user_id').notNull(),
 });
 
-// ========== AI Match Feedback ==========
-
-export const matchFeedback = pgTable('match_feedback', {
-  id: text('id').primaryKey(),
-  timestamp: timestamp('timestamp', { withTimezone: true, mode: 'date' }).defaultNow().notNull(),
-  outfitPhotoHash: text('outfit_photo_hash'),
-  suggestedItemId: text('suggested_item_id'),
-  baseSimilarity: real('base_similarity'),
-  boostedSimilarity: real('boosted_similarity'),
-  confidence: text('confidence'), // 'high' | 'medium' | 'low'
-  userAction: text('user_action'), // 'accepted' | 'rejected'
-  metadata: jsonb('metadata'),
-  userId: uuid('user_id').notNull(),
-});
-
-// ========== AI User Preferences ==========
-
-export const userPreferences = pgTable('user_preferences', {
-  id: text('id').primaryKey().default('default'),
-  categoryMatchWeight: real('category_match_weight').default(1.0),
-  brandMatchWeight: real('brand_match_weight').default(1.0),
-  recencyWeight: real('recency_weight').default(1.0),
-  wearFrequencyWeight: real('wear_frequency_weight').default(1.0),
-  highConfidenceThreshold: real('high_confidence_threshold').default(0.78),
-  mediumConfidenceThreshold: real('medium_confidence_threshold').default(0.68),
-  totalFeedbackCount: integer('total_feedback_count').default(0),
-  lastUpdated: timestamp('last_updated', { withTimezone: true, mode: 'date' })
-    .defaultNow()
-    .notNull(),
-  version: integer('version').default(1),
-  userId: uuid('user_id').notNull(),
-});

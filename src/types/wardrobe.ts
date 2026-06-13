@@ -32,7 +32,6 @@ export type WardrobeItem = {
   purchaseDate?: Date;
   createdAt: Date;
   updatedAt: Date;
-  embedding?: number[]; // CLIP embedding vector (512 dimensions) for AI matching
   archivedAt?: Date;
   archiveReason?: ArchiveReason;
   archiveNotes?: string;
@@ -46,7 +45,7 @@ export type NewWardrobeItem = Omit<
 export type AddItemFormState = Partial<
   Omit<
     NewWardrobeItem,
-    'imageUrl' | 'embedding' | 'price' | 'purchaseDate' | 'initialWearCount'
+    'imageUrl' | 'price' | 'purchaseDate' | 'initialWearCount'
   > & {
     price?: string;
     purchaseDate?: string;
@@ -56,7 +55,7 @@ export type AddItemFormState = Partial<
 
 export type EditItemFormState = Omit<
   NewWardrobeItem,
-  'imageUrl' | 'embedding' | 'price' | 'purchaseDate' | 'initialWearCount'
+  'imageUrl' | 'price' | 'purchaseDate' | 'initialWearCount'
 > & {
   price?: string;
   purchaseDate?: string;

@@ -6,11 +6,8 @@ import { deleteImage, getSignedUrl, getSignedUrls } from './supabaseStorage'
 
 // ========== Helpers ==========
 
-// All wardrobe_items columns except the 512-dim embedding vector.
-// Embedding is large (~2KB/item) and only needed for AI features.
 const ITEM_COLUMNS =
   'id, image_url, notes, brand, category, sub_category, wear_count, initial_wear_count, wear_history, price, is_second_hand, is_dog_casual, is_handmade, rating, purchase_date, created_at, updated_at, user_id, archived_at, archive_reason, archive_notes'
-const ITEM_COLUMNS_WITH_EMBEDDING = `${ITEM_COLUMNS}, embedding`
 
 export function generateId(): string {
   return `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`
@@ -36,7 +33,6 @@ function mapRowToItem(row: Record<string, unknown>): WardrobeItem {
     purchaseDate: row.purchase_date ? new Date(row.purchase_date as string) : undefined,
     createdAt: new Date(row.created_at as string),
     updatedAt: new Date(row.updated_at as string),
-    embedding: (row.embedding as number[]) ?? undefined,
     archivedAt: row.archived_at ? new Date(row.archived_at as string) : undefined,
     archiveReason: (row.archive_reason as ArchiveReason) ?? undefined,
     archiveNotes: (row.archive_notes as string) ?? undefined,
@@ -112,8 +108,6 @@ export async function saveItems(items: WardrobeItem[]): Promise<void> {
     is_handmade: item.isHandmade ?? false,
     rating: item.rating ?? null,
     purchase_date: item.purchaseDate?.toISOString() ?? null,
-    // Only include embedding if explicitly set — omitting it preserves the existing DB value on upsert
-    ...(item.embedding !== undefined && { embedding: item.embedding }),
     archived_at: item.archivedAt?.toISOString() ?? null,
     archive_reason: item.archiveReason ?? null,
     archive_notes: item.archiveNotes ?? null,
@@ -149,24 +143,6 @@ export async function loadItems(): Promise<WardrobeItem[]> {
   }
 }
 
-export async function loadItemsWithEmbeddings(): Promise<WardrobeItem[]> {
-  try {
-    const userId = await getCurrentUserId()
-    const { data, error } = await supabase
-      .from('wardrobe_items')
-      .select(ITEM_COLUMNS_WITH_EMBEDDING)
-      .eq('user_id', userId)
-
-    if (error) throw error
-    if (!data) return []
-
-    const items = data.map(mapRowToItem)
-    return resolveItemImageUrls(items)
-  } catch (error) {
-    console.error('Failed to load items with embeddings:', error)
-    return []
-  }
-}
 
 export async function getItemById(id: string): Promise<WardrobeItem | null> {
   try {
@@ -468,22 +444,6 @@ export async function getAllBrands(): Promise<string[]> {
   } catch (error) {
     console.error('Failed to get all brands:', error)
     return []
-  }
-}
-
-export async function updateItemEmbedding(id: string, embedding: number[]): Promise<void> {
-  const userId = await getCurrentUserId()
-  const { error } = await supabase
-    .from('wardrobe_items')
-    .update({
-      embedding,
-      updated_at: new Date().toISOString(),
-    })
-    .eq('id', id)
-    .eq('user_id', userId)
-
-  if (error) {
-    throw new Error('Failed to update item embedding')
   }
 }
 

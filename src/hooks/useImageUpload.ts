@@ -1,15 +1,12 @@
 import { useState } from 'react';
-import { removeImageBackground } from '../utils/backgroundRemoval';
-import { ENABLE_BACKGROUND_REMOVAL } from '../utils/config';
 import { compressImage } from '../utils/imageCompression';
 
 interface UseImageUploadOptions {
   onError?: (error: string) => void;
-  skipBackgroundRemoval?: boolean;
 }
 
 export function useImageUpload(options: UseImageUploadOptions = {}) {
-  const { onError, skipBackgroundRemoval = false } = options;
+  const { onError } = options;
   const [imagePreview, setImagePreview] = useState<string>('');
   const [isUploading, setIsUploading] = useState(false);
 
@@ -27,19 +24,7 @@ export function useImageUpload(options: UseImageUploadOptions = {}) {
           // Step 1: Compress the image first
           const compressedDataURL = await compressImage(originalDataURL);
 
-          let processedDataURL = compressedDataURL;
-
-          // Step 2: Remove background after compression (optional)
-          if (ENABLE_BACKGROUND_REMOVAL && !skipBackgroundRemoval) {
-            try {
-              processedDataURL = await removeImageBackground(compressedDataURL);
-            } catch (bgError) {
-              console.warn('Background removal failed, using compressed image:', bgError);
-              // Fall back to compressed image without background removal
-            }
-          }
-
-          setImagePreview(processedDataURL);
+          setImagePreview(compressedDataURL);
         } catch (error) {
           console.error('Failed to process image:', error);
           const errorMessage = 'Failed to process image. Please try another file.';
