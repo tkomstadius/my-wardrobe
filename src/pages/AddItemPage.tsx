@@ -74,7 +74,10 @@ export async function clientAction({ request }: ActionFunctionArgs) {
     let embedding: number[] | undefined
 
     try {
-      embedding = await getImageEmbedding(imageUrl)
+      const timeout = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error('Embedding timeout')), 8000),
+      )
+      embedding = await Promise.race([getImageEmbedding(imageUrl), timeout])
     } catch (error) {
       console.error('Failed to generate embedding:', error)
       // Continue without embedding - user can generate later in Settings
