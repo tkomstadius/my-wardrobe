@@ -20,7 +20,7 @@ export function BottomNav() {
     (currentPath === '/items' || currentPath.startsWith('/items/')) &&
     currentPath !== '/items/archived';
   const isOnMoreSection =
-    currentPath === '/stats' || currentPath === '/settings' || currentPath === '/items/archived';
+    currentPath === '/settings' || currentPath === '/items/archived';
 
   // Close menu on navigation
   // biome-ignore lint/correctness/useExhaustiveDependencies: pathname is the trigger, not a closure dep
@@ -40,15 +40,6 @@ export function BottomNav() {
 
       {showMore && (
         <div className={styles.moreMenu} role="menu">
-          <Link
-            to="/stats"
-            className={styles.moreMenuItem}
-            role="menuitem"
-            onClick={() => setShowMore(false)}
-          >
-            <IoBarChartOutline className={styles.moreMenuIcon} />
-            <span className={styles.moreMenuLabel}>Statistics</span>
-          </Link>
           <Link
             to="/items/archived"
             className={styles.moreMenuItem}
@@ -94,6 +85,14 @@ export function BottomNav() {
         >
           <IoOptionsOutline className={styles.icon} />
           <span className={styles.label}>Outfits</span>
+        </Link>
+
+        <Link
+          to="/stats"
+          className={`${styles.navItem} ${currentPath === '/stats' ? styles.active : ''}`}
+        >
+          <IoBarChartOutline className={styles.icon} />
+          <span className={styles.label}>Stats</span>
         </Link>
 
         <button
