@@ -10,6 +10,7 @@ import { Button } from '../components/common/ui/Button'
 import { Flex } from '../components/common/ui/Flex'
 import { Tabs } from '../components/common/ui/Tabs'
 import { Text } from '../components/common/ui/Text'
+import { WearCalendar } from '../components/common/WearCalendar'
 import { useWeather } from '../contexts/WeatherContext'
 import type { Outfit, OutfitRating } from '../types/outfit'
 import { NEGLECTED_ITEMS_THRESHOLD_DAYS, THIS_WEEK_DAYS } from '../utils/config'
@@ -158,6 +159,9 @@ export function HomePage() {
                   <Tabs.Trigger value="neglected" className={styles.tabTrigger}>
                     Neglected
                   </Tabs.Trigger>
+                  <Tabs.Trigger value="calendar" className={styles.tabTrigger}>
+                    Calendar
+                  </Tabs.Trigger>
                 </Tabs.List>
 
                 <Tabs.Content value="today" className={styles.tabContent}>
@@ -204,6 +208,10 @@ export function HomePage() {
                   ) : (
                     <CategoryItemsAccordion items={neglectedItems} />
                   )}
+                </Tabs.Content>
+
+                <Tabs.Content value="calendar" className={styles.tabContent}>
+                  <WearCalendar items={items} />
                 </Tabs.Content>
               </Tabs.Root>
             </Flex>
