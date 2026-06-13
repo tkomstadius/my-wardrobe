@@ -10,7 +10,9 @@ import {
   subMonths,
 } from 'date-fns';
 import { useMemo, useState } from 'react';
-import { IoChevronBack, IoChevronForward } from 'react-icons/io5';
+import { IoChevronBack, IoChevronForward, IoOptionsOutline } from 'react-icons/io5';
+import { Link } from 'react-router';
+import type { Outfit } from '../../types/outfit';
 import type { WardrobeItem } from '../../types/wardrobe';
 import { ItemCard } from './ItemCard';
 import { Text } from './ui/Text';
@@ -20,9 +22,10 @@ const DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
 interface WearCalendarProps {
   items: WardrobeItem[];
+  outfits: Outfit[];
 }
 
-export function WearCalendar({ items }: WearCalendarProps) {
+export function WearCalendar({ items, outfits }: WearCalendarProps) {
   const [currentMonth, setCurrentMonth] = useState(() => startOfMonth(new Date()));
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
@@ -39,6 +42,16 @@ export function WearCalendar({ items }: WearCalendarProps) {
     return map;
   }, [items]);
 
+  const outfitMap = useMemo(() => {
+    const map: Record<string, Outfit[]> = {};
+    for (const outfit of outfits) {
+      const key = format(new Date(outfit.createdAt), 'yyyy-MM-dd');
+      if (!map[key]) map[key] = [];
+      map[key].push(outfit);
+    }
+    return map;
+  }, [outfits]);
+
   const days = useMemo(
     () => eachDayOfInterval({ start: startOfMonth(currentMonth), end: endOfMonth(currentMonth) }),
     [currentMonth],
@@ -48,6 +61,7 @@ export function WearCalendar({ items }: WearCalendarProps) {
 
   const selectedDateKey = selectedDate ? format(selectedDate, 'yyyy-MM-dd') : null;
   const selectedDateItems = selectedDateKey ? (wearMap[selectedDateKey] ?? []) : [];
+  const selectedDateOutfits = selectedDateKey ? (outfitMap[selectedDateKey] ?? []) : [];
 
   const handleDayClick = (day: Date) => {
     setSelectedDate((prev) => (prev && isSameDay(day, prev) ? null : day));
@@ -92,6 +106,7 @@ export function WearCalendar({ items }: WearCalendarProps) {
         {days.map((day) => {
           const key = format(day, 'yyyy-MM-dd');
           const hasWears = Boolean(wearMap[key]?.length);
+          const hasOutfits = Boolean(outfitMap[key]?.length);
           const isSelected = selectedDate ? isSameDay(day, selectedDate) : false;
           const isTodayDate = isToday(day);
           return (
@@ -100,7 +115,7 @@ export function WearCalendar({ items }: WearCalendarProps) {
               type="button"
               className={[
                 styles.day,
-                hasWears ? styles.hasWears : '',
+                hasWears || hasOutfits ? styles.hasWears : '',
                 isSelected ? styles.selected : '',
                 isTodayDate ? styles.today : '',
               ]
@@ -111,7 +126,7 @@ export function WearCalendar({ items }: WearCalendarProps) {
               aria-pressed={isSelected}
             >
               <span className={styles.dayNumber}>{format(day, 'd')}</span>
-              {hasWears && <span className={styles.dot} />}
+              {(hasWears || hasOutfits) && <span className={styles.dot} />}
             </button>
           );
         })}
@@ -122,18 +137,51 @@ export function WearCalendar({ items }: WearCalendarProps) {
           <Text size="1" color="gray" className={styles.selectedLabel}>
             {format(selectedDate, 'EEEE, MMMM d')}
           </Text>
-          {selectedDateItems.length === 0 ? (
+          {selectedDateItems.length === 0 && selectedDateOutfits.length === 0 ? (
             <div className={styles.emptyDay}>
               <Text size="1" color="gray">
-                Nothing worn this day.
+                Nothing logged this day.
               </Text>
             </div>
           ) : (
-            <div className={styles.itemsGrid}>
-              {selectedDateItems.map((item) => (
-                <ItemCard key={item.id} item={item} />
-              ))}
-            </div>
+            <>
+              {selectedDateItems.length > 0 && (
+                <div className={styles.itemsGrid}>
+                  {selectedDateItems.map((item) => (
+                    <ItemCard key={item.id} item={item} />
+                  ))}
+                </div>
+              )}
+              {selectedDateOutfits.length > 0 && (
+                <div className={styles.section}>
+                  <Text size="1" color="gray" className={styles.sectionLabel}>
+                    Outfits
+                  </Text>
+                  <div className={styles.outfitsGrid}>
+                    {selectedDateOutfits.map((outfit) => (
+                      <Link
+                        key={outfit.id}
+                        to={`/outfit/${outfit.id}`}
+                        className={styles.outfitCard}
+                      >
+                        <div className={styles.outfitImage}>
+                          {outfit.photo ? (
+                            <img src={outfit.photo} alt="Outfit" />
+                          ) : (
+                            <div className={styles.noImage}>
+                              <IoOptionsOutline size={24} />
+                            </div>
+                          )}
+                        </div>
+                        <Text size="1" color="gray">
+                          {outfit.itemIds.length} {outfit.itemIds.length === 1 ? 'item' : 'items'}
+                        </Text>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </div>
       )}

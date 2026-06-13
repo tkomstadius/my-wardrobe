@@ -211,7 +211,7 @@ export function HomePage() {
                 </Tabs.Content>
 
                 <Tabs.Content value="calendar" className={styles.tabContent}>
-                  <WearCalendar items={items} />
+                  <WearCalendar items={items} outfits={outfits ?? []} />
                 </Tabs.Content>
               </Tabs.Root>
             </Flex>
