@@ -1,25 +1,59 @@
 import { supabase } from './supabase';
 
 const BUCKET = 'wardrobe-images';
-const SIGNED_URL_EXPIRY = 3600; // 1 hour in seconds
-const CACHE_TTL_MS = 55 * 60 * 1000; // 55 minutes — refresh 5min before expiry
+const SIGNED_URL_EXPIRY = 7 * 24 * 3600; // 7 days in seconds
+const CACHE_TTL_MS = 6.5 * 24 * 60 * 60 * 1000; // 6.5 days — refresh before expiry
+const LS_KEY = 'wardrobe_img_url_cache';
 
 type CacheEntry = { url: string; expiresAt: number };
-const urlCache = new Map<string, CacheEntry>();
+// In-memory layer avoids JSON.parse on every lookup within a session
+const memCache = new Map<string, CacheEntry>();
+
+function loadFromStorage(): void {
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    if (!raw) return;
+    const entries = JSON.parse(raw) as Record<string, CacheEntry>;
+    const now = Date.now();
+    for (const [path, entry] of Object.entries(entries)) {
+      if (entry.expiresAt > now) memCache.set(path, entry);
+    }
+  } catch {
+    // Corrupt storage — start fresh
+    localStorage.removeItem(LS_KEY);
+  }
+}
+
+function persistToStorage(): void {
+  try {
+    const entries: Record<string, CacheEntry> = {};
+    for (const [path, entry] of memCache.entries()) {
+      entries[path] = entry;
+    }
+    localStorage.setItem(LS_KEY, JSON.stringify(entries));
+  } catch {
+    // Storage quota exceeded — skip persistence, in-memory cache still works
+  }
+}
+
+// Load persisted cache once on module init
+loadFromStorage();
 
 function getCached(path: string): string | null {
-  const entry = urlCache.get(path);
+  const entry = memCache.get(path);
   if (entry && Date.now() < entry.expiresAt) return entry.url;
-  urlCache.delete(path);
+  memCache.delete(path);
   return null;
 }
 
 function setCache(path: string, url: string): void {
-  urlCache.set(path, { url, expiresAt: Date.now() + CACHE_TTL_MS });
+  memCache.set(path, { url, expiresAt: Date.now() + CACHE_TTL_MS });
+  persistToStorage();
 }
 
 export function invalidateUrlCache(path: string): void {
-  urlCache.delete(path);
+  memCache.delete(path);
+  persistToStorage();
 }
 
 /**
