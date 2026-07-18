@@ -1,10 +1,12 @@
 import type { LoaderFunctionArgs } from 'react-router';
 import { Link, useLoaderData } from 'react-router';
 import { BackLink } from '../components/common/BackLink';
+import { StatsCard } from '../components/common/StatsCard';
 import { Heading } from '../components/common/ui/Heading';
 import { Text } from '../components/common/ui/Text';
-import type { WardrobeItem } from '../types/wardrobe';
+import type { ArchiveReason, WardrobeItem } from '../types/wardrobe';
 import { formatDateDisplay } from '../utils/dateFormatter';
+import { calculateQuickStats } from '../utils/statsCalculations';
 import { loadArchivedItems } from '../utils/storageCommands';
 import styles from './ArchivedItemsPage.module.css';
 
@@ -18,6 +20,16 @@ const ARCHIVE_REASON_LABELS: Record<string, string> = {
   donated: 'Donated',
   sold: 'Sold',
 };
+
+function countByReason(items: WardrobeItem[]): Partial<Record<ArchiveReason, number>> {
+  const counts: Partial<Record<ArchiveReason, number>> = {};
+  for (const item of items) {
+    if (item.archiveReason) {
+      counts[item.archiveReason] = (counts[item.archiveReason] ?? 0) + 1;
+    }
+  }
+  return counts;
+}
 
 function ArchivedItemCard({ item }: { item: WardrobeItem }) {
   const reasonLabel = item.archiveReason ? (ARCHIVE_REASON_LABELS[item.archiveReason] ?? '') : '';
@@ -42,6 +54,8 @@ function ArchivedItemCard({ item }: { item: WardrobeItem }) {
 
 export function ArchivedItemsPage() {
   const { items } = useLoaderData<typeof loader>();
+  const stats = calculateQuickStats(items);
+  const reasonCounts = countByReason(items);
 
   return (
     <div className={styles.container}>
@@ -64,6 +78,27 @@ export function ArchivedItemsPage() {
         </div>
       ) : (
         <>
+          <div className={styles.statsGrid}>
+            <StatsCard title="Archived Items" value={stats.totalItems} />
+            <StatsCard title="Total Wears" value={stats.totalWears} />
+            <StatsCard title="Avg per Item" value={stats.averageWears.toFixed(1)} />
+            {stats.avgCostPerWear !== null && (
+              <StatsCard title="Avg Cost/Wear" value={stats.avgCostPerWear.toFixed(2)} />
+            )}
+          </div>
+
+          {Object.keys(reasonCounts).length > 0 && (
+            <div className={styles.reasonBreakdown}>
+              {(Object.entries(reasonCounts) as [ArchiveReason, number][]).map(
+                ([reason, count]) => (
+                  <Text key={reason} size="2" color="gray">
+                    {ARCHIVE_REASON_LABELS[reason]}: {count}
+                  </Text>
+                ),
+              )}
+            </div>
+          )}
+
           <Text size="2" color="gray" className={styles.count}>
             {items.length} {items.length === 1 ? 'item' : 'items'}
           </Text>

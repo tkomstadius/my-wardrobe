@@ -19,7 +19,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
     return { outfit: null, outfitItems: [] };
   }
 
-  const [outfit, items] = await Promise.all([getOutfitById(id), loadItems()]);
+  const [outfit, items] = await Promise.all([getOutfitById(id), loadItems(true)]);
 
   if (!outfit) {
     return { outfit: null, outfitItems: [] };

@@ -127,10 +127,14 @@ export async function saveItem(item: WardrobeItem): Promise<void> {
   await saveItems([item])
 }
 
-export async function loadItems(): Promise<WardrobeItem[]> {
+export async function loadItems(includeArchived = false): Promise<WardrobeItem[]> {
   try {
     const userId = await getCurrentUserId()
-    const { data, error } = await supabase.from('wardrobe_items').select(ITEM_COLUMNS).eq('user_id', userId)
+    let query = supabase.from('wardrobe_items').select(ITEM_COLUMNS).eq('user_id', userId)
+    if (!includeArchived) {
+      query = query.is('archived_at', null)
+    }
+    const { data, error } = await query
 
     if (error) throw error
     if (!data) return []
@@ -194,6 +198,7 @@ export async function getItemsByCategory(category: ItemCategory): Promise<Wardro
       .select(ITEM_COLUMNS)
       .eq('user_id', userId)
       .eq('category', category)
+      .is('archived_at', null)
 
     if (error) throw error
     if (!data) return []
@@ -213,6 +218,7 @@ export async function getItemCountsByCategory(): Promise<Partial<Record<ItemCate
       .from('wardrobe_items')
       .select('category')
       .eq('user_id', userId)
+      .is('archived_at', null)
 
     if (error) throw error
     if (!data) return {}

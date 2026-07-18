@@ -26,9 +26,8 @@ export async function loader() {
   try {
     const items = await loadItems()
     const outfits = await loadOutfits()
-    const activeItems = items.filter((item) => !item.archivedAt)
 
-    return { items: activeItems, outfits, error: null }
+    return { items, outfits, error: null }
   } catch (error) {
     console.error('Failed to load items:', error)
     return { items: [], error: error as string }

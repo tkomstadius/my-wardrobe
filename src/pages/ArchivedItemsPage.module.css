@@ -22,6 +22,20 @@
   width: 80px;
 }
 
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+  gap: 0.5rem;
+  margin-bottom: 16px;
+}
+
+.reasonBreakdown {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  margin-bottom: 16px;
+}
+
 .count {
   margin-bottom: 12px;
   display: block;

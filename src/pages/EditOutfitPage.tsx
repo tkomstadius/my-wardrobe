@@ -42,7 +42,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
     return { outfit: null, items: [] };
   }
 
-  const [outfit, items] = await Promise.all([getOutfitById(id), loadItems()]);
+  const [outfit, items] = await Promise.all([getOutfitById(id), loadItems(true)]);
 
   return { outfit, items };
 }
