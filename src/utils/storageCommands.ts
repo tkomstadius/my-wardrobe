@@ -1,16 +1,21 @@
-import { compareAsc } from 'date-fns'
-import type { NewOutfit, Outfit, OutfitRating } from '../types/outfit'
-import type { AiProcessingStatus, ArchiveReason, ItemCategory, WardrobeItem } from '../types/wardrobe'
-import { getCurrentUserId, supabase } from './supabase'
-import { deleteImage, getSignedUrl, getSignedUrls } from './supabaseStorage'
+import { compareAsc } from 'date-fns';
+import type { NewOutfit, Outfit, OutfitRating } from '../types/outfit';
+import type {
+  AiProcessingStatus,
+  ArchiveReason,
+  ItemCategory,
+  WardrobeItem,
+} from '../types/wardrobe';
+import { getCurrentUserId, supabase } from './supabase';
+import { deleteImage, getSignedUrl, getSignedUrls } from './supabaseStorage';
 
 // ========== Helpers ==========
 
 const ITEM_COLUMNS =
-  'id, image_url, notes, brand, category, sub_category, wear_count, initial_wear_count, wear_history, price, is_second_hand, is_dog_casual, is_handmade, rating, purchase_date, created_at, updated_at, user_id, archived_at, archive_reason, archive_notes, description, metadata, processing_status'
+  'id, image_url, notes, brand, category, sub_category, wear_count, initial_wear_count, wear_history, price, is_second_hand, is_dog_casual, is_handmade, rating, purchase_date, created_at, updated_at, user_id, archived_at, archive_reason, archive_notes, description, metadata, processing_status';
 
 export function generateId(): string {
-  return `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`
+  return `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
 }
 
 /** Map a Supabase wardrobe_items row (snake_case) to a WardrobeItem (camelCase). */
@@ -24,7 +29,9 @@ function mapRowToItem(row: Record<string, unknown>): WardrobeItem {
     subCategory: (row.sub_category as string) ?? undefined,
     wearCount: (row.wear_count as number) ?? 0,
     initialWearCount: (row.initial_wear_count as number) ?? undefined,
-    wearHistory: Array.isArray(row.wear_history) ? (row.wear_history as string[]).map((d) => new Date(d)) : [],
+    wearHistory: Array.isArray(row.wear_history)
+      ? (row.wear_history as string[]).map((d) => new Date(d))
+      : [],
     price: row.price != null ? Number(row.price) : undefined,
     isSecondHand: (row.is_second_hand as boolean) ?? undefined,
     isDogCasual: (row.is_dog_casual as boolean) ?? undefined,
@@ -39,7 +46,7 @@ function mapRowToItem(row: Record<string, unknown>): WardrobeItem {
     description: (row.description as string) ?? undefined,
     metadata: (row.metadata as Record<string, unknown>) ?? undefined,
     processingStatus: (row.processing_status as AiProcessingStatus) ?? undefined,
-  }
+  };
 }
 
 /** Map a Supabase outfits row (snake_case) to an Outfit (camelCase). */
@@ -52,14 +59,14 @@ function mapRowToOutfit(row: Record<string, unknown>): Outfit {
     rating: validateRating(row.rating as number | null),
     createdAt: new Date(row.created_at as string),
     updatedAt: new Date(row.updated_at as string),
-  }
+  };
 }
 
 function validateRating(value: number | null | undefined): OutfitRating | undefined {
   if (value === 1 || value === 0 || value === -1) {
-    return value
+    return value;
   }
-  return undefined
+  return undefined;
 }
 
 /**
@@ -67,34 +74,34 @@ function validateRating(value: number | null | undefined): OutfitRating | undefi
  * Mutates imageUrl in-place from storage path to signed URL.
  */
 async function resolveItemImageUrls(items: WardrobeItem[]): Promise<WardrobeItem[]> {
-  const paths = items.map((item) => item.imageUrl).filter(Boolean)
-  if (paths.length === 0) return items
+  const paths = items.map((item) => item.imageUrl).filter(Boolean);
+  if (paths.length === 0) return items;
 
-  const urlMap = await getSignedUrls(paths)
+  const urlMap = await getSignedUrls(paths);
   return items.map((item) => ({
     ...item,
     imageUrl: urlMap.get(item.imageUrl) ?? item.imageUrl,
-  }))
+  }));
 }
 
 /**
  * Resolve storage paths to signed URLs for a list of outfits.
  */
 async function resolveOutfitPhotoUrls(outfits: Outfit[]): Promise<Outfit[]> {
-  const paths = outfits.map((o) => o.photo).filter((p): p is string => !!p)
-  if (paths.length === 0) return outfits
+  const paths = outfits.map((o) => o.photo).filter((p): p is string => !!p);
+  if (paths.length === 0) return outfits;
 
-  const urlMap = await getSignedUrls(paths)
+  const urlMap = await getSignedUrls(paths);
   return outfits.map((outfit) => ({
     ...outfit,
     photo: outfit.photo ? (urlMap.get(outfit.photo) ?? outfit.photo) : undefined,
-  }))
+  }));
 }
 
 // ========== Item Storage Functions ==========
 
 export async function saveItems(items: WardrobeItem[]): Promise<void> {
-  const userId = await getCurrentUserId()
+  const userId = await getCurrentUserId();
   const rows = items.map((item) => ({
     id: item.id,
     image_url: item.imageUrl,
@@ -122,130 +129,129 @@ export async function saveItems(items: WardrobeItem[]): Promise<void> {
     created_at: item.createdAt.toISOString(),
     updated_at: item.updatedAt.toISOString(),
     user_id: userId,
-  }))
+  }));
 
-  const { error } = await supabase.from('wardrobe_items').upsert(rows)
+  const { error } = await supabase.from('wardrobe_items').upsert(rows);
   if (error) {
-    console.error('Failed to save items:', error)
-    throw new Error('Failed to save wardrobe items.')
+    console.error('Failed to save items:', error);
+    throw new Error('Failed to save wardrobe items.');
   }
 }
 
 export async function saveItem(item: WardrobeItem): Promise<void> {
-  await saveItems([item])
+  await saveItems([item]);
 }
 
 export async function loadItems(includeArchived = false): Promise<WardrobeItem[]> {
   try {
-    const userId = await getCurrentUserId()
-    let query = supabase.from('wardrobe_items').select(ITEM_COLUMNS).eq('user_id', userId)
+    const userId = await getCurrentUserId();
+    let query = supabase.from('wardrobe_items').select(ITEM_COLUMNS).eq('user_id', userId);
     if (!includeArchived) {
-      query = query.is('archived_at', null)
+      query = query.is('archived_at', null);
     }
-    const { data, error } = await query
+    const { data, error } = await query;
 
-    if (error) throw error
-    if (!data) return []
+    if (error) throw error;
+    if (!data) return [];
 
-    const items = data.map(mapRowToItem)
-    return resolveItemImageUrls(items)
+    const items = data.map(mapRowToItem);
+    return resolveItemImageUrls(items);
   } catch (error) {
-    console.error('Failed to load items:', error)
-    return []
+    console.error('Failed to load items:', error);
+    return [];
   }
 }
 
-
 export async function getItemById(id: string): Promise<WardrobeItem | null> {
   try {
-    const userId = await getCurrentUserId()
+    const userId = await getCurrentUserId();
     const { data, error } = await supabase
       .from('wardrobe_items')
       .select(ITEM_COLUMNS)
       .eq('id', id)
       .eq('user_id', userId)
-      .single()
+      .single();
 
-    if (error) throw error
-    if (!data) return null
+    if (error) throw error;
+    if (!data) return null;
 
-    const item = mapRowToItem(data)
-    const signedUrl = await getSignedUrl(item.imageUrl)
-    return { ...item, imageUrl: signedUrl }
+    const item = mapRowToItem(data);
+    const signedUrl = await getSignedUrl(item.imageUrl);
+    return { ...item, imageUrl: signedUrl };
   } catch (error) {
-    console.error('Failed to load item by id:', error)
-    return null
+    console.error('Failed to load item by id:', error);
+    return null;
   }
 }
 
 export async function getItemsByIds(ids: string[]): Promise<WardrobeItem[]> {
   try {
-    const userId = await getCurrentUserId()
+    const userId = await getCurrentUserId();
     const { data, error } = await supabase
       .from('wardrobe_items')
       .select(ITEM_COLUMNS)
       .eq('user_id', userId)
-      .in('id', ids)
+      .in('id', ids);
 
-    if (error) throw error
-    if (!data) return []
+    if (error) throw error;
+    if (!data) return [];
 
-    const items = data.map(mapRowToItem)
-    return resolveItemImageUrls(items)
+    const items = data.map(mapRowToItem);
+    return resolveItemImageUrls(items);
   } catch (error) {
-    console.error('Failed to load items by ids:', error)
-    return []
+    console.error('Failed to load items by ids:', error);
+    return [];
   }
 }
 
 export async function getItemsByCategory(category: ItemCategory): Promise<WardrobeItem[]> {
   try {
-    const userId = await getCurrentUserId()
+    const userId = await getCurrentUserId();
     const { data, error } = await supabase
       .from('wardrobe_items')
       .select(ITEM_COLUMNS)
       .eq('user_id', userId)
       .eq('category', category)
-      .is('archived_at', null)
+      .is('archived_at', null);
 
-    if (error) throw error
-    if (!data) return []
+    if (error) throw error;
+    if (!data) return [];
 
-    const items = data.map(mapRowToItem)
-    return resolveItemImageUrls(items)
+    const items = data.map(mapRowToItem);
+    return resolveItemImageUrls(items);
   } catch (error) {
-    console.error('Failed to load items by category:', error)
-    return []
+    console.error('Failed to load items by category:', error);
+    return [];
   }
 }
 
 export async function getItemCountsByCategory(): Promise<Partial<Record<ItemCategory, number>>> {
   try {
-    const userId = await getCurrentUserId()
+    const userId = await getCurrentUserId();
     const { data, error } = await supabase
       .from('wardrobe_items')
       .select('category')
       .eq('user_id', userId)
-      .is('archived_at', null)
+      .is('archived_at', null);
 
-    if (error) throw error
-    if (!data) return {}
+    if (error) throw error;
+    if (!data) return {};
 
-    const counts: Partial<Record<ItemCategory, number>> = {}
+    const counts: Partial<Record<ItemCategory, number>> = {};
     for (const row of data) {
-      const cat = row.category as ItemCategory
-      counts[cat] = (counts[cat] ?? 0) + 1
+      const cat = row.category as ItemCategory;
+      counts[cat] = (counts[cat] ?? 0) + 1;
     }
-    return counts
+    return counts;
   } catch (error) {
-    console.error('Failed to load item counts by category:', error)
-    return {}
+    console.error('Failed to load item counts by category:', error);
+    return {};
   }
 }
 
 export async function removeItem(id: string): Promise<void> {
   try {
-    const userId = await getCurrentUserId()
+    const userId = await getCurrentUserId();
 
     // Get the item first to find its image path
     const { data } = await supabase
@@ -253,29 +259,37 @@ export async function removeItem(id: string): Promise<void> {
       .select('image_url')
       .eq('id', id)
       .eq('user_id', userId)
-      .single()
+      .single();
 
     // Delete the DB record
-    const { error } = await supabase.from('wardrobe_items').delete().eq('id', id).eq('user_id', userId)
+    const { error } = await supabase
+      .from('wardrobe_items')
+      .delete()
+      .eq('id', id)
+      .eq('user_id', userId);
 
-    if (error) throw error
+    if (error) throw error;
 
     // Delete the image from Storage
     if (data?.image_url) {
       try {
-        await deleteImage(data.image_url as string)
+        await deleteImage(data.image_url as string);
       } catch (imgError) {
-        console.warn('Failed to delete item image from storage:', imgError)
+        console.warn('Failed to delete item image from storage:', imgError);
       }
     }
   } catch (error) {
-    console.error('Failed to delete item:', error)
-    throw new Error('Failed to delete item.')
+    console.error('Failed to delete item:', error);
+    throw new Error('Failed to delete item.');
   }
 }
 
-export async function archiveItem(id: string, reason: ArchiveReason, notes?: string): Promise<void> {
-  const userId = await getCurrentUserId()
+export async function archiveItem(
+  id: string,
+  reason: ArchiveReason,
+  notes?: string,
+): Promise<void> {
+  const userId = await getCurrentUserId();
   const { error } = await supabase
     .from('wardrobe_items')
     .update({
@@ -285,15 +299,15 @@ export async function archiveItem(id: string, reason: ArchiveReason, notes?: str
       updated_at: new Date().toISOString(),
     })
     .eq('id', id)
-    .eq('user_id', userId)
+    .eq('user_id', userId);
 
   if (error) {
-    throw new Error('Failed to archive item.')
+    throw new Error('Failed to archive item.');
   }
 }
 
 export async function unarchiveItem(id: string): Promise<void> {
-  const userId = await getCurrentUserId()
+  const userId = await getCurrentUserId();
   const { error } = await supabase
     .from('wardrobe_items')
     .update({
@@ -303,51 +317,51 @@ export async function unarchiveItem(id: string): Promise<void> {
       updated_at: new Date().toISOString(),
     })
     .eq('id', id)
-    .eq('user_id', userId)
+    .eq('user_id', userId);
 
   if (error) {
-    throw new Error('Failed to unarchive item.')
+    throw new Error('Failed to unarchive item.');
   }
 }
 
 export async function loadArchivedItems(): Promise<WardrobeItem[]> {
   try {
-    const userId = await getCurrentUserId()
+    const userId = await getCurrentUserId();
     const { data, error } = await supabase
       .from('wardrobe_items')
       .select(ITEM_COLUMNS)
       .eq('user_id', userId)
-      .not('archived_at', 'is', null)
+      .not('archived_at', 'is', null);
 
-    if (error) throw error
-    if (!data) return []
+    if (error) throw error;
+    if (!data) return [];
 
-    const items = data.map(mapRowToItem)
-    return resolveItemImageUrls(items)
+    const items = data.map(mapRowToItem);
+    return resolveItemImageUrls(items);
   } catch (error) {
-    console.error('Failed to load archived items:', error)
-    return []
+    console.error('Failed to load archived items:', error);
+    return [];
   }
 }
 
 export async function incrementWearCount(itemId: string): Promise<number> {
-  const userId = await getCurrentUserId()
+  const userId = await getCurrentUserId();
   const { data, error } = await supabase
     .from('wardrobe_items')
     .select('wear_count, initial_wear_count, wear_history')
     .eq('id', itemId)
     .eq('user_id', userId)
-    .single()
+    .single();
 
   if (error || !data) {
-    throw new Error('Item not found')
+    throw new Error('Item not found');
   }
 
-  const now = new Date()
-  const currentHistory = Array.isArray(data.wear_history) ? (data.wear_history as string[]) : []
-  const newHistory = [...currentHistory, now.toISOString()]
-  const initialCount = (data.initial_wear_count as number) ?? 0
-  const newWearCount = initialCount + newHistory.length
+  const now = new Date();
+  const currentHistory = Array.isArray(data.wear_history) ? (data.wear_history as string[]) : [];
+  const newHistory = [...currentHistory, now.toISOString()];
+  const initialCount = (data.initial_wear_count as number) ?? 0;
+  const newWearCount = initialCount + newHistory.length;
 
   const { error: updateError } = await supabase
     .from('wardrobe_items')
@@ -357,31 +371,33 @@ export async function incrementWearCount(itemId: string): Promise<number> {
       updated_at: now.toISOString(),
     })
     .eq('id', itemId)
-    .eq('user_id', userId)
+    .eq('user_id', userId);
 
   if (updateError) {
-    throw new Error('Failed to update wear count')
+    throw new Error('Failed to update wear count');
   }
 
-  return newWearCount
+  return newWearCount;
 }
 
 export async function logWearOnDate(itemId: string, date: Date): Promise<void> {
-  const userId = await getCurrentUserId()
+  const userId = await getCurrentUserId();
   const { data, error } = await supabase
     .from('wardrobe_items')
     .select('initial_wear_count, wear_history')
     .eq('id', itemId)
     .eq('user_id', userId)
-    .single()
+    .single();
 
   if (error || !data) {
-    throw new Error('Item not found')
+    throw new Error('Item not found');
   }
 
-  const currentHistory = Array.isArray(data.wear_history) ? (data.wear_history as string[]).map((d) => new Date(d)) : []
-  const newHistory = [...currentHistory, date].sort(compareAsc)
-  const initialCount = (data.initial_wear_count as number) ?? 0
+  const currentHistory = Array.isArray(data.wear_history)
+    ? (data.wear_history as string[]).map((d) => new Date(d))
+    : [];
+  const newHistory = [...currentHistory, date].sort(compareAsc);
+  const initialCount = (data.initial_wear_count as number) ?? 0;
 
   const { error: updateError } = await supabase
     .from('wardrobe_items')
@@ -391,34 +407,36 @@ export async function logWearOnDate(itemId: string, date: Date): Promise<void> {
       updated_at: new Date().toISOString(),
     })
     .eq('id', itemId)
-    .eq('user_id', userId)
+    .eq('user_id', userId);
 
   if (updateError) {
-    throw new Error('Failed to log wear')
+    throw new Error('Failed to log wear');
   }
 }
 
 export async function removeWear(itemId: string, wearIndex: number): Promise<void> {
-  const userId = await getCurrentUserId()
+  const userId = await getCurrentUserId();
   const { data, error } = await supabase
     .from('wardrobe_items')
     .select('initial_wear_count, wear_history')
     .eq('id', itemId)
     .eq('user_id', userId)
-    .single()
+    .single();
 
   if (error || !data) {
-    throw new Error('Item not found')
+    throw new Error('Item not found');
   }
 
-  const currentHistory = Array.isArray(data.wear_history) ? [...(data.wear_history as string[])] : []
+  const currentHistory = Array.isArray(data.wear_history)
+    ? [...(data.wear_history as string[])]
+    : [];
 
   if (wearIndex < 0 || wearIndex >= currentHistory.length) {
-    throw new Error('Invalid wear index')
+    throw new Error('Invalid wear index');
   }
 
-  currentHistory.splice(wearIndex, 1)
-  const initialCount = (data.initial_wear_count as number) ?? 0
+  currentHistory.splice(wearIndex, 1);
+  const initialCount = (data.initial_wear_count as number) ?? 0;
 
   const { error: updateError } = await supabase
     .from('wardrobe_items')
@@ -428,36 +446,36 @@ export async function removeWear(itemId: string, wearIndex: number): Promise<voi
       updated_at: new Date().toISOString(),
     })
     .eq('id', itemId)
-    .eq('user_id', userId)
+    .eq('user_id', userId);
 
   if (updateError) {
-    throw new Error('Failed to remove wear')
+    throw new Error('Failed to remove wear');
   }
 }
 
 export async function getAllBrands(): Promise<string[]> {
   try {
-    const userId = await getCurrentUserId()
+    const userId = await getCurrentUserId();
     const { data, error } = await supabase
       .from('wardrobe_items')
       .select('brand')
       .eq('user_id', userId)
-      .not('brand', 'is', null)
+      .not('brand', 'is', null);
 
-    if (error) throw error
-    if (!data) return []
+    if (error) throw error;
+    if (!data) return [];
 
-    const brands = new Set<string>()
+    const brands = new Set<string>();
     for (const row of data) {
-      const brand = row.brand as string | null
+      const brand = row.brand as string | null;
       if (brand?.trim()) {
-        brands.add(brand.trim())
+        brands.add(brand.trim());
       }
     }
-    return Array.from(brands).sort()
+    return Array.from(brands).sort();
   } catch (error) {
-    console.error('Failed to get all brands:', error)
-    return []
+    console.error('Failed to get all brands:', error);
+    return [];
   }
 }
 
@@ -466,100 +484,115 @@ export async function getAllBrands(): Promise<string[]> {
  * Used when the image hasn't changed and we need to preserve the existing path.
  */
 export async function getItemStoragePath(id: string): Promise<string | null> {
-  const userId = await getCurrentUserId()
-  const { data } = await supabase.from('wardrobe_items').select('image_url').eq('id', id).eq('user_id', userId).single()
-  return (data?.image_url as string) ?? null
+  const userId = await getCurrentUserId();
+  const { data } = await supabase
+    .from('wardrobe_items')
+    .select('image_url')
+    .eq('id', id)
+    .eq('user_id', userId)
+    .single();
+  return (data?.image_url as string) ?? null;
 }
 
 // ========== Outfit Storage Functions ==========
 
 export async function loadOutfits(): Promise<Outfit[]> {
   try {
-    const userId = await getCurrentUserId()
-    const { data, error } = await supabase.from('outfits').select('*').eq('user_id', userId)
+    const userId = await getCurrentUserId();
+    const { data, error } = await supabase.from('outfits').select('*').eq('user_id', userId);
 
-    if (error) throw error
-    if (!data) return []
+    if (error) throw error;
+    if (!data) return [];
 
-    const outfits = data.map(mapRowToOutfit)
-    return resolveOutfitPhotoUrls(outfits)
+    const outfits = data.map(mapRowToOutfit);
+    return resolveOutfitPhotoUrls(outfits);
   } catch (error) {
-    console.error('Failed to load outfits:', error)
-    return []
+    console.error('Failed to load outfits:', error);
+    return [];
   }
 }
 
 export async function getOutfitById(id: string): Promise<Outfit | null> {
   try {
-    const userId = await getCurrentUserId()
-    const { data, error } = await supabase.from('outfits').select('*').eq('id', id).eq('user_id', userId).single()
+    const userId = await getCurrentUserId();
+    const { data, error } = await supabase
+      .from('outfits')
+      .select('*')
+      .eq('id', id)
+      .eq('user_id', userId)
+      .single();
 
-    if (error) throw error
-    if (!data) return null
+    if (error) throw error;
+    if (!data) return null;
 
-    const outfit = mapRowToOutfit(data)
+    const outfit = mapRowToOutfit(data);
     if (outfit.photo) {
-      const signedUrl = await getSignedUrl(outfit.photo)
-      return { ...outfit, photo: signedUrl }
+      const signedUrl = await getSignedUrl(outfit.photo);
+      return { ...outfit, photo: signedUrl };
     }
-    return outfit
+    return outfit;
   } catch (error) {
-    console.error('Failed to load outfit by id:', error)
-    return null
+    console.error('Failed to load outfit by id:', error);
+    return null;
   }
 }
 
 export async function getOutfitsWithItemId(itemId: string): Promise<Outfit[]> {
   try {
-    const userId = await getCurrentUserId()
+    const userId = await getCurrentUserId();
     const { data, error } = await supabase
       .from('outfits')
       .select('*')
       .eq('user_id', userId)
-      .contains('item_ids', [itemId])
+      .contains('item_ids', [itemId]);
 
-    if (error) throw error
-    if (!data) return []
+    if (error) throw error;
+    if (!data) return [];
 
-    const outfits = data.map(mapRowToOutfit)
-    return resolveOutfitPhotoUrls(outfits)
+    const outfits = data.map(mapRowToOutfit);
+    return resolveOutfitPhotoUrls(outfits);
   } catch (error) {
-    console.error('Failed to load outfits with item:', error)
-    return []
+    console.error('Failed to load outfits with item:', error);
+    return [];
   }
 }
 
 export async function removeOutfit(id: string): Promise<void> {
   try {
-    const userId = await getCurrentUserId()
+    const userId = await getCurrentUserId();
 
     // Get the outfit first to find its photo path
-    const { data } = await supabase.from('outfits').select('photo_url').eq('id', id).eq('user_id', userId).single()
+    const { data } = await supabase
+      .from('outfits')
+      .select('photo_url')
+      .eq('id', id)
+      .eq('user_id', userId)
+      .single();
 
     // Delete the DB record
-    const { error } = await supabase.from('outfits').delete().eq('id', id).eq('user_id', userId)
+    const { error } = await supabase.from('outfits').delete().eq('id', id).eq('user_id', userId);
 
-    if (error) throw error
+    if (error) throw error;
 
     // Delete the photo from Storage
     if (data?.photo_url) {
       try {
-        await deleteImage(data.photo_url as string)
+        await deleteImage(data.photo_url as string);
       } catch (imgError) {
-        console.warn('Failed to delete outfit photo from storage:', imgError)
+        console.warn('Failed to delete outfit photo from storage:', imgError);
       }
     }
   } catch (error) {
-    console.error('Failed to delete outfit:', error)
-    throw new Error('Failed to delete outfit.')
+    console.error('Failed to delete outfit:', error);
+    throw new Error('Failed to delete outfit.');
   }
 }
 
 export async function addOutfit(outfit: NewOutfit): Promise<void> {
   try {
-    const userId = await getCurrentUserId()
-    const now = new Date()
-    const id = generateId()
+    const userId = await getCurrentUserId();
+    const now = new Date();
+    const id = generateId();
 
     const { error } = await supabase.from('outfits').insert({
       id,
@@ -570,17 +603,17 @@ export async function addOutfit(outfit: NewOutfit): Promise<void> {
       created_at: (outfit.createdAt ?? now).toISOString(),
       updated_at: now.toISOString(),
       user_id: userId,
-    })
+    });
 
-    if (error) throw error
+    if (error) throw error;
   } catch (error) {
-    console.error('Failed to save outfit:', error)
-    throw new Error('Failed to save outfit.')
+    console.error('Failed to save outfit:', error);
+    throw new Error('Failed to save outfit.');
   }
 }
 
 export async function saveOutfits(outfits: Outfit[]): Promise<void> {
-  const userId = await getCurrentUserId()
+  const userId = await getCurrentUserId();
   const rows = outfits.map((outfit) => ({
     id: outfit.id,
     photo_url: outfit.photo ?? null,
@@ -590,34 +623,38 @@ export async function saveOutfits(outfits: Outfit[]): Promise<void> {
     created_at: outfit.createdAt.toISOString(),
     updated_at: outfit.updatedAt.toISOString(),
     user_id: userId,
-  }))
+  }));
 
-  const { error } = await supabase.from('outfits').upsert(rows)
+  const { error } = await supabase.from('outfits').upsert(rows);
   if (error) {
-    console.error('Failed to save outfits:', error)
-    throw new Error('Failed to save outfits.')
+    console.error('Failed to save outfits:', error);
+    throw new Error('Failed to save outfits.');
   }
 }
 
 export async function saveOutfit(outfit: Outfit): Promise<void> {
-  await saveOutfits([outfit])
+  await saveOutfits([outfit]);
 }
 
 export async function updateOutfit(id: string, updates: Partial<Outfit>): Promise<void> {
-  const userId = await getCurrentUserId()
+  const userId = await getCurrentUserId();
 
   const updateRow: Record<string, unknown> = {
     updated_at: new Date().toISOString(),
-  }
+  };
 
-  if (updates.photo !== undefined) updateRow.photo_url = updates.photo
-  if (updates.itemIds !== undefined) updateRow.item_ids = updates.itemIds
-  if (updates.notes !== undefined) updateRow.notes = updates.notes
-  if (updates.rating !== undefined) updateRow.rating = updates.rating
+  if (updates.photo !== undefined) updateRow.photo_url = updates.photo;
+  if (updates.itemIds !== undefined) updateRow.item_ids = updates.itemIds;
+  if (updates.notes !== undefined) updateRow.notes = updates.notes;
+  if (updates.rating !== undefined) updateRow.rating = updates.rating;
 
-  const { error } = await supabase.from('outfits').update(updateRow).eq('id', id).eq('user_id', userId)
+  const { error } = await supabase
+    .from('outfits')
+    .update(updateRow)
+    .eq('id', id)
+    .eq('user_id', userId);
 
   if (error) {
-    throw new Error('Failed to update outfit')
+    throw new Error('Failed to update outfit');
   }
 }

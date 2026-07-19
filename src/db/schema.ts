@@ -48,8 +48,10 @@ export const wardrobeItems = pgTable(
     userId: uuid('user_id').notNull(),
   },
   (table) => [
-    index('wardrobe_items_embedding_hnsw_idx')
-      .using('hnsw', table.embedding.op('vector_cosine_ops')),
+    index('wardrobe_items_embedding_hnsw_idx').using(
+      'hnsw',
+      table.embedding.op('vector_cosine_ops'),
+    ),
   ],
 );
 
@@ -65,4 +67,3 @@ export const outfits = pgTable('outfits', {
   updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'date' }).defaultNow().notNull(),
   userId: uuid('user_id').notNull(),
 });
-

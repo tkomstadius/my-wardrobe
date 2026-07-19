@@ -5,7 +5,6 @@ export function RouteErrorBoundary() {
   const error = useRouteError();
   const navigate = useNavigate();
 
-
   let title = 'Something went wrong';
   let message = 'An unexpected error occurred.';
   let details = '';

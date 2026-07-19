@@ -2,7 +2,12 @@ import type { OutfitRating } from './outfit';
 
 export type ArchiveReason = 'thrown_away' | 'donated' | 'sold';
 
-export type AiProcessingStatus = 'not_requested' | 'pending' | 'processing' | 'completed' | 'failed';
+export type AiProcessingStatus =
+  | 'not_requested'
+  | 'pending'
+  | 'processing'
+  | 'completed'
+  | 'failed';
 
 export type ItemCategory =
   | 'tops'
@@ -48,10 +53,7 @@ export type NewWardrobeItem = Omit<
 >;
 
 export type AddItemFormState = Partial<
-  Omit<
-    NewWardrobeItem,
-    'imageUrl' | 'price' | 'purchaseDate' | 'initialWearCount'
-  > & {
+  Omit<NewWardrobeItem, 'imageUrl' | 'price' | 'purchaseDate' | 'initialWearCount'> & {
     price?: string;
     purchaseDate?: string;
     initialWearCount?: string;

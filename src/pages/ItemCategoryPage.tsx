@@ -18,7 +18,12 @@ export async function loader({ params }: LoaderFunctionArgs) {
   const isValidItemCategory = category && CATEGORY_IDS.includes(category as ItemCategory);
 
   if (!isValidItemCategory) {
-    return { items: [], category: null, isValid: false, categoryCounts: {} as Partial<Record<ItemCategory, number>> };
+    return {
+      items: [],
+      category: null,
+      isValid: false,
+      categoryCounts: {} as Partial<Record<ItemCategory, number>>,
+    };
   }
 
   const [categoryItems, categoryCounts] = await Promise.all([
@@ -35,8 +40,12 @@ export async function loader({ params }: LoaderFunctionArgs) {
 }
 
 export function ItemCategoryPage() {
-  const { items: categoryItems, category, isValid, categoryCounts } =
-    useLoaderData<typeof loader>();
+  const {
+    items: categoryItems,
+    category,
+    isValid,
+    categoryCounts,
+  } = useLoaderData<typeof loader>();
   const [searchParams] = useSearchParams();
   const justAddedId = searchParams.get('justAdded');
 

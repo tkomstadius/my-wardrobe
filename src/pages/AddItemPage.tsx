@@ -1,7 +1,14 @@
-import { useState } from 'react'
-import { type ActionFunctionArgs, Form, redirect, useActionData, useLoaderData, useNavigation } from 'react-router'
-import { BackLink } from '../components/common/BackLink'
-import { CheckboxField } from '../components/common/CheckboxField'
+import { useState } from 'react';
+import {
+  type ActionFunctionArgs,
+  Form,
+  redirect,
+  useActionData,
+  useLoaderData,
+  useNavigation,
+} from 'react-router';
+import { BackLink } from '../components/common/BackLink';
+import { CheckboxField } from '../components/common/CheckboxField';
 import {
   BRAND_NAME,
   CATEGORY_NAME,
@@ -15,69 +22,69 @@ import {
   RATING_NAME,
   SECOND_HAND_NAME,
   SUBCATEGORY_NAME,
-} from '../components/common/form/constants'
-import { ImageInput } from '../components/common/form/ImageInput'
-import { RatingButtons } from '../components/common/form/RatingButtons'
-import { SelectInput } from '../components/common/form/SelectInput'
-import { TextInput } from '../components/common/form/TextInput'
-import { Button } from '../components/common/ui/Button'
-import { Callout } from '../components/common/ui/Callout'
-import { Flex } from '../components/common/ui/Flex'
-import { Text } from '../components/common/ui/Text'
-import { TextArea } from '../components/common/ui/TextArea'
-import { TextField } from '../components/common/ui/TextField'
-import type { OutfitRating } from '../types/outfit'
-import type { ItemCategory, NewWardrobeItem, WardrobeItem } from '../types/wardrobe'
-import { triggerItemProcessing } from '../utils/aiProcessing'
-import { CATEGORIES, getSubCategoriesForCategory } from '../utils/categories'
-import { generateId, getAllBrands, saveItem } from '../utils/storageCommands'
-import { getCurrentUserId } from '../utils/supabase'
-import { dataUrlToBlob, uploadItemImage } from '../utils/supabaseStorage'
-import styles from './AddItemPage.module.css'
+} from '../components/common/form/constants';
+import { ImageInput } from '../components/common/form/ImageInput';
+import { RatingButtons } from '../components/common/form/RatingButtons';
+import { SelectInput } from '../components/common/form/SelectInput';
+import { TextInput } from '../components/common/form/TextInput';
+import { Button } from '../components/common/ui/Button';
+import { Callout } from '../components/common/ui/Callout';
+import { Flex } from '../components/common/ui/Flex';
+import { Text } from '../components/common/ui/Text';
+import { TextArea } from '../components/common/ui/TextArea';
+import { TextField } from '../components/common/ui/TextField';
+import type { OutfitRating } from '../types/outfit';
+import type { ItemCategory, NewWardrobeItem, WardrobeItem } from '../types/wardrobe';
+import { triggerItemProcessing } from '../utils/aiProcessing';
+import { CATEGORIES, getSubCategoriesForCategory } from '../utils/categories';
+import { generateId, getAllBrands, saveItem } from '../utils/storageCommands';
+import { getCurrentUserId } from '../utils/supabase';
+import { dataUrlToBlob, uploadItemImage } from '../utils/supabaseStorage';
+import styles from './AddItemPage.module.css';
 
 type ActionData = {
-  error?: string
-}
+  error?: string;
+};
 
 export async function clientLoader() {
-  const brands = await getAllBrands()
+  const brands = await getAllBrands();
 
-  return { brands }
+  return { brands };
 }
 
 export async function clientAction({ request }: ActionFunctionArgs) {
-  const formData = await request.formData()
+  const formData = await request.formData();
 
-  const imageUrl = formData.get(IMAGE_URL_NAME) as string
-  const brand = formData.get(BRAND_NAME) as string
-  const category = formData.get(CATEGORY_NAME) as ItemCategory
-  const subCategory = formData.get(SUBCATEGORY_NAME) as string
-  const price = formData.get(PRICE_NAME) as string
-  const purchaseDate = formData.get(PURCHASE_DATE_NAME) as string
-  const initialWearCount = formData.get(INITIAL_WEAR_COUNT_NAME) as string
-  const notes = formData.get(NOTES_NAME) as string
-  const rating = formData.get(RATING_NAME) as string
-  const isSecondHand = formData.get(SECOND_HAND_NAME) === 'on'
-  const isDogCasual = formData.get(DOG_CASUAL_NAME) === 'on'
-  const isHandmade = formData.get(HANDMADE_NAME) === 'on'
+  const imageUrl = formData.get(IMAGE_URL_NAME) as string;
+  const brand = formData.get(BRAND_NAME) as string;
+  const category = formData.get(CATEGORY_NAME) as ItemCategory;
+  const subCategory = formData.get(SUBCATEGORY_NAME) as string;
+  const price = formData.get(PRICE_NAME) as string;
+  const purchaseDate = formData.get(PURCHASE_DATE_NAME) as string;
+  const initialWearCount = formData.get(INITIAL_WEAR_COUNT_NAME) as string;
+  const notes = formData.get(NOTES_NAME) as string;
+  const rating = formData.get(RATING_NAME) as string;
+  const isSecondHand = formData.get(SECOND_HAND_NAME) === 'on';
+  const isDogCasual = formData.get(DOG_CASUAL_NAME) === 'on';
+  const isHandmade = formData.get(HANDMADE_NAME) === 'on';
 
   if (!imageUrl) {
-    return { error: 'Please add an image of the item' }
+    return { error: 'Please add an image of the item' };
   }
 
   if (!category) {
-    return { error: 'Please select a category' }
+    return { error: 'Please select a category' };
   }
 
   try {
-    const now = new Date()
-    const initialCount = initialWearCount ? Number.parseInt(initialWearCount, 10) : 0
-    const id = generateId()
+    const now = new Date();
+    const initialCount = initialWearCount ? Number.parseInt(initialWearCount, 10) : 0;
+    const id = generateId();
 
     // Upload image to Supabase Storage
-    const userId = await getCurrentUserId()
-    const blob = dataUrlToBlob(imageUrl)
-    const storagePath = await uploadItemImage(userId, id, blob)
+    const userId = await getCurrentUserId();
+    const blob = dataUrlToBlob(imageUrl);
+    const storagePath = await uploadItemImage(userId, id, blob);
 
     const newItemData: NewWardrobeItem = {
       imageUrl: storagePath,
@@ -92,7 +99,7 @@ export async function clientAction({ request }: ActionFunctionArgs) {
       rating: rating ? (Number.parseInt(rating, 10) as OutfitRating) : undefined,
       purchaseDate: purchaseDate ? new Date(purchaseDate) : undefined,
       initialWearCount: initialCount,
-    }
+    };
 
     const item: WardrobeItem = {
       ...newItemData,
@@ -102,32 +109,34 @@ export async function clientAction({ request }: ActionFunctionArgs) {
       wearHistory: [],
       createdAt: now,
       updatedAt: now,
-    }
+    };
 
-    await saveItem(item)
+    await saveItem(item);
 
     // Fire-and-forget: do not block returning control to the user on processing finishing.
-    triggerItemProcessing(id, storagePath)
+    triggerItemProcessing(id, storagePath);
 
     // justAdded tells the category list to watch this specific item's processing status even
     // before its first status write ('pending') has necessarily landed yet.
-    return redirect(`/items/${category}?justAdded=${id}`)
+    return redirect(`/items/${category}?justAdded=${id}`);
   } catch (err) {
-    console.error('Failed to save item:', err)
-    return { error: 'Failed to save item. Please try again.' }
+    console.error('Failed to save item:', err);
+    return { error: 'Failed to save item. Please try again.' };
   }
 }
 
 export function AddItemPage() {
-  const navigation = useNavigation()
-  const { brands } = useLoaderData<typeof clientLoader>()
-  const actionData = useActionData<ActionData>()
-  const [selectedCategory, setSelectedCategory] = useState<ItemCategory | ''>('')
+  const navigation = useNavigation();
+  const { brands } = useLoaderData<typeof clientLoader>();
+  const actionData = useActionData<ActionData>();
+  const [selectedCategory, setSelectedCategory] = useState<ItemCategory | ''>('');
 
-  const isSubmitting = navigation.state === 'submitting'
-  const isLoading = navigation.state === 'loading'
+  const isSubmitting = navigation.state === 'submitting';
+  const isLoading = navigation.state === 'loading';
 
-  const availableSubCategories = selectedCategory ? getSubCategoriesForCategory(selectedCategory) : []
+  const availableSubCategories = selectedCategory
+    ? getSubCategoriesForCategory(selectedCategory)
+    : [];
 
   return (
     <div className={styles.container}>
@@ -143,7 +152,12 @@ export function AddItemPage() {
         </fieldset>
 
         <fieldset className={styles.fieldSection}>
-          <TextInput label="Brand" name={BRAND_NAME} placeholder="e.g., Ganni, Hope" suggestions={brands} />
+          <TextInput
+            label="Brand"
+            name={BRAND_NAME}
+            placeholder="e.g., Ganni, Hope"
+            suggestions={brands}
+          />
 
           <SelectInput
             label="Category*"
@@ -220,5 +234,5 @@ export function AddItemPage() {
         </div>
       </Form>
     </div>
-  )
+  );
 }

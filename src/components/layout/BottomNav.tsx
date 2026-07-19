@@ -19,8 +19,7 @@ export function BottomNav() {
   const isOnItemsOrCategoryPage =
     (currentPath === '/items' || currentPath.startsWith('/items/')) &&
     currentPath !== '/items/archived';
-  const isOnMoreSection =
-    currentPath === '/settings' || currentPath === '/items/archived';
+  const isOnMoreSection = currentPath === '/settings' || currentPath === '/items/archived';
 
   // Close menu on navigation
   // biome-ignore lint/correctness/useExhaustiveDependencies: pathname is the trigger, not a closure dep

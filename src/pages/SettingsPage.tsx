@@ -1,15 +1,15 @@
-import { useLoaderData } from 'react-router-dom'
-import { Text } from '../components/common/ui/Text'
-import { loadItems } from '../utils/storageCommands'
-import styles from './SettingsPage.module.css'
+import { useLoaderData } from 'react-router-dom';
+import { Text } from '../components/common/ui/Text';
+import { loadItems } from '../utils/storageCommands';
+import styles from './SettingsPage.module.css';
 
 export async function loader() {
-  const items = await loadItems()
-  return { itemCount: items.length }
+  const items = await loadItems();
+  return { itemCount: items.length };
 }
 
 export function SettingsPage() {
-  const { itemCount } = useLoaderData<typeof loader>()
+  const { itemCount } = useLoaderData<typeof loader>();
 
   return (
     <div className={styles.container}>
@@ -21,5 +21,5 @@ export function SettingsPage() {
         {itemCount} items in wardrobe
       </Text>
     </div>
-  )
+  );
 }
