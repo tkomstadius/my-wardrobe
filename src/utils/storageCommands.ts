@@ -1,13 +1,13 @@
 import { compareAsc } from 'date-fns'
 import type { NewOutfit, Outfit, OutfitRating } from '../types/outfit'
-import type { ArchiveReason, ItemCategory, WardrobeItem } from '../types/wardrobe'
+import type { AiProcessingStatus, ArchiveReason, ItemCategory, WardrobeItem } from '../types/wardrobe'
 import { getCurrentUserId, supabase } from './supabase'
 import { deleteImage, getSignedUrl, getSignedUrls } from './supabaseStorage'
 
 // ========== Helpers ==========
 
 const ITEM_COLUMNS =
-  'id, image_url, notes, brand, category, sub_category, wear_count, initial_wear_count, wear_history, price, is_second_hand, is_dog_casual, is_handmade, rating, purchase_date, created_at, updated_at, user_id, archived_at, archive_reason, archive_notes'
+  'id, image_url, notes, brand, category, sub_category, wear_count, initial_wear_count, wear_history, price, is_second_hand, is_dog_casual, is_handmade, rating, purchase_date, created_at, updated_at, user_id, archived_at, archive_reason, archive_notes, description, metadata, processing_status'
 
 export function generateId(): string {
   return `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`
@@ -36,6 +36,9 @@ function mapRowToItem(row: Record<string, unknown>): WardrobeItem {
     archivedAt: row.archived_at ? new Date(row.archived_at as string) : undefined,
     archiveReason: (row.archive_reason as ArchiveReason) ?? undefined,
     archiveNotes: (row.archive_notes as string) ?? undefined,
+    description: (row.description as string) ?? undefined,
+    metadata: (row.metadata as Record<string, unknown>) ?? undefined,
+    processingStatus: (row.processing_status as AiProcessingStatus) ?? undefined,
   }
 }
 
@@ -111,6 +114,11 @@ export async function saveItems(items: WardrobeItem[]): Promise<void> {
     archived_at: item.archivedAt?.toISOString() ?? null,
     archive_reason: item.archiveReason ?? null,
     archive_notes: item.archiveNotes ?? null,
+    description: item.description ?? null,
+    metadata: item.metadata ?? null,
+    // undefined (not null) — omits the key so JSON.stringify drops it, letting the DB's
+    // 'not_requested' default apply on insert instead of writing an explicit NULL.
+    processing_status: item.processingStatus ?? undefined,
     created_at: item.createdAt.toISOString(),
     updated_at: item.updatedAt.toISOString(),
     user_id: userId,

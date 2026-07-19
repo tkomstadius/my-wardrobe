@@ -22,8 +22,28 @@ pnpm test             # Playwright tests
 
 ```bash
 pnpm drizzle-kit generate   # Generate SQL migration from schema changes
-pnpm drizzle-kit push       # Push schema directly to Supabase (dev)
 ```
+
+`DATABASE_URL` must use Supabase's **session pooler** (port `5432`), not the transaction pooler
+(port `6543`) — the transaction pooler drops session state that `drizzle-kit` depends on, which
+makes it hang indefinitely rather than fail cleanly.
+
+**Do not run `drizzle-kit push`.** It diffs the live database against `schema.ts` and treats
+anything not declared there — including RLS policies, since this Drizzle version has no way to
+declare policies in code — as safe to drop, and it applies statements sequentially rather than in
+one transaction. A failed push can leave RLS disabled on a live table mid-migration. Use this flow
+instead:
+
+1. `pnpm drizzle-kit generate` to produce a migration file in `drizzle/`
+2. Read the generated SQL before applying it. In particular, check any column being *replaced*
+   (not just widened) — Drizzle will emit `ALTER COLUMN ... SET DATA TYPE` for a same-named
+   column even when the old and new types are incompatible (e.g. `real[]` → `vector(n)`), which
+   errors or silently mis-casts. Replace those with an explicit `DROP COLUMN` + `ADD COLUMN`.
+3. Apply it directly against the DB: `psql "$DATABASE_URL" -1 -v ON_ERROR_STOP=1 -f drizzle/000X_name.sql`
+   — `-1` wraps the whole file in a single transaction so a failure rolls back everything instead
+   of leaving a half-applied schema.
+4. Verify RLS is still enabled on every table afterward:
+   `psql "$DATABASE_URL" -c "SELECT relname, relrowsecurity FROM pg_class WHERE relkind = 'r' AND relnamespace = 'public'::regnamespace;"`
 
 ## After Making Changes
 
@@ -52,7 +72,8 @@ Required in `.env` (see `.env.example`):
 
 - `VITE_SUPABASE_URL` — Supabase project URL
 - `VITE_SUPABASE_ANON_KEY` — Supabase anon/public key
-- `DATABASE_URL` — Postgres connection string (for Drizzle migrations only, not used at runtime)
+- `DATABASE_URL` — Postgres connection string (for Drizzle migrations only, not used at runtime).
+  Must be Supabase's session pooler (port `5432`) — see Database Commands below.
 
 ## Architecture
 
@@ -74,12 +95,13 @@ Auth: contexts/AuthContext.tsx → Supabase Auth (magic link)
 
 ### Database
 
-4 tables, all with `user_id` column and Row Level Security (RLS) policies:
+2 tables, both with `user_id` column and Row Level Security (RLS) policies:
 
-- **`wardrobe_items`** — clothing items with image paths, categories, wear history
+- **`wardrobe_items`** — clothing items with image paths, categories, wear history, and AI
+  metadata columns (`description`, `metadata` jsonb, `processing_status`, `embedding` —
+  vector(1536), reserved for OpenAI `text-embedding-3-small`, HNSW-indexed; not yet populated by
+  any pipeline)
 - **`outfits`** — outfit records with photo paths, item ID arrays, ratings
-- **`match_feedback`** — AI suggestion accept/reject feedback for learning
-- **`user_preferences`** — learned AI preference weights
 
 Schema defined in `src/db/schema.ts` (Drizzle). Runtime queries use Supabase JS client (not Drizzle — browser can't make TCP connections to Postgres).
 

@@ -2,6 +2,8 @@ import type { OutfitRating } from './outfit';
 
 export type ArchiveReason = 'thrown_away' | 'donated' | 'sold';
 
+export type AiProcessingStatus = 'not_requested' | 'pending' | 'processing' | 'completed' | 'failed';
+
 export type ItemCategory =
   | 'tops'
   | 'bottoms'
@@ -35,6 +37,9 @@ export type WardrobeItem = {
   archivedAt?: Date;
   archiveReason?: ArchiveReason;
   archiveNotes?: string;
+  description?: string; // AI-generated description
+  metadata?: Record<string, unknown>; // AI-extracted attributes (color, pattern, material, etc.)
+  processingStatus?: AiProcessingStatus;
 };
 
 export type NewWardrobeItem = Omit<

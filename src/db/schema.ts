@@ -1,42 +1,57 @@
 import { sql } from 'drizzle-orm';
 import {
   boolean,
+  index,
   integer,
+  jsonb,
   numeric,
   pgTable,
   smallint,
   text,
   timestamp,
   uuid,
+  vector,
 } from 'drizzle-orm/pg-core';
 
 // ========== Wardrobe Items ==========
 
-export const wardrobeItems = pgTable('wardrobe_items', {
-  id: text('id').primaryKey(),
-  imageUrl: text('image_url').notNull(),
-  notes: text('notes'),
-  brand: text('brand'),
-  category: text('category').notNull(),
-  subCategory: text('sub_category'),
-  wearCount: integer('wear_count').default(0).notNull(),
-  initialWearCount: integer('initial_wear_count').default(0),
-  wearHistory: timestamp('wear_history', { withTimezone: true, mode: 'date' })
-    .array()
-    .default(sql`'{}'`),
-  price: numeric('price'),
-  isSecondHand: boolean('is_second_hand').default(false),
-  isDogCasual: boolean('is_dog_casual').default(false),
-  isHandmade: boolean('is_handmade').default(false),
-  rating: smallint('rating'), // 1 = good, 0 = meh, -1 = nope
-  purchaseDate: timestamp('purchase_date', { withTimezone: true, mode: 'date' }),
-  archivedAt: timestamp('archived_at', { withTimezone: true, mode: 'date' }),
-  archiveReason: text('archive_reason'), // 'thrown_away' | 'donated' | 'sold'
-  archiveNotes: text('archive_notes'),
-  createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).defaultNow().notNull(),
-  updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'date' }).defaultNow().notNull(),
-  userId: uuid('user_id').notNull(),
-});
+export const wardrobeItems = pgTable(
+  'wardrobe_items',
+  {
+    id: text('id').primaryKey(),
+    imageUrl: text('image_url').notNull(),
+    notes: text('notes'),
+    brand: text('brand'),
+    category: text('category').notNull(),
+    subCategory: text('sub_category'),
+    wearCount: integer('wear_count').default(0).notNull(),
+    initialWearCount: integer('initial_wear_count').default(0),
+    wearHistory: timestamp('wear_history', { withTimezone: true, mode: 'date' })
+      .array()
+      .default(sql`'{}'`),
+    price: numeric('price'),
+    isSecondHand: boolean('is_second_hand').default(false),
+    isDogCasual: boolean('is_dog_casual').default(false),
+    isHandmade: boolean('is_handmade').default(false),
+    rating: smallint('rating'), // 1 = good, 0 = meh, -1 = nope
+    purchaseDate: timestamp('purchase_date', { withTimezone: true, mode: 'date' }),
+    archivedAt: timestamp('archived_at', { withTimezone: true, mode: 'date' }),
+    archiveReason: text('archive_reason'), // 'thrown_away' | 'donated' | 'sold'
+    archiveNotes: text('archive_notes'),
+    description: text('description'), // AI-generated description
+    metadata: jsonb('metadata'), // AI-extracted attributes (color, pattern, material, etc.)
+    processingStatus: text('processing_status').default('not_requested'), // 'not_requested' | 'pending' | 'processing' | 'completed' | 'failed'
+    // 1536 dims = OpenAI text-embedding-3-small output size; intended for that model specifically.
+    embedding: vector('embedding', { dimensions: 1536 }),
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'date' }).defaultNow().notNull(),
+    userId: uuid('user_id').notNull(),
+  },
+  (table) => [
+    index('wardrobe_items_embedding_hnsw_idx')
+      .using('hnsw', table.embedding.op('vector_cosine_ops')),
+  ],
+);
 
 // ========== Outfits ==========
 
