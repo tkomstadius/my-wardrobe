@@ -1,5 +1,6 @@
 import { createClient } from 'npm:@supabase/supabase-js@2';
 import { corsHeaders } from '../_shared/cors.ts';
+import { validateAnalysis } from './services/analysisValidationService.ts';
 import { descriptionGenerator } from './services/descriptionGenerationService.ts';
 import { embeddingGenerator } from './services/embeddingGenerationService.ts';
 import { createImageRetrievalService } from './services/imageRetrievalService.ts';
@@ -87,6 +88,12 @@ Deno.serve(async (req) => {
     return jsonResponse({ error: 'imagePath does not match this item' }, 400);
   }
 
+  // --- Prevent duplicate concurrent processing ---------------------------------------------------------------
+  if (item.processing_status === 'processing') {
+    console.log(`[process-item] Item ${itemId} is already processing, skipping duplicate invocation`);
+    return jsonResponse({ status: 'skipped', reason: 'already processing' }, 200);
+  }
+
   // --- Skip if already processed ---------------------------------------------------------------
   if (item.metadata != null && item.embedding != null) {
     console.log(`[process-item] Item ${itemId} already has metadata and embedding, skipping`);
@@ -110,7 +117,11 @@ Deno.serve(async (req) => {
     ]);
     const embedding = await embeddingGenerator.generate(description);
 
-    await persistence.saveAnalysis(itemId, { description, metadata, embedding });
+    // Independent of provider — catches refusals, truncated output, or a schema-less response
+    // from a future provider swap, before anything touches the database.
+    const analysis = validateAnalysis({ description, metadata, embedding });
+
+    await persistence.saveAnalysis(itemId, analysis);
 
     console.log(`[process-item] Item ${itemId} processed successfully`);
     return jsonResponse({ status: 'completed' }, 200);

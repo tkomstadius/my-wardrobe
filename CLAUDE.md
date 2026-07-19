@@ -75,6 +75,12 @@ Required in `.env` (see `.env.example`):
 - `DATABASE_URL` — Postgres connection string (for Drizzle migrations only, not used at runtime).
   Must be Supabase's session pooler (port `5432`) — see Database Commands below.
 
+Required as **Supabase Edge Function secrets** (not in `.env` — set via
+`supabase secrets set NAME=value`, never committed):
+
+- `OPENAI_API_KEY` — used by `process-item`'s description/metadata/embedding services
+- `OPENAI_VISION_MODEL` — optional, defaults to `gpt-4o-mini` if unset
+
 ## Architecture
 
 ### Data Flow
@@ -116,25 +122,37 @@ item photo and writes `description`, `metadata`, `embedding`, and `processing_st
 independently swappable:
 - `services/imageRetrievalService.ts` — downloads the photo from Storage (never swapped)
 - `services/persistenceService.ts` — all `wardrobe_items` reads/writes (never swapped)
-- `services/descriptionGenerationService.ts` — image → description text
-- `services/metadataGenerationService.ts` — image → structured attributes (independent of
-  description generation by design — separate services can use separate providers)
+- `services/analysisValidationService.ts` — validates description/metadata/embedding shape before
+  anything is persisted (non-empty description under 2000 chars; `metadata.color`/`pattern`/
+  `material` all non-empty strings; embedding exactly 1536 finite numbers). Provider-agnostic —
+  runs regardless of what generated the analysis.
+- `services/descriptionGenerationService.ts` — image → description text, via OpenAI Responses API
+  (`OPENAI_VISION_MODEL` env var, default `gpt-4o-mini`). Plain text output, no schema needed for
+  a single string.
+- `services/metadataGenerationService.ts` — image → `{ color, pattern, material }`, via OpenAI
+  Responses API with a strict Structured Outputs JSON schema. Independent of description
+  generation by design (separate services, separate calls) — mock or real, the two aren't
+  guaranteed internally consistent with each other, only each internally valid.
 - `services/embeddingGenerationService.ts` — **text → vector**, not image → vector. Takes the
-  generated description, not the photo, because the column is sized for OpenAI
-  `text-embedding-3-small`, a text-only model. `index.ts` runs description + metadata generation
-  in parallel, then feeds the description into embedding generation.
-- All three generation services currently export a `mock*` implementation with no real AI calls
-  (**no OpenAI integration yet**). To swap in a real provider: write a new implementation of that
+  generated description, not the photo, via OpenAI `text-embedding-3-small` (hardcoded, not
+  env-overridable — the column's 1536 dimensions and HNSW index are built for this exact model).
+  `index.ts` runs description + metadata generation in parallel, then feeds the description into
+  embedding generation.
+- `services/openai/client.ts` (`OPENAI_API_KEY` env var) and `openai/imageEncoding.ts`
+  (Blob → base64 data URL) are shared plumbing used by the two vision services — not swappable
+  interfaces themselves, just OpenAI-specific internals.
+- To swap any generation service for a different provider: write a new implementation of that
   service's exported interface and change the one exported binding at the bottom of that file —
-  nothing in `index.ts` or the other services needs to change.
+  nothing in `index.ts`, `analysisValidationService.ts`, or the other services needs to change.
 - Invoked with `POST { itemId, imagePath }` and the caller's `Authorization: Bearer <jwt>` header.
   No service-role key: every service is constructed with the caller-scoped client, so every query
   runs under the caller's own JWT — RLS is the authorization boundary (an item that isn't theirs
   is simply not found, not leaked).
 - `processing_status` lifecycle: `not_requested` (DB default, set on item creation) → `pending` →
-  `processing` → `completed` | `failed`, all driven by this function. Skips reprocessing if
-  `metadata` and `embedding` are already set on the row — see the reprocessing note below for why
-  that matters on photo edits.
+  `processing` → `completed` | `failed`, all driven by this function. Returns early (skip, no
+  reprocessing) if `processing_status` is already `processing` (prevents duplicate concurrent
+  runs) or if `metadata`/`embedding` are already both set — see the reprocessing note below for
+  why that second one matters on photo edits.
 - Excluded from Biome (`!supabase/functions` in `biome.json`) — Deno code, different runtime and
   style conventions than the rest of the app (npm: specifiers, `Deno.serve`, no Vite/tsc coverage).
 

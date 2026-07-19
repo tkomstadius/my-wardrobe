@@ -1,32 +1,60 @@
-const COLORS = ['black', 'white', 'navy', 'beige', 'olive', 'burgundy', 'grey'];
-const PATTERNS = ['solid', 'striped', 'floral', 'checked', 'plain'];
-const MATERIALS = ['cotton', 'wool', 'polyester', 'linen', 'denim'];
+import { openai } from './openai/client.ts';
+import { blobToDataUrl } from './openai/imageEncoding.ts';
 
-function pick<T>(options: readonly T[]): T {
-  return options[Math.floor(Math.random() * options.length)] as T;
-}
+// Overridable — see descriptionGenerationService.ts for why this one can be swapped freely.
+const MODEL = Deno.env.get('OPENAI_VISION_MODEL') ?? 'gpt-4o-mini';
+
+const PROMPT =
+  'Look at this clothing item photo and extract its color, pattern, and material. Be concise — ' +
+  'single words or short phrases, not sentences.';
+
+// Structured Outputs schema — OpenAI enforces this shape at generation time. We still validate
+// independently in analysisValidationService.ts before persisting (defense in depth).
+const METADATA_SCHEMA = {
+  type: 'object',
+  properties: {
+    color: { type: 'string', description: 'The primary color of the item' },
+    pattern: { type: 'string', description: 'e.g. solid, striped, floral, checked, plaid' },
+    material: { type: 'string', description: 'Best guess at the fabric or material' },
+  },
+  required: ['color', 'pattern', 'material'],
+  additionalProperties: false,
+} as const;
 
 export interface MetadataGenerator {
   generate(image: Blob): Promise<Record<string, unknown>>;
 }
 
-/**
- * Placeholder — returns randomized structured attributes instead of calling a real vision model.
- * Independent of descriptionGenerationService by design (separate services, separate providers
- * later), so mock output between the two isn't guaranteed to agree — a real provider analyzing
- * the same image would naturally be consistent; this mock has no shared state to be.
- */
-export const mockMetadataGenerator: MetadataGenerator = {
-  async generate(_image: Blob): Promise<Record<string, unknown>> {
-    return {
-      color: pick(COLORS),
-      pattern: pick(PATTERNS),
-      material: pick(MATERIALS),
-      source: 'mock',
-    };
+export const openAiMetadataGenerator: MetadataGenerator = {
+  async generate(image: Blob): Promise<Record<string, unknown>> {
+    const imageDataUrl = await blobToDataUrl(image);
+
+    const response = await openai.responses.create({
+      model: MODEL,
+      input: [
+        {
+          role: 'user',
+          content: [
+            { type: 'input_text', text: PROMPT },
+            { type: 'input_image', image_url: imageDataUrl, detail: 'auto' },
+          ],
+        },
+      ],
+      text: {
+        format: {
+          type: 'json_schema',
+          name: 'garment_metadata',
+          schema: METADATA_SCHEMA,
+          strict: true,
+        },
+      },
+      max_output_tokens: 150,
+    });
+
+    return JSON.parse(response.output_text) as Record<string, unknown>;
   },
 };
 
-// Swap this binding for a real implementation of MetadataGenerator when ready — the orchestrator
+// Swap this binding for a different implementation of MetadataGenerator later — the orchestrator
 // and every other service stay unchanged.
-export const metadataGenerator: MetadataGenerator = mockMetadataGenerator;
+export const metadataGenerator: MetadataGenerator = openAiMetadataGenerator;

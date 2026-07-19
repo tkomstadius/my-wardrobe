@@ -8,6 +8,7 @@ export interface ItemRow {
   // PostgREST likely returns this as pgvector's raw text form, not a parsed JSON array — only
   // used for a null check by the caller, so the exact shape doesn't matter.
   embedding: unknown;
+  processing_status: ProcessingStatus | null;
 }
 
 export interface ItemAnalysis {
@@ -30,7 +31,7 @@ export function createPersistenceService(supabase: SupabaseClient): PersistenceS
     async getItem(itemId: string): Promise<ItemRow | null> {
       const { data, error } = await supabase
         .from('wardrobe_items')
-        .select('id, image_url, metadata, embedding')
+        .select('id, image_url, metadata, embedding, processing_status')
         .eq('id', itemId)
         .single<ItemRow>();
 

@@ -32,7 +32,7 @@ export async function clearItemAiAnalysis(itemId: string): Promise<void> {
       description: null,
       metadata: null,
       embedding: null,
-      processing_status: 'not_requested',
+      processing_status: 'pending',
     })
     .eq('id', itemId)
     .eq('user_id', userId);

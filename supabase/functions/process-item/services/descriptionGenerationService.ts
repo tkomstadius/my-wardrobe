@@ -1,25 +1,41 @@
-const COLORS = ['black', 'white', 'navy', 'beige', 'olive', 'burgundy', 'grey'];
-const PATTERNS = ['solid', 'striped', 'floral', 'checked', 'plain'];
-const MATERIALS = ['cotton', 'wool', 'polyester', 'linen', 'denim'];
+import { openai } from './openai/client.ts';
+import { blobToDataUrl } from './openai/imageEncoding.ts';
 
-function pick<T>(options: readonly T[]): T {
-  return options[Math.floor(Math.random() * options.length)] as T;
-}
+// Overridable — unlike the embedding model, description quality/cost is a free choice.
+const MODEL = Deno.env.get('OPENAI_VISION_MODEL') ?? 'gpt-4o-mini';
+
+const PROMPT =
+  'Describe this clothing item in 1-3 sentences of natural language, suitable for semantic ' +
+  'search (embedding-based similarity matching against other wardrobe items). Mention garment ' +
+  'type, color, material, pattern, and any notable style details visible in the photo. Do not ' +
+  'mention the background, lighting, or that this is a photo.';
 
 export interface DescriptionGenerator {
   generate(image: Blob): Promise<string>;
 }
 
-/** Placeholder — returns a randomized sentence instead of calling a real vision model. */
-export const mockDescriptionGenerator: DescriptionGenerator = {
-  async generate(_image: Blob): Promise<string> {
-    const color = pick(COLORS);
-    const pattern = pick(PATTERNS);
-    const material = pick(MATERIALS);
-    return `A ${pattern} ${color} item made of ${material}. (mock description — no AI provider configured yet)`;
+export const openAiDescriptionGenerator: DescriptionGenerator = {
+  async generate(image: Blob): Promise<string> {
+    const imageDataUrl = await blobToDataUrl(image);
+
+    const response = await openai.responses.create({
+      model: MODEL,
+      input: [
+        {
+          role: 'user',
+          content: [
+            { type: 'input_text', text: PROMPT },
+            { type: 'input_image', image_url: imageDataUrl, detail: 'auto' },
+          ],
+        },
+      ],
+      max_output_tokens: 300,
+    });
+
+    return response.output_text.trim();
   },
 };
 
-// Swap this binding for a real implementation of DescriptionGenerator (e.g. an OpenAI vision
-// call) when ready — the orchestrator and every other service stay unchanged.
-export const descriptionGenerator: DescriptionGenerator = mockDescriptionGenerator;
+// Swap this binding for a different implementation of DescriptionGenerator later — the
+// orchestrator and every other service stay unchanged.
+export const descriptionGenerator: DescriptionGenerator = openAiDescriptionGenerator;
