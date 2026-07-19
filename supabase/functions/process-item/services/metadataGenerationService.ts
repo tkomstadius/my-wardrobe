@@ -1,33 +1,39 @@
-import { openai } from './openai/client.ts';
-import { blobToDataUrl } from './openai/imageEncoding.ts';
+import { openai } from './openai/client.ts'
+import { blobToDataUrl } from './openai/imageEncoding.ts'
 
 // Overridable — see descriptionGenerationService.ts for why this one can be swapped freely.
-const MODEL = Deno.env.get('OPENAI_VISION_MODEL') ?? 'gpt-4o-mini';
+const MODEL = Deno.env.get('OPENAI_VISION_MODEL') ?? 'gpt-4o-mini'
 
 const PROMPT =
-  'Look at this clothing item photo and extract its color, pattern, and material. Be concise — ' +
-  'single words or short phrases, not sentences.';
+  'Analyze this clothing item and extract structured metadata.' +
+  'Only return the requested fields.' +
+  'Use concise values (single words or short phrases).' +
+  'If a value cannot be determined confidently from the image, return "unknown" rather than guessing.'
 
 // Structured Outputs schema — OpenAI enforces this shape at generation time. We still validate
 // independently in analysisValidationService.ts before persisting (defense in depth).
 const METADATA_SCHEMA = {
   type: 'object',
   properties: {
-    color: { type: 'string', description: 'The primary color of the item' },
+    category: { type: 'string', description: 'Garment type, e.g. sweater, shirt, jeans, jacket' },
+    color: { type: 'string', description: 'Primary visible color of the item' },
     pattern: { type: 'string', description: 'e.g. solid, striped, floral, checked, plaid' },
-    material: { type: 'string', description: 'Best guess at the fabric or material' },
+    material: {
+      type: 'string',
+      description: 'Material if visually apparent, otherwise "unknown"',
+    },
   },
-  required: ['color', 'pattern', 'material'],
+  required: ['category', 'color', 'pattern', 'material'],
   additionalProperties: false,
-} as const;
+} as const
 
 export interface MetadataGenerator {
-  generate(image: Blob): Promise<Record<string, unknown>>;
+  generate(image: Blob): Promise<Record<string, unknown>>
 }
 
 export const openAiMetadataGenerator: MetadataGenerator = {
   async generate(image: Blob): Promise<Record<string, unknown>> {
-    const imageDataUrl = await blobToDataUrl(image);
+    const imageDataUrl = await blobToDataUrl(image)
 
     const response = await openai.responses.create({
       model: MODEL,
@@ -49,12 +55,12 @@ export const openAiMetadataGenerator: MetadataGenerator = {
         },
       },
       max_output_tokens: 150,
-    });
+    })
 
-    return JSON.parse(response.output_text) as Record<string, unknown>;
+    return JSON.parse(response.output_text) as Record<string, unknown>
   },
-};
+}
 
 // Swap this binding for a different implementation of MetadataGenerator later — the orchestrator
 // and every other service stay unchanged.
-export const metadataGenerator: MetadataGenerator = openAiMetadataGenerator;
+export const metadataGenerator: MetadataGenerator = openAiMetadataGenerator
