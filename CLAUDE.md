@@ -107,32 +107,56 @@ Schema defined in `src/db/schema.ts` (Drizzle). Runtime queries use Supabase JS 
 
 ### AI Processing (Edge Function)
 
-`supabase/functions/process-item/` — a Supabase Edge Function (Deno) that analyzes an item photo
-and writes `description`, `metadata`, `embedding`, and `processing_status` back to its
-`wardrobe_items` row.
+`supabase/functions/process-item/` — a deployed Supabase Edge Function (Deno) that analyzes an
+item photo and writes `description`, `metadata`, `embedding`, and `processing_status` back to its
+`wardrobe_items` row. Redeploy after changes: `supabase functions deploy process-item` (requires
+`supabase link` — see project ref in `supabase/config.toml`).
 
-- **Not deployed yet** — the function exists as code (`supabase functions deploy process-item`
-  hasn't been run). Triggering it from the app will fail until it is.
-- **Wired into the add-item flow**: `utils/aiProcessing.ts` (`triggerItemProcessing`,
-  `getItemProcessingStatus`) + `hooks/useProcessingStatus.ts` (polls while a status is
-  non-terminal, revalidates the route loader once it isn't). `AddItemPage`'s `clientAction` fires
-  it after `saveItem` without awaiting it, then redirects with `?justAdded=<id>` so
-  `ItemCategoryPage` knows to watch that one card even before its first `pending` write has
-  landed. `ItemCard` and `ItemDetailPage` render `ProcessingStatusBadge` (hidden for
-  `not_requested`/`completed`); `ItemDetailPage` also offers a Retry button on `failed`, which
-  re-invokes the same function — it works because the Edge Function's skip check only looks at
-  whether `metadata`/`embedding` are set, not `processing_status`.
-- **No OpenAI integration yet.** `mockProvider.ts` returns randomized placeholder data via the
-  `MetadataProvider` interface (`types.ts`). Swap the `provider` binding in `index.ts` for a real
-  implementation later — nothing else in the function changes.
+**Structure** — `index.ts` only orchestrates; all actual work lives in `services/`, each
+independently swappable:
+- `services/imageRetrievalService.ts` — downloads the photo from Storage (never swapped)
+- `services/persistenceService.ts` — all `wardrobe_items` reads/writes (never swapped)
+- `services/descriptionGenerationService.ts` — image → description text
+- `services/metadataGenerationService.ts` — image → structured attributes (independent of
+  description generation by design — separate services can use separate providers)
+- `services/embeddingGenerationService.ts` — **text → vector**, not image → vector. Takes the
+  generated description, not the photo, because the column is sized for OpenAI
+  `text-embedding-3-small`, a text-only model. `index.ts` runs description + metadata generation
+  in parallel, then feeds the description into embedding generation.
+- All three generation services currently export a `mock*` implementation with no real AI calls
+  (**no OpenAI integration yet**). To swap in a real provider: write a new implementation of that
+  service's exported interface and change the one exported binding at the bottom of that file —
+  nothing in `index.ts` or the other services needs to change.
 - Invoked with `POST { itemId, imagePath }` and the caller's `Authorization: Bearer <jwt>` header.
-  No service-role key: every query runs under the caller's own JWT, so RLS is the authorization
-  boundary (an item that isn't theirs is simply not found, not leaked).
+  No service-role key: every service is constructed with the caller-scoped client, so every query
+  runs under the caller's own JWT — RLS is the authorization boundary (an item that isn't theirs
+  is simply not found, not leaked).
 - `processing_status` lifecycle: `not_requested` (DB default, set on item creation) → `pending` →
   `processing` → `completed` | `failed`, all driven by this function. Skips reprocessing if
-  `metadata` and `embedding` are already set on the row.
+  `metadata` and `embedding` are already set on the row — see the reprocessing note below for why
+  that matters on photo edits.
 - Excluded from Biome (`!supabase/functions` in `biome.json`) — Deno code, different runtime and
   style conventions than the rest of the app (npm: specifiers, `Deno.serve`, no Vite/tsc coverage).
+
+**Wired into the app**:
+- `utils/aiProcessing.ts` — `triggerItemProcessing` (fire-and-forget invoke), `getItemProcessingStatus`
+  (lightweight poll query), `clearItemAiAnalysis` (nulls `description`/`metadata`/`embedding` and
+  resets `processing_status`; must be awaited before re-triggering after a photo change, since the
+  skip check only looks at whether `metadata`/`embedding` are set — a stale-but-present analysis
+  would otherwise make a re-trigger silently no-op instead of reprocessing the new photo).
+- `hooks/useProcessingStatus.ts` — polls while a status is non-terminal, revalidates the route
+  loader once it isn't.
+- `AddItemPage` triggers processing after `saveItem` without awaiting it, then redirects with
+  `?justAdded=<id>` so `ItemCategoryPage` force-watches that one card even before its first
+  `pending` write has landed. `EditItemPage` calls `clearItemAiAnalysis` + retriggers whenever the
+  photo actually changes, then redirects with `?reprocessing=true` so `ItemDetailPage` does the
+  same force-watch.
+- `ItemCard` and `ItemDetailPage` render `ProcessingStatusBadge` (hidden for
+  `not_requested`/`completed`); `ItemDetailPage` also offers a Retry button on `failed`.
+- `ItemDetailPage` renders an "AI Analysis" section showing `description` and a generic
+  key/value list of `metadata` (not hardcoded to the mock's `color`/`pattern`/`material` keys, so
+  it won't need changes when a real provider returns different attributes). Hidden when both are
+  empty.
 
 ### Image Storage
 

@@ -1,34 +1,19 @@
 import { createClient } from 'npm:@supabase/supabase-js@2';
 import { corsHeaders } from '../_shared/cors.ts';
-import { mockProvider } from './mockProvider.ts';
-import type { MetadataProvider } from './types.ts';
-
-// Swap this binding for a real AI-backed MetadataProvider when ready (e.g. an OpenAI provider
-// implementing the same interface) — nothing else in this file needs to change.
-const provider: MetadataProvider = mockProvider;
-
-// Must match the bucket used in src/utils/supabaseStorage.ts.
-const BUCKET = 'wardrobe-images';
+import { descriptionGenerator } from './services/descriptionGenerationService.ts';
+import { embeddingGenerator } from './services/embeddingGenerationService.ts';
+import { createImageRetrievalService } from './services/imageRetrievalService.ts';
+import { metadataGenerator } from './services/metadataGenerationService.ts';
+import { createPersistenceService } from './services/persistenceService.ts';
 
 // Auto-injected by the Supabase platform into every deployed Edge Function — no manual secret
 // configuration needed.
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY')!;
 
-type ProcessingStatus = 'not_requested' | 'pending' | 'processing' | 'completed' | 'failed';
-
 interface RequestBody {
   itemId?: string;
   imagePath?: string;
-}
-
-interface ItemRow {
-  id: string;
-  image_url: string;
-  metadata: Record<string, unknown> | null;
-  // PostgREST likely returns this as pgvector's raw text form, not a parsed JSON array — only
-  // used for a null check below, so the exact shape doesn't matter.
-  embedding: unknown;
 }
 
 function jsonResponse(body: unknown, status: number): Response {
@@ -57,8 +42,8 @@ Deno.serve(async (req) => {
     return jsonResponse({ error: 'Missing Authorization header' }, 401);
   }
 
-  // Client scoped to the caller's own JWT — every query below runs under their RLS policies, so
-  // an item that isn't theirs simply won't be found. No service-role key is used or needed.
+  // Client scoped to the caller's own JWT — passed into every service below, so every query
+  // they run is governed by the caller's own RLS policies. No service-role key anywhere.
   const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     global: { headers: { Authorization: authHeader } },
     auth: { persistSession: false },
@@ -84,18 +69,14 @@ Deno.serve(async (req) => {
     return jsonResponse({ error: 'itemId and imagePath are required' }, 400);
   }
 
-  // --- Retrieve item ---------------------------------------------------------------
-  const { data: item, error: fetchError } = await supabase
-    .from('wardrobe_items')
-    .select('id, image_url, metadata, embedding')
-    .eq('id', itemId)
-    .single<ItemRow>();
+  // --- Wire up services ---------------------------------------------------------------
+  const images = createImageRetrievalService(supabase);
+  const persistence = createPersistenceService(supabase);
 
-  if (fetchError || !item) {
-    console.error(
-      `[process-item] Item ${itemId} not found for user ${userId}:`,
-      fetchError?.message ?? 'no rows',
-    );
+  // --- Retrieve item ---------------------------------------------------------------
+  const item = await persistence.getItem(itemId);
+  if (!item) {
+    console.error(`[process-item] Item ${itemId} not found for user ${userId}`);
     return jsonResponse({ error: 'Item not found' }, 404);
   }
 
@@ -112,56 +93,31 @@ Deno.serve(async (req) => {
     return jsonResponse({ status: 'skipped', reason: 'already processed' }, 200);
   }
 
-  const setStatus = async (status: ProcessingStatus) => {
-    const { error } = await supabase
-      .from('wardrobe_items')
-      .update({ processing_status: status })
-      .eq('id', itemId);
-    if (error) {
-      console.error(`[process-item] Failed to set processing_status=${status} for item ${itemId}:`, error.message);
-    }
-  };
-
   // Queued, then actively working — modeled as two distinct states now so nothing else has to
   // change if this ever moves behind a real queue instead of running synchronously.
-  await setStatus('pending');
+  await persistence.setStatus(itemId, 'pending');
 
   try {
-    await setStatus('processing');
+    await persistence.setStatus(itemId, 'processing');
 
-    // --- Download image ---------------------------------------------------------------
-    const { data: imageBlob, error: downloadError } = await supabase.storage
-      .from(BUCKET)
-      .download(imagePath);
+    const image = await images.download(imagePath);
 
-    if (downloadError || !imageBlob) {
-      throw new Error(`Failed to download image at ${imagePath}: ${downloadError?.message ?? 'no data'}`);
-    }
+    // Description and metadata are independent — generated in parallel. Embedding depends on the
+    // description text (text-embedding-3-small takes text, not images), so it runs after.
+    const [description, metadata] = await Promise.all([
+      descriptionGenerator.generate(image),
+      metadataGenerator.generate(image),
+    ]);
+    const embedding = await embeddingGenerator.generate(description);
 
-    // --- Generate analysis (mocked) ---------------------------------------------------------------
-    const analysis = await provider.analyze(imageBlob, { itemId });
-
-    // --- Save ---------------------------------------------------------------
-    const { error: updateError } = await supabase
-      .from('wardrobe_items')
-      .update({
-        description: analysis.description,
-        metadata: analysis.metadata,
-        embedding: analysis.embedding,
-        processing_status: 'completed' satisfies ProcessingStatus,
-      })
-      .eq('id', itemId);
-
-    if (updateError) {
-      throw new Error(`Failed to save analysis: ${updateError.message}`);
-    }
+    await persistence.saveAnalysis(itemId, { description, metadata, embedding });
 
     console.log(`[process-item] Item ${itemId} processed successfully`);
     return jsonResponse({ status: 'completed' }, 200);
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     console.error(`[process-item] Processing failed for item ${itemId}:`, message);
-    await setStatus('failed');
+    await persistence.setStatus(itemId, 'failed');
     return jsonResponse({ status: 'failed', error: message }, 500);
   }
 });
