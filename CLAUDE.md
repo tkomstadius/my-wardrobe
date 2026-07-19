@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-My Wardrobe is a personal-use, mobile-first PWA for tracking wardrobe items and outfits. Data is stored in Supabase (Postgres + Storage) with magic link authentication. AI features (FashionCLIP embeddings) run client-side via Hugging Face Transformers.js.
+My Wardrobe is a personal-use, mobile-first PWA for tracking wardrobe items and outfits. Data is stored in Supabase (Postgres + Storage) with magic link authentication.
 
 ## Commands
 
@@ -76,7 +76,7 @@ Auth: contexts/AuthContext.tsx → Supabase Auth (magic link)
 
 4 tables, all with `user_id` column and Row Level Security (RLS) policies:
 
-- **`wardrobe_items`** — clothing items with image paths, categories, wear history, embeddings
+- **`wardrobe_items`** — clothing items with image paths, categories, wear history
 - **`outfits`** — outfit records with photo paths, item ID arrays, ratings
 - **`match_feedback`** — AI suggestion accept/reject feedback for learning
 - **`user_preferences`** — learned AI preference weights
@@ -98,7 +98,7 @@ Schema defined in `src/db/schema.ts` (Drizzle). Runtime queries use Supabase JS 
 
 ### Core Domain Models (`src/types/`)
 
-- **WardrobeItem**: image, category/subCategory, wearCount, wearHistory[], price, tags, optional CLIP embedding vector
+- **WardrobeItem**: image, category/subCategory, wearCount, wearHistory[], price, tags
 - **Outfit**: itemIds[], photo, rating, weather snapshot
 
 ### Key Directories
@@ -107,7 +107,7 @@ Schema defined in `src/db/schema.ts` (Drizzle). Runtime queries use Supabase JS 
 - `src/components/common/ui/` — Base UI wrapper components (Button, Card, Dialog, etc.)
 - `src/components/common/form/` — form field components (TextInput, SelectInput, etc.)
 - `src/components/layout/` — MainLayout with BottomNav
-- `src/utils/` — business logic, DB access, AI integration, categories, stats calculations
+- `src/utils/` — business logic, DB access, categories, stats calculations
 - `src/db/` — Drizzle schema (used for migrations only)
 - `src/contexts/` — AuthContext (Supabase Auth), WeatherContext (open-meteo API)
 - `src/hooks/` — useImageUpload, useItemSearch
@@ -118,17 +118,8 @@ Schema defined in `src/db/schema.ts` (Drizzle). Runtime queries use Supabase JS 
 - **Router actions** for form submissions. Pages export `clientAction` and use `Form` from React Router.
 - **CSS Modules** everywhere: `import styles from "./Component.module.css"` — class composition via template literals.
 - **Base UI wrapping**: UI components in `common/ui/` wrap `@base-ui/react` primitives with app-specific styling.
-- **Image pipeline**: upload → canvas compression → optional AI background removal → upload to Supabase Storage → store path in DB → signed URL for display.
+- **Image pipeline**: upload → canvas compression → upload to Supabase Storage → store path in DB → signed URL for display.
 - **snake_case ↔ camelCase**: `mapRowToItem()`/`mapRowToOutfit()` in storageCommands handle mapping between Postgres column names and TypeScript types.
-
-### AI Features
-
-- FashionCLIP (Marqo) embeddings generated in-browser via `@huggingface/transformers`
-- Model (~200-500MB) auto-cached in browser after first download
-- `utils/aiEmbedding.ts` — model loading and vector generation
-- `utils/aiMatching.ts` — cosine similarity matching for outfit suggestions
-- `utils/aiLearning.ts` — feedback tracking and preference learning (Supabase-backed)
-- `utils/itemSuggestion.ts` — weighted scoring algorithm (neglect days, weather, category)
 
 ## Code Style
 
