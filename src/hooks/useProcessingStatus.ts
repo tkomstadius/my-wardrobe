@@ -45,14 +45,15 @@ export function useProcessingStatus(
 
     let cancelled = false;
     let attempts = 0;
+    let interval: ReturnType<typeof setInterval> | undefined;
 
-    const interval = setInterval(async () => {
+    const poll = async () => {
       attempts += 1;
       if (attempts > MAX_POLL_ATTEMPTS) {
         console.error(
           `[useProcessingStatus] Gave up watching item ${itemId} after ${MAX_POLL_ATTEMPTS} attempts`,
         );
-        clearInterval(interval);
+        if (interval) clearInterval(interval);
         return;
       }
 
@@ -61,13 +62,19 @@ export function useProcessingStatus(
         if (cancelled || latest === undefined) return;
         setStatus(latest);
         if (TERMINAL_STATUSES.has(latest)) {
-          clearInterval(interval);
+          if (interval) clearInterval(interval);
           revalidateRef.current();
         }
       } catch (error) {
         console.error(`[useProcessingStatus] Failed to poll status for item ${itemId}:`, error);
       }
-    }, POLL_INTERVAL_MS);
+    };
+
+    // Check immediately on mount instead of waiting a full POLL_INTERVAL_MS for the first
+    // check — real AI processing can finish quickly enough that waiting would mean never
+    // observing (or displaying) an intermediate 'pending'/'processing' state at all.
+    poll();
+    interval = setInterval(poll, POLL_INTERVAL_MS);
 
     return () => {
       cancelled = true;

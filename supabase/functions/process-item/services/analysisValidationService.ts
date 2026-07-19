@@ -3,7 +3,7 @@ import type { ItemAnalysis } from './persistenceService.ts';
 // Must match wardrobe_items.embedding's dimensions (src/db/schema.ts).
 const EMBEDDING_DIMENSIONS = 1536;
 const MAX_DESCRIPTION_LENGTH = 2000;
-const REQUIRED_METADATA_FIELDS = ['color', 'pattern', 'material'] as const;
+const REQUIRED_METADATA_FIELDS = ['category', 'color', 'pattern', 'material'] as const;
 
 interface AnalysisCandidate {
   description: unknown;

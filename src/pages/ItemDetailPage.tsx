@@ -94,11 +94,12 @@ export function ItemDetailPage() {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [selectedDate, setSelectedDate] = useState('');
   const [newWearCount, setNewWearCount] = useState<number>();
-  // Forced true either by the Retry button below, or by arriving here right after an image edit
-  // (EditItemPage redirects with ?reprocessing=true) — both cases mean processing was just
-  // (re)triggered but the item's loaded status may still show a stale/terminal value.
+  // Forced true by the Retry button below, or by arriving here right after creating an item
+  // (AddItemPage redirects with ?justAdded=true) or editing its photo (EditItemPage redirects
+  // with ?reprocessing=true) — all three cases mean processing was just (re)triggered but the
+  // item's loaded status may still show a stale/not-yet-updated value.
   const [forceWatchProcessing, setForceWatchProcessing] = useState(
-    () => searchParams.get('reprocessing') === 'true',
+    () => searchParams.get('justAdded') === 'true' || searchParams.get('reprocessing') === 'true',
   );
   const processingStatus = useProcessingStatus(item?.id ?? '', item?.processingStatus, {
     forceWatch: forceWatchProcessing,

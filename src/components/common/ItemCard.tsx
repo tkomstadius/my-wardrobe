@@ -10,17 +10,15 @@ import { ProcessingStatusBadge } from './ProcessingStatusBadge';
 
 interface ItemCardProps {
   item: WardrobeItem;
-  /** Poll this item's processing status even before it's known to be 'pending'/'processing' —
-   *  set right after this item was just uploaded (see ItemCategoryPage's justAdded param). */
-  watchProcessing?: boolean;
 }
 
-export function ItemCard({ item, watchProcessing = false }: ItemCardProps) {
+export function ItemCard({ item }: ItemCardProps) {
   const navigate = useNavigate();
   const [newWearCount, setNewWearCount] = useState<number>();
-  const processingStatus = useProcessingStatus(item.id, item.processingStatus, {
-    forceWatch: watchProcessing,
-  });
+  // Shows a badge if this item happens to already be mid-processing (e.g. browsing back to the
+  // list while something's still running) — no force-watch here, since the item detail page is
+  // where a freshly created/edited item's status is actually watched from.
+  const processingStatus = useProcessingStatus(item.id, item.processingStatus);
 
   const wornToday = isWornToday(item);
 

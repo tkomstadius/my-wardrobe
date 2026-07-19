@@ -116,9 +116,9 @@ export async function clientAction({ request }: ActionFunctionArgs) {
     // Fire-and-forget: do not block returning control to the user on processing finishing.
     triggerItemProcessing(id, storagePath);
 
-    // justAdded tells the category list to watch this specific item's processing status even
-    // before its first status write ('pending') has necessarily landed yet.
-    return redirect(`/items/${category}?justAdded=${id}`);
+    // justAdded tells the detail page to watch this item's processing status even before its
+    // first status write ('pending') has necessarily landed yet.
+    return redirect(`/item/${id}?justAdded=true`);
   } catch (err) {
     console.error('Failed to save item:', err);
     return { error: 'Failed to save item. Please try again.' };

@@ -17,6 +17,7 @@ const PROMPT =
   'Keep the description under 40 words.' +
   'Do not use marketing language or subjective adjectives.' +
   'Do not mention the image, background, lighting or mannequin.'
+
 export interface DescriptionGenerator {
   generate(image: Blob): Promise<string>
 }
