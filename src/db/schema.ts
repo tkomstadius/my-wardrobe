@@ -43,6 +43,9 @@ export const wardrobeItems = pgTable(
     processingStatus: text('processing_status').default('not_requested'), // 'not_requested' | 'pending' | 'processing' | 'completed' | 'failed'
     // 1536 dims = OpenAI text-embedding-3-small output size; intended for that model specifically.
     embedding: vector('embedding', { dimensions: 1536 }),
+    aiModel: text('ai_model'), // e.g. 'gpt-4o-mini' — which model produced description/metadata
+    aiPromptVersion: integer('ai_prompt_version'), // bumped in code whenever prompts change meaningfully
+    aiProcessedAt: timestamp('ai_processed_at', { withTimezone: true, mode: 'date' }),
     createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).defaultNow().notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'date' }).defaultNow().notNull(),
     userId: uuid('user_id').notNull(),

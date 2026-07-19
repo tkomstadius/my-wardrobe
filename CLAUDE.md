@@ -105,32 +105,40 @@ Auth: contexts/AuthContext.tsx → Supabase Auth (magic link)
 
 - **`wardrobe_items`** — clothing items with image paths, categories, wear history, and AI
   metadata columns (`description`, `metadata` jsonb, `processing_status`, `embedding` —
-  vector(1536), reserved for OpenAI `text-embedding-3-small`, HNSW-indexed). Populated by the
-  Edge Function described below.
+  vector(1536), reserved for OpenAI `text-embedding-3-small`, HNSW-indexed — plus `ai_model`,
+  `ai_prompt_version`, `ai_processed_at` recording *how* a given analysis was produced, so
+  items processed under an old model/prompt can be found and selectively reprocessed later
+  instead of reprocessing everything). Populated by the Edge Function described below.
 - **`outfits`** — outfit records with photo paths, item ID arrays, ratings
 
 Schema defined in `src/db/schema.ts` (Drizzle). Runtime queries use Supabase JS client (not Drizzle — browser can't make TCP connections to Postgres).
 
-### AI Processing (Edge Function)
+### AI Processing (Edge Functions)
 
-`supabase/functions/process-item/` — a deployed Supabase Edge Function (Deno) that analyzes an
-item photo and writes `description`, `metadata`, `embedding`, and `processing_status` back to its
-`wardrobe_items` row. Redeploy after changes: `supabase functions deploy process-item` (requires
-`supabase link` — see project ref in `supabase/config.toml`).
+Two deployed Supabase Edge Functions (Deno). Redeploy after changes:
+`supabase functions deploy <name>` (requires `supabase link` — see project ref in
+`supabase/config.toml`).
+
+#### `supabase/functions/process-item/`
+
+Analyzes an item photo and writes `description`, `metadata`, `embedding`, `ai_model`,
+`ai_prompt_version`, `ai_processed_at`, and `processing_status` back to its `wardrobe_items` row.
 
 **Structure** — `index.ts` only orchestrates; all actual work lives in `services/`, each
 independently swappable:
 - `services/imageRetrievalService.ts` — downloads the photo from Storage (never swapped)
-- `services/persistenceService.ts` — all `wardrobe_items` reads/writes (never swapped)
-- `services/analysisValidationService.ts` — validates description/metadata/embedding shape before
-  anything is persisted (non-empty description under 2000 chars; `metadata.color`/`pattern`/
-  `material` all non-empty strings; embedding exactly 1536 finite numbers). Provider-agnostic —
-  runs regardless of what generated the analysis.
-- `services/descriptionGenerationService.ts` — image → description text, via OpenAI Responses API
-  (`OPENAI_VISION_MODEL` env var, default `gpt-4o-mini`). Plain text output, no schema needed for
-  a single string.
-- `services/metadataGenerationService.ts` — image → `{ color, pattern, material }`, via OpenAI
-  Responses API with a strict Structured Outputs JSON schema. Independent of description
+- `services/persistenceService.ts` — all `wardrobe_items` reads/writes (never swapped):
+  `getItem`, `setStatus`, `saveAnalysis` (full analysis + `ai_*` provenance fields),
+  `updateEmbedding` (embedding only — used by regenerate-embedding below)
+- `services/analysisValidationService.ts` — `validateAnalysis` checks description/metadata/embedding
+  shape before anything is persisted (non-empty description under 2000 chars;
+  `metadata.category`/`color`/`pattern`/`material` all non-empty strings; embedding exactly 1536
+  finite numbers). Provider-agnostic — runs regardless of what generated the analysis. Also
+  exports `validateEmbedding` standalone, reused by regenerate-embedding.
+- `services/descriptionGenerationService.ts` — image → description text, via OpenAI Responses API.
+  Plain text output, no schema needed for a single string.
+- `services/metadataGenerationService.ts` — image → `{ category, color, pattern, material }`, via
+  OpenAI Responses API with a strict Structured Outputs JSON schema. Independent of description
   generation by design (separate services, separate calls) — mock or real, the two aren't
   guaranteed internally consistent with each other, only each internally valid.
 - `services/embeddingGenerationService.ts` — **text → vector**, not image → vector. Takes the
@@ -141,6 +149,10 @@ independently swappable:
 - `services/openai/client.ts` (`OPENAI_API_KEY` env var) and `openai/imageEncoding.ts`
   (Blob → base64 data URL) are shared plumbing used by the two vision services — not swappable
   interfaces themselves, just OpenAI-specific internals.
+- `services/openai/config.ts` — `VISION_MODEL` (env `OPENAI_VISION_MODEL`, default `gpt-4o-mini`;
+  recorded as `ai_model` on save) and `PROMPT_VERSION` (recorded as `ai_prompt_version`). **Bump
+  `PROMPT_VERSION` by hand whenever either vision prompt changes meaningfully** — nothing does
+  this automatically. Shared with regenerate-embedding.
 - To swap any generation service for a different provider: write a new implementation of that
   service's exported interface and change the one exported binding at the bottom of that file —
   nothing in `index.ts`, `analysisValidationService.ts`, or the other services needs to change.
@@ -153,28 +165,51 @@ independently swappable:
   reprocessing) if `processing_status` is already `processing` (prevents duplicate concurrent
   runs) or if `metadata`/`embedding` are already both set — see the reprocessing note below for
   why that second one matters on photo edits.
-- Excluded from Biome (`!supabase/functions` in `biome.json`) — Deno code, different runtime and
-  style conventions than the rest of the app (npm: specifiers, `Deno.serve`, no Vite/tsc coverage).
+
+#### `supabase/functions/regenerate-embedding/`
+
+Re-embeds a single piece of text without touching `description`/`metadata`/`ai_*` fields. Exists
+because manually editing the description (see below) needs the embedding to stay in sync without
+re-running the full image pipeline (which would overwrite the manual correction). Reuses
+process-item's `embeddingGenerationService.ts`, `persistenceService.ts`, and
+`analysisValidationService.ts`'s `validateEmbedding` directly via relative import rather than
+duplicating them — this function is orchestration only, same principle as process-item's
+`index.ts`. Invoked with `POST { itemId, description }`, same auth model as process-item.
+
+Both excluded from Biome (`!supabase/functions` in `biome.json`) — Deno code, different runtime
+and style conventions than the rest of the app (npm: specifiers, `Deno.serve`, no Vite/tsc
+coverage).
 
 **Wired into the app**:
-- `utils/aiProcessing.ts` — `triggerItemProcessing` (fire-and-forget invoke), `getItemProcessingStatus`
-  (lightweight poll query), `clearItemAiAnalysis` (nulls `description`/`metadata`/`embedding` and
-  resets `processing_status`; must be awaited before re-triggering after a photo change, since the
-  skip check only looks at whether `metadata`/`embedding` are set — a stale-but-present analysis
-  would otherwise make a re-trigger silently no-op instead of reprocessing the new photo).
+- `utils/aiProcessing.ts` — `triggerItemProcessing` / `triggerEmbeddingRegeneration`
+  (fire-and-forget invokes), `getItemProcessingStatus` (lightweight poll query),
+  `clearItemAiAnalysis` (nulls `description`/`metadata`/`embedding`/`ai_model`/`ai_prompt_version`/
+  `ai_processed_at`, sets `processing_status` to `pending`; must be awaited before re-triggering
+  after a photo change, since the skip check only looks at whether `metadata`/`embedding` are set
+  — a stale-but-present analysis would otherwise make a re-trigger silently no-op instead of
+  reprocessing the new photo).
 - `hooks/useProcessingStatus.ts` — polls while a status is non-terminal, revalidates the route
   loader once it isn't.
-- `AddItemPage` triggers processing after `saveItem` without awaiting it, then redirects with
-  `?justAdded=<id>` so `ItemCategoryPage` force-watches that one card even before its first
-  `pending` write has landed. `EditItemPage` calls `clearItemAiAnalysis` + retriggers whenever the
-  photo actually changes, then redirects with `?reprocessing=true` so `ItemDetailPage` does the
-  same force-watch.
+- `AddItemPage` triggers processing after `saveItem` without awaiting it, then redirects to the
+  item detail page with `?justAdded=true` so it force-watches even before the first `pending`
+  write has landed. `EditItemPage`: if the photo changed, calls `clearItemAiAnalysis` + retriggers
+  full processing (takes precedence over any manual text edits submitted in the same request,
+  since a new photo needs fresh analysis regardless); else if only the description text changed,
+  calls `triggerEmbeddingRegeneration` instead (metadata-only edits trigger nothing — metadata
+  doesn't feed the embedding). Either case redirects with `?reprocessing=true` for the same
+  force-watch. `ItemCategoryPage`/`ItemCard` don't force-watch — a card just shows a badge if an
+  item's actual status happens to be non-terminal when rendered.
 - `ItemCard` and `ItemDetailPage` render `ProcessingStatusBadge` (hidden for
-  `not_requested`/`completed`); `ItemDetailPage` also offers a Retry button on `failed`.
-- `ItemDetailPage` renders an "AI Analysis" section showing `description` and a generic
-  key/value list of `metadata` (not hardcoded to the mock's `color`/`pattern`/`material` keys, so
-  it won't need changes when a real provider returns different attributes). Hidden when both are
-  empty.
+  `not_requested`/`completed`); `ItemDetailPage` also offers a Retry button on `failed`
+  (re-invokes `triggerItemProcessing`, which works because the skip check only looks at
+  `metadata`/`embedding` presence).
+- `ItemDetailPage` renders a read-only "AI Analysis" section showing `description` and a generic
+  key/value list of `metadata` (not hardcoded to specific keys, so it won't need changes when a
+  provider returns different attributes). Hidden when both are empty.
+- `EditItemPage` has a separate, *editable* "AI Analysis" fieldset (description textarea +
+  category/color/pattern/material inputs, matching metadataGenerationService.ts's schema) so a
+  wrong AI result can be manually corrected — see the description-change → regenerate-embedding
+  wiring above.
 
 ### Image Storage
 

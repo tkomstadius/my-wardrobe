@@ -5,6 +5,7 @@ import { descriptionGenerator } from './services/descriptionGenerationService.ts
 import { embeddingGenerator } from './services/embeddingGenerationService.ts';
 import { createImageRetrievalService } from './services/imageRetrievalService.ts';
 import { metadataGenerator } from './services/metadataGenerationService.ts';
+import { PROMPT_VERSION, VISION_MODEL } from './services/openai/config.ts';
 import { createPersistenceService } from './services/persistenceService.ts';
 
 // Auto-injected by the Supabase platform into every deployed Edge Function — no manual secret
@@ -119,9 +120,14 @@ Deno.serve(async (req) => {
 
     // Independent of provider — catches refusals, truncated output, or a schema-less response
     // from a future provider swap, before anything touches the database.
-    const analysis = validateAnalysis({ description, metadata, embedding });
+    const validated = validateAnalysis({ description, metadata, embedding });
 
-    await persistence.saveAnalysis(itemId, analysis);
+    await persistence.saveAnalysis(itemId, {
+      ...validated,
+      model: VISION_MODEL,
+      promptVersion: PROMPT_VERSION,
+      processedAt: new Date().toISOString(),
+    });
 
     console.log(`[process-item] Item ${itemId} processed successfully`);
     return jsonResponse({ status: 'completed' }, 200);

@@ -16,6 +16,11 @@ export const DOG_CASUAL_NAME = 'isDogCasual';
 export const HANDMADE_NAME = 'isHandmade';
 export const RATING_NAME = 'rating';
 export const ITEM_IDS_NAME = 'itemIds';
+export const AI_DESCRIPTION_NAME = 'aiDescription';
+export const AI_CATEGORY_NAME = 'aiCategory';
+export const AI_COLOR_NAME = 'aiColor';
+export const AI_PATTERN_NAME = 'aiPattern';
+export const AI_MATERIAL_NAME = 'aiMaterial';
 
 export const TRAIT_OPTIONS = [
   { id: 'none', title: 'None' },

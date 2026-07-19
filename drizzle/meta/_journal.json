@@ -15,6 +15,13 @@
       "when": 1784490876758,
       "tag": "0001_boring_maelstrom",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1784499594390,
+      "tag": "0002_fat_ultimates",
+      "breakpoints": true
     }
   ]
 }

@@ -4,3 +4,6 @@ project_id = "rzgplclulouumctonouc"
 # Gateway rejects requests without a valid JWT before the function even runs. The function also
 # verifies the JWT itself (see index.ts) so the check isn't silently dependent on this config.
 verify_jwt = true
+
+[functions.regenerate-embedding]
+verify_jwt = true

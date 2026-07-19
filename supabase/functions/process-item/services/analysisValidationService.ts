@@ -1,5 +1,3 @@
-import type { ItemAnalysis } from './persistenceService.ts';
-
 // Must match wardrobe_items.embedding's dimensions (src/db/schema.ts).
 const EMBEDDING_DIMENSIONS = 1536;
 const MAX_DESCRIPTION_LENGTH = 2000;
@@ -11,13 +9,36 @@ interface AnalysisCandidate {
   embedding: unknown;
 }
 
+// Deliberately not ItemAnalysis (persistenceService.ts) — this is just the AI-generated content
+// that gets validated. model/promptVersion/processedAt are operational metadata the orchestrator
+// attaches afterward, not something to validate here.
+export interface ValidatedAnalysisContent {
+  description: string;
+  metadata: Record<string, unknown>;
+  embedding: number[];
+}
+
+/** Throws a clear Error unless `embedding` is exactly EMBEDDING_DIMENSIONS finite numbers.
+ *  Standalone so regenerate-embedding (re-embeds edited text without touching description/
+ *  metadata) can validate without pulling in the description/metadata checks below. */
+export function validateEmbedding(embedding: unknown): number[] {
+  if (!Array.isArray(embedding) || embedding.length !== EMBEDDING_DIMENSIONS) {
+    const got = Array.isArray(embedding) ? `array of ${embedding.length}` : typeof embedding;
+    throw new Error(`Validation failed: embedding must be an array of ${EMBEDDING_DIMENSIONS} numbers, got ${got}`);
+  }
+  if (!embedding.every((value) => typeof value === 'number' && Number.isFinite(value))) {
+    throw new Error('Validation failed: embedding must contain only finite numbers');
+  }
+  return embedding as number[];
+}
+
 /**
  * Throws a clear, specific Error if the AI-generated analysis doesn't look sane. OpenAI's
  * Structured Outputs already enforces the metadata schema at generation time, but this runs
  * regardless of provider — defense in depth against refusals, truncated output, or a future
  * provider swap that doesn't enforce a schema at all.
  */
-export function validateAnalysis(candidate: AnalysisCandidate): ItemAnalysis {
+export function validateAnalysis(candidate: AnalysisCandidate): ValidatedAnalysisContent {
   const { description, metadata, embedding } = candidate;
 
   if (typeof description !== 'string' || description.trim().length === 0) {
@@ -38,17 +59,9 @@ export function validateAnalysis(candidate: AnalysisCandidate): ItemAnalysis {
     }
   }
 
-  if (!Array.isArray(embedding) || embedding.length !== EMBEDDING_DIMENSIONS) {
-    const got = Array.isArray(embedding) ? `array of ${embedding.length}` : typeof embedding;
-    throw new Error(`Validation failed: embedding must be an array of ${EMBEDDING_DIMENSIONS} numbers, got ${got}`);
-  }
-  if (!embedding.every((value) => typeof value === 'number' && Number.isFinite(value))) {
-    throw new Error('Validation failed: embedding must contain only finite numbers');
-  }
-
   return {
     description: description.trim(),
     metadata: metadataRecord,
-    embedding: embedding as number[],
+    embedding: validateEmbedding(embedding),
   };
 }

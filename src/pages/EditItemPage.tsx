@@ -14,6 +14,11 @@ import { BackLink } from '../components/common/BackLink';
 import { CheckboxField } from '../components/common/CheckboxField';
 import { DeleteConfirmDialog } from '../components/common/DeleteConfirmDialog';
 import {
+  AI_CATEGORY_NAME,
+  AI_COLOR_NAME,
+  AI_DESCRIPTION_NAME,
+  AI_MATERIAL_NAME,
+  AI_PATTERN_NAME,
   BRAND_NAME,
   CATEGORY_NAME,
   DOG_CASUAL_NAME,
@@ -34,12 +39,17 @@ import { TextInput } from '../components/common/form/TextInput';
 import { Button } from '../components/common/ui/Button';
 import { Callout } from '../components/common/ui/Callout';
 import { Flex } from '../components/common/ui/Flex';
+import { Heading } from '../components/common/ui/Heading';
 import { Text } from '../components/common/ui/Text';
 import { TextArea } from '../components/common/ui/TextArea';
 import { TextField } from '../components/common/ui/TextField';
 import type { OutfitRating } from '../types/outfit';
 import type { ItemCategory, WardrobeItem } from '../types/wardrobe';
-import { clearItemAiAnalysis, triggerItemProcessing } from '../utils/aiProcessing';
+import {
+  clearItemAiAnalysis,
+  triggerEmbeddingRegeneration,
+  triggerItemProcessing,
+} from '../utils/aiProcessing';
 import { CATEGORIES, CATEGORY_IDS, getSubCategoriesForCategory } from '../utils/categories';
 import {
   getAllBrands,
@@ -88,6 +98,11 @@ export async function clientAction({ request, params }: ActionFunctionArgs) {
   const isSecondHand = formData.get(SECOND_HAND_NAME) === 'on';
   const isDogCasual = formData.get(DOG_CASUAL_NAME) === 'on';
   const isHandmade = formData.get(HANDMADE_NAME) === 'on';
+  const aiDescription = formData.get(AI_DESCRIPTION_NAME) as string;
+  const aiCategory = formData.get(AI_CATEGORY_NAME) as string;
+  const aiColor = formData.get(AI_COLOR_NAME) as string;
+  const aiPattern = formData.get(AI_PATTERN_NAME) as string;
+  const aiMaterial = formData.get(AI_MATERIAL_NAME) as string;
 
   if (!imageUrl) {
     return { error: 'Please add an image of the item' };
@@ -121,6 +136,20 @@ export async function clientAction({ request, params }: ActionFunctionArgs) {
 
     const totalWearCount = newInitialWearCount + existingItem.wearHistory.length;
 
+    const normalizedDescription = aiDescription?.trim() || '';
+    const previousDescription = existingItem.description?.trim() || '';
+    // Compared before the full-pipeline reprocess path below can overwrite it — only meaningful
+    // when the image itself didn't also change (that path regenerates everything from scratch).
+    const descriptionChanged = normalizedDescription !== previousDescription;
+
+    const aiMetadataFields = {
+      category: aiCategory?.trim() || '',
+      color: aiColor?.trim() || '',
+      pattern: aiPattern?.trim() || '',
+      material: aiMaterial?.trim() || '',
+    };
+    const hasAiMetadata = Object.values(aiMetadataFields).some((value) => value.length > 0);
+
     const updatedItem: WardrobeItem = {
       ...existingItem,
       imageUrl: storagePath,
@@ -136,19 +165,31 @@ export async function clientAction({ request, params }: ActionFunctionArgs) {
       purchaseDate: purchaseDate ? new Date(purchaseDate) : undefined,
       initialWearCount: newInitialWearCount,
       wearCount: totalWearCount,
+      description: normalizedDescription || undefined,
+      metadata: hasAiMetadata ? aiMetadataFields : undefined,
       updatedAt: new Date(),
     };
 
     await saveItem(updatedItem);
 
+    let shouldWatchProcessing = false;
+
     if (imageChanged) {
       // Must be awaited and finish before triggering — otherwise process-item could read the
-      // still-stale metadata/embedding and skip reprocessing the new photo entirely.
+      // still-stale metadata/embedding and skip reprocessing the new photo entirely. Takes
+      // precedence over any manual description/metadata edits submitted in this same request,
+      // since a new photo needs fresh analysis regardless.
       await clearItemAiAnalysis(id);
       triggerItemProcessing(id, storagePath);
+      shouldWatchProcessing = true;
+    } else if (descriptionChanged && normalizedDescription) {
+      // Only the embedding needs to change — metadata edits don't feed it, and re-running the
+      // full image pipeline would blow away the manual correction that was just saved.
+      triggerEmbeddingRegeneration(id, normalizedDescription);
+      shouldWatchProcessing = true;
     }
 
-    return redirect(`/item/${existingItem.id}${imageChanged ? '?reprocessing=true' : ''}`);
+    return redirect(`/item/${existingItem.id}${shouldWatchProcessing ? '?reprocessing=true' : ''}`);
   } catch (err) {
     console.error('Failed to update item:', err);
     return { error: 'Failed to save changes. Please try again.' };
@@ -317,6 +358,57 @@ export function EditItemPage() {
 
           <fieldset className={styles.fieldSection}>
             <RatingButtons name={RATING_NAME} defaultValue={item.rating} />
+          </fieldset>
+
+          <fieldset className={styles.fieldSection}>
+            <Heading size="4">AI Analysis</Heading>
+            <Text size="1" color="gray">
+              Edit if the AI got something wrong. Changing the description regenerates its
+              embedding; metadata edits don't (they don't feed it).
+            </Text>
+
+            <Flex direction="column" gap="1">
+              <Text as="label" size="2" weight="bold">
+                Description
+              </Text>
+              <TextArea
+                variant="soft"
+                name={AI_DESCRIPTION_NAME}
+                placeholder="No AI description yet"
+                rows={3}
+                defaultValue={item.description || ''}
+                size="3"
+              />
+            </Flex>
+
+            <TextInput
+              label="Category"
+              name={AI_CATEGORY_NAME}
+              placeholder="e.g., sweater"
+              defaultValue={
+                typeof item.metadata?.category === 'string' ? item.metadata.category : ''
+              }
+            />
+            <TextInput
+              label="Color"
+              name={AI_COLOR_NAME}
+              placeholder="e.g., black"
+              defaultValue={typeof item.metadata?.color === 'string' ? item.metadata.color : ''}
+            />
+            <TextInput
+              label="Pattern"
+              name={AI_PATTERN_NAME}
+              placeholder="e.g., solid"
+              defaultValue={typeof item.metadata?.pattern === 'string' ? item.metadata.pattern : ''}
+            />
+            <TextInput
+              label="Material"
+              name={AI_MATERIAL_NAME}
+              placeholder="e.g., cotton"
+              defaultValue={
+                typeof item.metadata?.material === 'string' ? item.metadata.material : ''
+              }
+            />
           </fieldset>
 
           {actionData?.error && <Callout>{actionData.error}</Callout>}

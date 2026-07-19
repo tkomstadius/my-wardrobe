@@ -1,8 +1,6 @@
 import { openai } from './openai/client.ts'
+import { VISION_MODEL } from './openai/config.ts'
 import { blobToDataUrl } from './openai/imageEncoding.ts'
-
-// Overridable — unlike the embedding model, description quality/cost is a free choice.
-const MODEL = Deno.env.get('OPENAI_VISION_MODEL') ?? 'gpt-4o-mini'
 
 const PROMPT =
   'Write a concise factual description of this clothing item for embedding generation.' +
@@ -27,7 +25,7 @@ export const openAiDescriptionGenerator: DescriptionGenerator = {
     const imageDataUrl = await blobToDataUrl(image)
 
     const response = await openai.responses.create({
-      model: MODEL,
+      model: VISION_MODEL,
       input: [
         {
           role: 'user',

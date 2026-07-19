@@ -15,6 +15,9 @@ export interface ItemAnalysis {
   description: string;
   metadata: Record<string, unknown>;
   embedding: number[];
+  model: string;
+  promptVersion: number;
+  processedAt: string;
 }
 
 export interface PersistenceService {
@@ -22,6 +25,10 @@ export interface PersistenceService {
   getItem(itemId: string): Promise<ItemRow | null>;
   setStatus(itemId: string, status: ProcessingStatus): Promise<void>;
   saveAnalysis(itemId: string, analysis: ItemAnalysis): Promise<void>;
+  /** Updates only the embedding — used by regenerate-embedding when a manually-edited
+   *  description needs a fresh vector without touching description/metadata/ai_* provenance
+   *  fields, which still correctly describe the (unaffected) original AI-generated text fields. */
+  updateEmbedding(itemId: string, embedding: number[]): Promise<void>;
 }
 
 /** Uses the caller-scoped Supabase client passed in from the orchestrator — never a service-role
@@ -64,12 +71,26 @@ export function createPersistenceService(supabase: SupabaseClient): PersistenceS
           description: analysis.description,
           metadata: analysis.metadata,
           embedding: analysis.embedding,
+          ai_model: analysis.model,
+          ai_prompt_version: analysis.promptVersion,
+          ai_processed_at: analysis.processedAt,
           processing_status: 'completed' satisfies ProcessingStatus,
         })
         .eq('id', itemId);
 
       if (error) {
         throw new Error(`Failed to save analysis: ${error.message}`);
+      }
+    },
+
+    async updateEmbedding(itemId: string, embedding: number[]): Promise<void> {
+      const { error } = await supabase
+        .from('wardrobe_items')
+        .update({ embedding, processing_status: 'completed' satisfies ProcessingStatus })
+        .eq('id', itemId);
+
+      if (error) {
+        throw new Error(`Failed to update embedding: ${error.message}`);
       }
     },
   };

@@ -1,8 +1,6 @@
 import { openai } from './openai/client.ts'
+import { VISION_MODEL } from './openai/config.ts'
 import { blobToDataUrl } from './openai/imageEncoding.ts'
-
-// Overridable — see descriptionGenerationService.ts for why this one can be swapped freely.
-const MODEL = Deno.env.get('OPENAI_VISION_MODEL') ?? 'gpt-4o-mini'
 
 const PROMPT =
   'Analyze this clothing item and extract structured metadata.' +
@@ -36,7 +34,7 @@ export const openAiMetadataGenerator: MetadataGenerator = {
     const imageDataUrl = await blobToDataUrl(image)
 
     const response = await openai.responses.create({
-      model: MODEL,
+      model: VISION_MODEL,
       input: [
         {
           role: 'user',

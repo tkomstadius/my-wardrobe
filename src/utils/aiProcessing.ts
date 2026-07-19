@@ -20,6 +20,24 @@ export function triggerItemProcessing(itemId: string, imagePath: string): void {
 }
 
 /**
+ * Kicks off the regenerate-embedding Edge Function without waiting for it to finish, for when a
+ * description was manually edited. Only re-embeds the given text — does not touch
+ * description/metadata, and does not re-run the full image-analysis pipeline.
+ */
+export function triggerEmbeddingRegeneration(itemId: string, description: string): void {
+  supabase.functions
+    .invoke('regenerate-embedding', { body: { itemId, description } })
+    .then(({ error }) => {
+      if (error) {
+        console.error(`Failed to invoke regenerate-embedding for item ${itemId}:`, error.message);
+      }
+    })
+    .catch((error: unknown) => {
+      console.error(`Failed to invoke regenerate-embedding for item ${itemId}:`, error);
+    });
+}
+
+/**
  * Clears a previous analysis so process-item will actually reprocess instead of skipping (its
  * skip check only looks at whether metadata/embedding are set, not whether the photo changed).
  * Call this — and await it — before triggering processing after a photo replacement.
@@ -32,6 +50,9 @@ export async function clearItemAiAnalysis(itemId: string): Promise<void> {
       description: null,
       metadata: null,
       embedding: null,
+      ai_model: null,
+      ai_prompt_version: null,
+      ai_processed_at: null,
       processing_status: 'pending',
     })
     .eq('id', itemId)
