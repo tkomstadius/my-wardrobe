@@ -59,7 +59,7 @@ Fix any errors from steps 1-3 before committing. There are no automated tests ye
 ## Tech Stack
 
 - **React 19** + **TypeScript 5.9** (strict mode) + **React Router 7** (loaders/actions pattern)
-- **Supabase** (Postgres + Storage + Auth) — data and image storage, magic link authentication
+- **Supabase** (Postgres + Storage + Auth + Edge Functions) — data and image storage, magic link authentication, server-side AI processing
 - **Drizzle ORM** (dev only) — schema definition and migrations via `drizzle-kit`
 - **Base UI** (`@base-ui/react`) for accessible component primitives
 - **CSS Modules** for styling — no Tailwind, no inline styles
@@ -99,11 +99,40 @@ Auth: contexts/AuthContext.tsx → Supabase Auth (magic link)
 
 - **`wardrobe_items`** — clothing items with image paths, categories, wear history, and AI
   metadata columns (`description`, `metadata` jsonb, `processing_status`, `embedding` —
-  vector(1536), reserved for OpenAI `text-embedding-3-small`, HNSW-indexed; not yet populated by
-  any pipeline)
+  vector(1536), reserved for OpenAI `text-embedding-3-small`, HNSW-indexed). Populated by the
+  Edge Function described below.
 - **`outfits`** — outfit records with photo paths, item ID arrays, ratings
 
 Schema defined in `src/db/schema.ts` (Drizzle). Runtime queries use Supabase JS client (not Drizzle — browser can't make TCP connections to Postgres).
+
+### AI Processing (Edge Function)
+
+`supabase/functions/process-item/` — a Supabase Edge Function (Deno) that analyzes an item photo
+and writes `description`, `metadata`, `embedding`, and `processing_status` back to its
+`wardrobe_items` row.
+
+- **Not deployed yet** — the function exists as code (`supabase functions deploy process-item`
+  hasn't been run). Triggering it from the app will fail until it is.
+- **Wired into the add-item flow**: `utils/aiProcessing.ts` (`triggerItemProcessing`,
+  `getItemProcessingStatus`) + `hooks/useProcessingStatus.ts` (polls while a status is
+  non-terminal, revalidates the route loader once it isn't). `AddItemPage`'s `clientAction` fires
+  it after `saveItem` without awaiting it, then redirects with `?justAdded=<id>` so
+  `ItemCategoryPage` knows to watch that one card even before its first `pending` write has
+  landed. `ItemCard` and `ItemDetailPage` render `ProcessingStatusBadge` (hidden for
+  `not_requested`/`completed`); `ItemDetailPage` also offers a Retry button on `failed`, which
+  re-invokes the same function — it works because the Edge Function's skip check only looks at
+  whether `metadata`/`embedding` are set, not `processing_status`.
+- **No OpenAI integration yet.** `mockProvider.ts` returns randomized placeholder data via the
+  `MetadataProvider` interface (`types.ts`). Swap the `provider` binding in `index.ts` for a real
+  implementation later — nothing else in the function changes.
+- Invoked with `POST { itemId, imagePath }` and the caller's `Authorization: Bearer <jwt>` header.
+  No service-role key: every query runs under the caller's own JWT, so RLS is the authorization
+  boundary (an item that isn't theirs is simply not found, not leaked).
+- `processing_status` lifecycle: `not_requested` (DB default, set on item creation) → `pending` →
+  `processing` → `completed` | `failed`, all driven by this function. Skips reprocessing if
+  `metadata` and `embedding` are already set on the row.
+- Excluded from Biome (`!supabase/functions` in `biome.json`) — Deno code, different runtime and
+  style conventions than the rest of the app (npm: specifiers, `Deno.serve`, no Vite/tsc coverage).
 
 ### Image Storage
 
@@ -133,6 +162,7 @@ Schema defined in `src/db/schema.ts` (Drizzle). Runtime queries use Supabase JS 
 - `src/db/` — Drizzle schema (used for migrations only)
 - `src/contexts/` — AuthContext (Supabase Auth), WeatherContext (open-meteo API)
 - `src/hooks/` — useImageUpload, useItemSearch
+- `supabase/functions/` — Edge Functions (Deno); see AI Processing above
 
 ### Patterns
 

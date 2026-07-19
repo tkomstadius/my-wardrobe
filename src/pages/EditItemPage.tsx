@@ -39,6 +39,7 @@ import { TextArea } from '../components/common/ui/TextArea'
 import { TextField } from '../components/common/ui/TextField'
 import type { OutfitRating } from '../types/outfit'
 import type { ItemCategory, WardrobeItem } from '../types/wardrobe'
+import { clearItemAiAnalysis, triggerItemProcessing } from '../utils/aiProcessing'
 import { CATEGORIES, CATEGORY_IDS, getSubCategoriesForCategory } from '../utils/categories'
 import { getAllBrands, getItemById, getItemStoragePath, removeItem, saveItem } from '../utils/storageCommands'
 import { getCurrentUserId } from '../utils/supabase'
@@ -134,7 +135,14 @@ export async function clientAction({ request, params }: ActionFunctionArgs) {
 
     await saveItem(updatedItem)
 
-    return redirect(`/item/${existingItem.id}`)
+    if (imageChanged) {
+      // Must be awaited and finish before triggering — otherwise process-item could read the
+      // still-stale metadata/embedding and skip reprocessing the new photo entirely.
+      await clearItemAiAnalysis(id)
+      triggerItemProcessing(id, storagePath)
+    }
+
+    return redirect(`/item/${existingItem.id}${imageChanged ? '?reprocessing=true' : ''}`)
   } catch (err) {
     console.error('Failed to update item:', err)
     return { error: 'Failed to save changes. Please try again.' }

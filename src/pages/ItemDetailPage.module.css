@@ -81,6 +81,36 @@
   border-radius: var(--border-radius);
 }
 
+/* AI Analysis Section */
+.aiAnalysisSection {
+  padding: 20px 0;
+  border-top: 1px solid var(--border-color);
+}
+
+.aiDescription {
+  display: block;
+  line-height: 1.6;
+  margin-bottom: 12px;
+}
+
+.metadataList {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.metadataRow {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.metadataRow:last-child {
+  border-bottom: none;
+}
+
 /* Wear History Section */
 .wearHistorySection {
   padding: 20px 0;

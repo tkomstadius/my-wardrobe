@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Link, type LoaderFunctionArgs, useLoaderData } from 'react-router';
+import { Link, type LoaderFunctionArgs, useLoaderData, useSearchParams } from 'react-router';
 import { Fab } from '../components/common/Fab';
 import { ItemCard } from '../components/common/ItemCard';
 import { type BooleanFilter, QuickFilters } from '../components/common/QuickFilters';
@@ -37,6 +37,8 @@ export async function loader({ params }: LoaderFunctionArgs) {
 export function ItemCategoryPage() {
   const { items: categoryItems, category, isValid, categoryCounts } =
     useLoaderData<typeof loader>();
+  const [searchParams] = useSearchParams();
+  const justAddedId = searchParams.get('justAdded');
 
   const [selectedBooleanFilters, setSelectedBooleanFilters] = useState<Set<BooleanFilter>>(
     new Set(),
@@ -182,7 +184,7 @@ export function ItemCategoryPage() {
           {hasFilteredItems ? (
             <div className={styles.grid}>
               {sortedItems.map((item) => (
-                <ItemCard key={item.id} item={item} />
+                <ItemCard key={item.id} item={item} watchProcessing={item.id === justAddedId} />
               ))}
             </div>
           ) : (

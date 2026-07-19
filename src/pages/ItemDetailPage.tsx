@@ -7,22 +7,27 @@ import {
   useLoaderData,
   useNavigate,
   useRevalidator,
+  useSearchParams,
 } from 'react-router'
 import { ArchiveDialog } from '../components/common/ArchiveDialog'
 import { BackLink } from '../components/common/BackLink'
 import { DeleteConfirmDialog } from '../components/common/DeleteConfirmDialog'
 import { RATING_OPTIONS } from '../components/common/form/constants'
+import { ProcessingStatusBadge } from '../components/common/ProcessingStatusBadge'
 import { Button } from '../components/common/ui/Button'
 import { Flex } from '../components/common/ui/Flex'
 import { Grid } from '../components/common/ui/Grid'
 import { Heading } from '../components/common/ui/Heading'
 import { Text } from '../components/common/ui/Text'
 import { TextField } from '../components/common/ui/TextField'
+import { useProcessingStatus } from '../hooks/useProcessingStatus'
 import type { ArchiveReason } from '../types/wardrobe'
+import { triggerItemProcessing } from '../utils/aiProcessing'
 import { formatDate, formatDateDisplay, formatItemAge, formatLastWorn, normalizeToNoon } from '../utils/dateFormatter'
 import {
   archiveItem,
   getItemById,
+  getItemStoragePath,
   getOutfitsWithItemId,
   incrementWearCount,
   logWearOnDate,
@@ -58,10 +63,23 @@ export async function clientAction({ request }: ActionFunctionArgs) {
 // TODO maybe handle delete differently using a form action instead
 // TODO add outfits it is included in
 
+function formatMetadataKey(key: string): string {
+  const spaced = key.replace(/_/g, ' ').replace(/([a-z])([A-Z])/g, '$1 $2')
+  return spaced.charAt(0).toUpperCase() + spaced.slice(1)
+}
+
+function formatMetadataValue(value: unknown): string {
+  if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
+    return String(value)
+  }
+  return JSON.stringify(value)
+}
+
 export function ItemDetailPage() {
   const navigate = useNavigate()
   const revalidator = useRevalidator()
   const { item, outfits: outfitsWithItem } = useLoaderData<typeof loader>()
+  const [searchParams] = useSearchParams()
   const [isDeleting, setIsDeleting] = useState(false)
   const [isArchiving, setIsArchiving] = useState(false)
   const [isUnarchiving, setIsUnarchiving] = useState(false)
@@ -70,6 +88,28 @@ export function ItemDetailPage() {
   const [showDatePicker, setShowDatePicker] = useState(false)
   const [selectedDate, setSelectedDate] = useState('')
   const [newWearCount, setNewWearCount] = useState<number>()
+  // Forced true either by the Retry button below, or by arriving here right after an image edit
+  // (EditItemPage redirects with ?reprocessing=true) — both cases mean processing was just
+  // (re)triggered but the item's loaded status may still show a stale/terminal value.
+  const [forceWatchProcessing, setForceWatchProcessing] = useState(
+    () => searchParams.get('reprocessing') === 'true',
+  )
+  const processingStatus = useProcessingStatus(item?.id ?? '', item?.processingStatus, {
+    forceWatch: forceWatchProcessing,
+  })
+
+  const handleRetryProcessing = async () => {
+    if (!item) return
+    // item.imageUrl has already been resolved to a signed URL for display — the Edge Function
+    // needs the raw storage path instead.
+    const storagePath = await getItemStoragePath(item.id)
+    if (!storagePath) {
+      console.error(`Cannot retry processing for item ${item.id}: no storage path found`)
+      return
+    }
+    setForceWatchProcessing(true)
+    triggerItemProcessing(item.id, storagePath)
+  }
 
   const handleDelete = async () => {
     if (!item) return
@@ -188,6 +228,8 @@ export function ItemDetailPage() {
         <div className={styles.imageSection}>
           <img src={item.imageUrl} alt={item.notes || item.brand || 'Item'} />
         </div>
+
+        <ProcessingStatusBadge status={processingStatus} onRetry={handleRetryProcessing} />
 
         {item.archivedAt && (
           <div className={styles.archiveBanner}>
@@ -325,6 +367,32 @@ export function ItemDetailPage() {
             </Flex>
           )}
         </section>
+
+        {/* AI Analysis */}
+        {(item.description || (item.metadata && Object.keys(item.metadata).length > 0)) && (
+          <section className={styles.aiAnalysisSection}>
+            <Heading size="4" className={styles.sectionHeading}>
+              AI Analysis
+            </Heading>
+            {item.description && (
+              <Text size="2" color="gray" className={styles.aiDescription}>
+                {item.description}
+              </Text>
+            )}
+            {item.metadata && Object.keys(item.metadata).length > 0 && (
+              <div className={styles.metadataList}>
+                {Object.entries(item.metadata).map(([key, value]) => (
+                  <div key={key} className={styles.metadataRow}>
+                    <Text size="1" color="gray">
+                      {formatMetadataKey(key)}
+                    </Text>
+                    <Text size="1">{formatMetadataValue(value)}</Text>
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
+        )}
 
         {/* Wear History */}
         {item.wearHistory && item.wearHistory.length > 0 && (

@@ -1,18 +1,26 @@
 import { useState } from 'react';
 import { IoAddOutline, IoPencilOutline } from 'react-icons/io5';
 import { Link, useNavigate } from 'react-router';
+import { useProcessingStatus } from '../../hooks/useProcessingStatus';
 import type { WardrobeItem } from '../../types/wardrobe';
 import { incrementWearCount } from '../../utils/storageCommands';
 import { isWornToday } from '../../utils/wardrobeFilters';
 import styles from './ItemCard.module.css';
+import { ProcessingStatusBadge } from './ProcessingStatusBadge';
 
 interface ItemCardProps {
   item: WardrobeItem;
+  /** Poll this item's processing status even before it's known to be 'pending'/'processing' —
+   *  set right after this item was just uploaded (see ItemCategoryPage's justAdded param). */
+  watchProcessing?: boolean;
 }
 
-export function ItemCard({ item }: ItemCardProps) {
+export function ItemCard({ item, watchProcessing = false }: ItemCardProps) {
   const navigate = useNavigate();
   const [newWearCount, setNewWearCount] = useState<number>();
+  const processingStatus = useProcessingStatus(item.id, item.processingStatus, {
+    forceWatch: watchProcessing,
+  });
 
   const wornToday = isWornToday(item);
 
@@ -47,6 +55,9 @@ export function ItemCard({ item }: ItemCardProps) {
       <div className={styles.card}>
         <div className={styles.imageContainer}>
           <img src={item.imageUrl} alt={item.brand || 'Wardrobe item'} className={styles.image} />
+          <div className={styles.statusBadge}>
+            <ProcessingStatusBadge status={processingStatus} />
+          </div>
         </div>
 
         <div className={styles.footer}>

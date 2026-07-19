@@ -13,7 +13,8 @@
       "!**/dist",
       "!**/build",
       "!**/.vite",
-      "!**/tsconfig*.json"
+      "!**/tsconfig*.json",
+      "!supabase/functions"
     ]
   },
   "formatter": {

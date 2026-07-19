@@ -28,6 +28,7 @@ import { TextArea } from '../components/common/ui/TextArea'
 import { TextField } from '../components/common/ui/TextField'
 import type { OutfitRating } from '../types/outfit'
 import type { ItemCategory, NewWardrobeItem, WardrobeItem } from '../types/wardrobe'
+import { triggerItemProcessing } from '../utils/aiProcessing'
 import { CATEGORIES, getSubCategoriesForCategory } from '../utils/categories'
 import { generateId, getAllBrands, saveItem } from '../utils/storageCommands'
 import { getCurrentUserId } from '../utils/supabase'
@@ -105,7 +106,12 @@ export async function clientAction({ request }: ActionFunctionArgs) {
 
     await saveItem(item)
 
-    return redirect(`/items/${category}`)
+    // Fire-and-forget: do not block returning control to the user on processing finishing.
+    triggerItemProcessing(id, storagePath)
+
+    // justAdded tells the category list to watch this specific item's processing status even
+    // before its first status write ('pending') has necessarily landed yet.
+    return redirect(`/items/${category}?justAdded=${id}`)
   } catch (err) {
     console.error('Failed to save item:', err)
     return { error: 'Failed to save item. Please try again.' }

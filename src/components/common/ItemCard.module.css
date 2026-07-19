@@ -28,6 +28,14 @@
   overflow: hidden;
   background: var(--surface-color);
   flex-shrink: 0;
+  position: relative;
+}
+
+.statusBadge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 1;
 }
 
 .image {
