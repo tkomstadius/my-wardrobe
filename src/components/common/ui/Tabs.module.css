@@ -32,8 +32,8 @@
 }
 
 .trigger[data-active] {
-  color: var(--items-accent-color);
-  background-color: rgba(99, 102, 241, 0.08);
+  color: var(--items-color);
+  background-color: rgba(var(--accent-rgb), 0.08);
 }
 
 .trigger[data-active]::after {

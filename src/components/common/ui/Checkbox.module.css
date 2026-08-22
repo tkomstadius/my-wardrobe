@@ -21,7 +21,7 @@
 }
 
 .checkIcon {
-  color: white;
+  color: var(--accent-contrast);
   display: none;
 }
 

@@ -14,7 +14,7 @@
 
 .textarea:focus {
   border-color: var(--accent-color);
-  outline: 2px solid rgba(99, 102, 241, 0.2);
+  outline: 2px solid rgba(var(--accent-rgb), 0.2);
 }
 
 .textarea::placeholder {

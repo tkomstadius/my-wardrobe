@@ -13,12 +13,12 @@
   position: sticky;
   top: 0;
   z-index: 100;
-  background-color: rgba(15, 15, 15, 0.75);
+  background-color: rgba(27, 23, 32, 0.75);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   padding: 1rem;
   color: var(--text-color);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  border-bottom: 1px solid rgba(var(--warm-white-rgb), 0.04);
   overflow: hidden;
 }
 
@@ -47,8 +47,9 @@
 }
 
 .name {
-  font-size: 1.25rem;
-  font-weight: 600;
+  font-size: 1.3rem;
+  font-weight: 500;
+  font-style: italic;
 }
 
 .weatherPill {

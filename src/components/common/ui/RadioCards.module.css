@@ -25,6 +25,6 @@
 
 .item[data-checked] {
   border-color: var(--accent-color);
-  background-color: rgba(99, 102, 241, 0.1);
+  background-color: rgba(var(--accent-rgb), 0.1);
   color: var(--accent-color);
 }

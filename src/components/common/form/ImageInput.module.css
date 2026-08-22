@@ -82,7 +82,7 @@
   cursor: pointer;
   box-shadow: var(--shadow-md);
   transition: all var(--transition-normal);
-  color: white;
+  color: var(--accent-contrast);
 
   &:hover,
   &:active {

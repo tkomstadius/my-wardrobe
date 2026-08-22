@@ -47,7 +47,7 @@
 
 .filterButtonActive {
   background-color: var(--accent-9);
-  color: white;
+  color: var(--accent-contrast);
   border-color: var(--accent-9);
 }
 

@@ -13,5 +13,5 @@
 
 .outline {
   background: transparent;
-  border-color: oklch(0.4 0.2 300);
+  border-color: var(--accent-color);
 }

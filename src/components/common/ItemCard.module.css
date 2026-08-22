@@ -89,6 +89,7 @@
 .quickWearButton,
 .quickEditButton {
   background: var(--items-color);
+  color: var(--accent-contrast);
   width: 36px;
   height: 36px;
   border-radius: 50%;
