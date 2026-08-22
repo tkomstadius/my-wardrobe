@@ -7,3 +7,6 @@ verify_jwt = true
 
 [functions.regenerate-embedding]
 verify_jwt = true
+
+[functions.suggest-outfit]
+verify_jwt = true

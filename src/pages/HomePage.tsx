@@ -3,8 +3,8 @@ import { IoSparklesOutline } from 'react-icons/io5';
 import { useLoaderData } from 'react-router';
 import { CategoryItemsAccordion } from '../components/common/CategoryItemsAccordion';
 import { ItemCard } from '../components/common/ItemCard';
-import { ItemSuggestionDialog } from '../components/common/ItemSuggestionDialog';
 import { OutfitRatingPrompt } from '../components/common/OutfitRatingPrompt';
+import { OutfitSuggestionDialog } from '../components/common/OutfitSuggestionDialog';
 import { StatsCard } from '../components/common/StatsCard';
 import { Button } from '../components/common/ui/Button';
 import { Flex } from '../components/common/ui/Flex';
@@ -16,7 +16,6 @@ import type { Outfit, OutfitRating } from '../types/outfit';
 import { NEGLECTED_ITEMS_THRESHOLD_DAYS, THIS_WEEK_DAYS } from '../utils/config';
 import { getDaysAgo } from '../utils/dateFormatter';
 import { findUnratedOutfits } from '../utils/outfitRatingPrompt';
-import { type OutfitSuggestion, suggestRediscoverOutfit } from '../utils/outfitSuggestion';
 import { calculateQuickStats } from '../utils/statsCalculations';
 import { loadItems, loadOutfits, updateOutfit } from '../utils/storageCommands';
 import {
@@ -45,8 +44,6 @@ export function HomePage() {
   const [unratedOutfits, setUnratedOutfits] = useState<Outfit[]>([]);
   const [currentOutfitIndex, setCurrentOutfitIndex] = useState(0);
   const [suggestionDialogOpen, setSuggestionDialogOpen] = useState(false);
-  const [suggestion, setSuggestion] = useState<OutfitSuggestion | null>(null);
-  const [dismissedIds, setDismissedIds] = useState<Set<string>>(new Set());
 
   const todayItems = useMemo(() => getItemsWornToday(items), [items]);
   const weekItems = useMemo(() => getItemsWornInPeriod(items, getDaysAgo(THIS_WEEK_DAYS)), [items]);
@@ -84,19 +81,7 @@ export function HomePage() {
   };
 
   const handleSuggestItem = () => {
-    const newSuggestion = suggestRediscoverOutfit(items, weatherData, dismissedIds);
-    setSuggestion(newSuggestion);
     setSuggestionDialogOpen(true);
-  };
-
-  const handleTryAnother = () => {
-    // Add current suggestion to dismissed and get a new one
-    if (suggestion) {
-      const newDismissed = new Set([...dismissedIds, suggestion.featuredItem.id]);
-      setDismissedIds(newDismissed);
-      const newSuggestion = suggestRediscoverOutfit(items, weatherData, newDismissed);
-      setSuggestion(newSuggestion);
-    }
   };
 
   const currentOutfit = unratedOutfits[currentOutfitIndex];
@@ -120,11 +105,11 @@ export function HomePage() {
           totalCount={unratedOutfits.length}
         />
       )}
-      <ItemSuggestionDialog
+      <OutfitSuggestionDialog
         open={suggestionDialogOpen}
         onOpenChange={setSuggestionDialogOpen}
-        suggestion={suggestion}
-        onTryAnother={handleTryAnother}
+        items={items}
+        weatherData={weatherData}
       />
       <Flex direction="column" gap="4">
         {!hasItems ? (
