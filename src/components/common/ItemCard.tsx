@@ -6,7 +6,10 @@ import type { WardrobeItem } from '../../types/wardrobe';
 import { incrementWearCount } from '../../utils/storageCommands';
 import { isWornToday } from '../../utils/wardrobeFilters';
 import styles from './ItemCard.module.css';
+import { MissingAnalysisBadge } from './MissingAnalysisBadge';
 import { ProcessingStatusBadge } from './ProcessingStatusBadge';
+
+const ACTIVE_STATUSES = new Set(['pending', 'processing', 'failed']);
 
 interface ItemCardProps {
   item: WardrobeItem;
@@ -21,6 +24,7 @@ export function ItemCard({ item }: ItemCardProps) {
   const processingStatus = useProcessingStatus(item.id, item.processingStatus);
 
   const wornToday = isWornToday(item);
+  const missingAnalysis = !item.description && !ACTIVE_STATUSES.has(processingStatus ?? '');
 
   const handleQuickEdit = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -55,6 +59,7 @@ export function ItemCard({ item }: ItemCardProps) {
           <img src={item.imageUrl} alt={item.brand || 'Wardrobe item'} className={styles.image} />
           <div className={styles.statusBadge}>
             <ProcessingStatusBadge status={processingStatus} />
+            {missingAnalysis && <MissingAnalysisBadge />}
           </div>
         </div>
 
