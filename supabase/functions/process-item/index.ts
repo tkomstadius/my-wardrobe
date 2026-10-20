@@ -89,25 +89,28 @@ Deno.serve(async (req) => {
     return jsonResponse({ error: 'imagePath does not match this item' }, 400);
   }
 
-  // --- Prevent duplicate concurrent processing ---------------------------------------------------------------
-  if (item.processing_status === 'processing') {
-    console.log(`[process-item] Item ${itemId} is already processing, skipping duplicate invocation`);
-    return jsonResponse({ status: 'skipped', reason: 'already processing' }, 200);
-  }
-
   // --- Skip if already processed ---------------------------------------------------------------
   if (item.metadata != null && item.embedding != null) {
     console.log(`[process-item] Item ${itemId} already has metadata and embedding, skipping`);
     return jsonResponse({ status: 'skipped', reason: 'already processed' }, 200);
   }
 
-  // Queued, then actively working — modeled as two distinct states now so nothing else has to
-  // change if this ever moves behind a real queue instead of running synchronously.
-  await persistence.setStatus(itemId, 'pending');
+  // --- Claim (prevents duplicate concurrent processing) ------------------------------------------
+  // Atomic check-and-set, so two simultaneous invocations can't both proceed. A stale claim left
+  // by a crashed/timed-out run is reclaimable, so an item can't get stuck in 'processing' forever.
+  let claimed: boolean;
+  try {
+    claimed = await persistence.claimProcessing(itemId);
+  } catch (err) {
+    console.error(`[process-item] Could not claim item ${itemId}:`, err instanceof Error ? err.message : err);
+    return jsonResponse({ status: 'failed', error: 'Could not start processing' }, 500);
+  }
+  if (!claimed) {
+    console.log(`[process-item] Item ${itemId} is already processing, skipping duplicate invocation`);
+    return jsonResponse({ status: 'skipped', reason: 'already processing' }, 200);
+  }
 
   try {
-    await persistence.setStatus(itemId, 'processing');
-
     const image = await images.download(imagePath);
 
     // Description and metadata are independent — generated in parallel. Embedding depends on the

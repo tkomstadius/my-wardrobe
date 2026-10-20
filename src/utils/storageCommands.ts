@@ -1,4 +1,3 @@
-import { compareAsc } from 'date-fns';
 import type { NewOutfit, Outfit, OutfitRating } from '../types/outfit';
 import type {
   AiProcessingStatus,
@@ -12,7 +11,7 @@ import { deleteImage, getSignedUrl, getSignedUrls } from './supabaseStorage';
 // ========== Helpers ==========
 
 const ITEM_COLUMNS =
-  'id, image_url, notes, brand, category, sub_category, wear_count, initial_wear_count, wear_history, price, is_second_hand, is_dog_casual, is_handmade, rating, purchase_date, created_at, updated_at, user_id, archived_at, archive_reason, archive_notes, description, metadata, processing_status';
+  'id, image_url, notes, brand, category, sub_category, wear_count, initial_wear_count, wear_history, price, is_second_hand, is_dog_casual, is_handmade, rating, purchase_date, created_at, updated_at, user_id, archived_at, archive_reason, archive_notes, description, metadata, processing_status, processing_started_at';
 
 export function generateId(): string {
   return `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
@@ -46,6 +45,9 @@ function mapRowToItem(row: Record<string, unknown>): WardrobeItem {
     description: (row.description as string) ?? undefined,
     metadata: (row.metadata as Record<string, unknown>) ?? undefined,
     processingStatus: (row.processing_status as AiProcessingStatus) ?? undefined,
+    processingStartedAt: row.processing_started_at
+      ? new Date(row.processing_started_at as string)
+      : undefined,
   };
 }
 
@@ -140,6 +142,57 @@ export async function saveItems(items: WardrobeItem[]): Promise<void> {
 
 export async function saveItem(item: WardrobeItem): Promise<void> {
   await saveItems([item]);
+}
+
+/** The fields the edit form owns. Deliberately excludes wear_history/wear_count (owned by the
+ *  wear RPCs), processing_status (owned by the Edge Functions) and archive fields — writing back
+ *  a copy loaded earlier would overwrite any change made to those in the meantime. */
+export type EditableItemFields = Pick<
+  WardrobeItem,
+  | 'imageUrl'
+  | 'notes'
+  | 'brand'
+  | 'category'
+  | 'subCategory'
+  | 'price'
+  | 'isSecondHand'
+  | 'isDogCasual'
+  | 'isHandmade'
+  | 'rating'
+  | 'purchaseDate'
+  | 'initialWearCount'
+  | 'description'
+  | 'metadata'
+>;
+
+export async function updateItem(id: string, fields: EditableItemFields): Promise<void> {
+  const userId = await getCurrentUserId();
+  const { error } = await supabase
+    .from('wardrobe_items')
+    .update({
+      image_url: fields.imageUrl,
+      notes: fields.notes ?? null,
+      brand: fields.brand ?? null,
+      category: fields.category,
+      sub_category: fields.subCategory ?? null,
+      price: fields.price?.toString() ?? null,
+      is_second_hand: fields.isSecondHand ?? false,
+      is_dog_casual: fields.isDogCasual ?? false,
+      is_handmade: fields.isHandmade ?? false,
+      rating: fields.rating ?? null,
+      purchase_date: fields.purchaseDate?.toISOString() ?? null,
+      initial_wear_count: fields.initialWearCount ?? 0,
+      description: fields.description ?? null,
+      metadata: fields.metadata ?? null,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', id)
+    .eq('user_id', userId);
+
+  if (error) {
+    console.error('Failed to update item:', error);
+    throw new Error('Failed to update wardrobe item.');
+  }
 }
 
 export async function loadItems(includeArchived = false): Promise<WardrobeItem[]> {
@@ -344,131 +397,48 @@ export async function loadArchivedItems(): Promise<WardrobeItem[]> {
   }
 }
 
+// Wear logging goes through the add_wear/remove_wear RPCs (drizzle/0004_wear_rpcs.sql) so the
+// read-modify-write of wear_history happens atomically in Postgres — a client-side
+// read/modify/write lets two concurrent writes silently drop one of the wears. The DB also keeps
+// wear_count in sync via trigger, and keeps wear_history sorted ascending.
+
 /** `wornAt` is caller-supplied so the exact entry can be passed to removeWearByDate (undo). */
 export async function incrementWearCount(
   itemId: string,
   wornAt: Date = new Date(),
 ): Promise<number> {
-  const userId = await getCurrentUserId();
-  const { data, error } = await supabase
-    .from('wardrobe_items')
-    .select('wear_count, initial_wear_count, wear_history')
-    .eq('id', itemId)
-    .eq('user_id', userId)
-    .single();
+  const { data, error } = await supabase.rpc('add_wear', {
+    p_item_id: itemId,
+    p_worn_at: wornAt.toISOString(),
+  });
 
-  if (error || !data) {
+  if (error) {
+    throw new Error(`Failed to log wear: ${error.message}`);
+  }
+  if (data == null) {
     throw new Error('Item not found');
   }
 
-  const now = new Date();
-  const currentHistory = Array.isArray(data.wear_history) ? (data.wear_history as string[]) : [];
-  const newHistory = [...currentHistory, wornAt.toISOString()];
-  const initialCount = (data.initial_wear_count as number) ?? 0;
-  const newWearCount = initialCount + newHistory.length;
-
-  const { error: updateError } = await supabase
-    .from('wardrobe_items')
-    .update({
-      wear_count: newWearCount,
-      wear_history: newHistory,
-      updated_at: now.toISOString(),
-    })
-    .eq('id', itemId)
-    .eq('user_id', userId);
-
-  if (updateError) {
-    throw new Error('Failed to update wear count');
-  }
-
-  return newWearCount;
+  return data as number;
 }
 
 export async function logWearOnDate(itemId: string, date: Date): Promise<void> {
-  const userId = await getCurrentUserId();
-  const { data, error } = await supabase
-    .from('wardrobe_items')
-    .select('initial_wear_count, wear_history')
-    .eq('id', itemId)
-    .eq('user_id', userId)
-    .single();
-
-  if (error || !data) {
-    throw new Error('Item not found');
-  }
-
-  const currentHistory = Array.isArray(data.wear_history)
-    ? (data.wear_history as string[]).map((d) => new Date(d))
-    : [];
-  const newHistory = [...currentHistory, date].sort(compareAsc);
-  const initialCount = (data.initial_wear_count as number) ?? 0;
-
-  const { error: updateError } = await supabase
-    .from('wardrobe_items')
-    .update({
-      wear_count: initialCount + newHistory.length,
-      wear_history: newHistory.map((d) => d.toISOString()),
-      updated_at: new Date().toISOString(),
-    })
-    .eq('id', itemId)
-    .eq('user_id', userId);
-
-  if (updateError) {
-    throw new Error('Failed to log wear');
-  }
+  await incrementWearCount(itemId, date);
 }
 
-export async function removeWear(itemId: string, wearIndex: number): Promise<void> {
-  await removeWearWhere(itemId, () => wearIndex);
-}
-
-/** Removes the wear logged at exactly `date` — used to undo a just-logged wear. */
+/** Removes the wear logged at exactly `date` (e.g. undoing a just-logged wear, or a specific
+ *  entry from the wear history list). */
 export async function removeWearByDate(itemId: string, date: Date): Promise<void> {
-  await removeWearWhere(itemId, (history) =>
-    history.map((entry) => new Date(entry).getTime()).lastIndexOf(date.getTime()),
-  );
-}
+  const { data, error } = await supabase.rpc('remove_wear', {
+    p_item_id: itemId,
+    p_worn_at: date.toISOString(),
+  });
 
-async function removeWearWhere(
-  itemId: string,
-  findIndex: (history: string[]) => number,
-): Promise<void> {
-  const userId = await getCurrentUserId();
-  const { data, error } = await supabase
-    .from('wardrobe_items')
-    .select('initial_wear_count, wear_history')
-    .eq('id', itemId)
-    .eq('user_id', userId)
-    .single();
-
-  if (error || !data) {
-    throw new Error('Item not found');
+  if (error) {
+    throw new Error(`Failed to remove wear: ${error.message}`);
   }
-
-  const currentHistory = Array.isArray(data.wear_history)
-    ? [...(data.wear_history as string[])]
-    : [];
-
-  const wearIndex = findIndex(currentHistory);
-  if (wearIndex < 0 || wearIndex >= currentHistory.length) {
-    throw new Error('Invalid wear index');
-  }
-
-  currentHistory.splice(wearIndex, 1);
-  const initialCount = (data.initial_wear_count as number) ?? 0;
-
-  const { error: updateError } = await supabase
-    .from('wardrobe_items')
-    .update({
-      wear_count: initialCount + currentHistory.length,
-      wear_history: currentHistory,
-      updated_at: new Date().toISOString(),
-    })
-    .eq('id', itemId)
-    .eq('user_id', userId);
-
-  if (updateError) {
-    throw new Error('Failed to remove wear');
+  if (data == null) {
+    throw new Error('Wear not found');
   }
 }
 

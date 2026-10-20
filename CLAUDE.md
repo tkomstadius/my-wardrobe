@@ -111,6 +111,17 @@ Auth: contexts/AuthContext.tsx → Supabase Auth (magic link)
   instead of reprocessing everything). Populated by the Edge Function described below.
 - **`outfits`** — outfit records with photo paths, item ID arrays, ratings
 
+Wear logging goes through two Postgres RPCs, `add_wear` / `remove_wear` (`SECURITY INVOKER`, so
+RLS applies; defined in `drizzle/0004_wear_rpcs.sql`), so the read-modify-write of `wear_history`
+is atomic — never update `wear_history` from the client. `wear_history` is kept sorted ascending,
+and a trigger (`wardrobe_items_sync_wear_count`) always derives `wear_count` as
+`initial_wear_count + cardinality(wear_history)` — anything the client writes there is ignored.
+Edits go through `updateItem` (form-owned fields only), not `saveItem`, so a stale copy of the
+item can't overwrite wear history or processing status.
+
+Functions and triggers can't be declared in Drizzle's schema: add them as a custom migration
+(`pnpm drizzle-kit generate --custom --name=<name>`, then write the SQL by hand).
+
 Schema defined in `src/db/schema.ts` (Drizzle). Runtime queries use Supabase JS client (not Drizzle — browser can't make TCP connections to Postgres).
 
 ### AI Processing (Edge Functions)
@@ -160,11 +171,15 @@ independently swappable:
   No service-role key: every service is constructed with the caller-scoped client, so every query
   runs under the caller's own JWT — RLS is the authorization boundary (an item that isn't theirs
   is simply not found, not leaked).
-- `processing_status` lifecycle: `not_requested` (DB default, set on item creation) → `pending` →
-  `processing` → `completed` | `failed`, all driven by this function. Returns early (skip, no
-  reprocessing) if `processing_status` is already `processing` (prevents duplicate concurrent
-  runs) or if `metadata`/`embedding` are already both set — see the reprocessing note below for
-  why that second one matters on photo edits.
+- `processing_status` lifecycle: `not_requested` (DB default, set on item creation; or `pending`,
+  set client-side by `clearItemAiAnalysis`) → `processing` → `completed` | `failed`, driven by
+  this function. Returns early (skip, no reprocessing) if `metadata`/`embedding` are already both
+  set — see the reprocessing note below for why that matters on photo edits. Entering
+  `processing` goes through `persistenceService.claimProcessing`: one conditional UPDATE that also
+  stamps `processing_started_at`, so two concurrent invocations can't both proceed (the loser
+  returns `skipped`). A claim older than `STALE_PROCESSING_MS` (5 min) is treated as abandoned
+  (crashed/timed-out run) and can be reclaimed, so an item can't get stuck in `processing`
+  forever. regenerate-embedding claims the same way.
 
 #### `supabase/functions/regenerate-embedding/`
 
@@ -200,9 +215,12 @@ coverage).
   force-watch. `ItemCategoryPage`/`ItemCard` don't force-watch — a card just shows a badge if an
   item's actual status happens to be non-terminal when rendered.
 - `ItemCard` and `ItemDetailPage` render `ProcessingStatusBadge` (hidden for
-  `not_requested`/`completed`); `ItemDetailPage` also offers a Retry button on `failed`
-  (re-invokes `triggerItemProcessing`, which works because the skip check only looks at
-  `metadata`/`embedding` presence).
+  `not_requested`/`completed`); `ItemDetailPage` also offers a Retry button on `failed`, and
+  on a stale `pending`/`processing` (`isProcessingStale` in `utils/aiProcessing.ts`, mirroring the
+  Edge Functions' 5-minute threshold — shown as `failed`). Retry re-invokes
+  `triggerEmbeddingRegeneration` if the item already has a description + metadata (what failed
+  was re-embedding an edited description; process-item would skip it as already processed), else
+  `triggerItemProcessing`.
 - `ItemDetailPage` renders a read-only "AI Analysis" section showing `description` and a generic
   key/value list of `metadata` (not hardcoded to specific keys, so it won't need changes when a
   provider returns different attributes). Hidden when both are empty.
@@ -215,12 +233,14 @@ coverage).
 
 - Images stored in private Supabase Storage bucket `wardrobe-images`
 - DB stores **storage paths** (e.g., `{userId}/items/{itemId}.jpg`), not URLs
-- Signed URLs (1hr expiry) generated at read time via `getSignedUrl()`/`getSignedUrls()`
+- Signed URLs (7-day expiry, cached in `localStorage`) generated at read time via `getSignedUrl()`/`getSignedUrls()`
 - Upload pipeline: compress → upload Blob to Storage → store path in DB
 
 ### Authentication
 
 - Magic link (email OTP) via Supabase Auth
+- Sign-in only, no sign-up: `shouldCreateUser: false`, and sign-ups are disabled in the Supabase
+  Auth settings — any account could otherwise invoke the AI Edge Functions on the OpenAI bill
 - `AuthContext` wraps the app, gates all routes behind authentication
 - `App.tsx` checks `isAuthenticated` — unauthenticated users see `LoginPage`
 

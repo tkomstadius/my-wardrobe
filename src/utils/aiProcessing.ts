@@ -1,4 +1,4 @@
-import type { AiProcessingStatus } from '../types/wardrobe';
+import type { AiProcessingStatus, WardrobeItem } from '../types/wardrobe';
 import { getCurrentUserId, supabase } from './supabase';
 
 /**
@@ -82,4 +82,18 @@ export async function getItemProcessingStatus(
   }
 
   return (data.processing_status as AiProcessingStatus) ?? undefined;
+}
+
+/** Mirrors STALE_PROCESSING_MS in the Edge Functions' persistenceService.ts: past this, an
+ *  in-flight status means the run died (crash/timeout) and the item can be reclaimed. */
+const STALE_PROCESSING_MS = 5 * 60 * 1000;
+
+/** True if the item is stuck 'pending'/'processing' from a run that never finished — the UI
+ *  should offer Retry instead of showing it as still in progress. */
+export function isProcessingStale(item: WardrobeItem): boolean {
+  if (item.processingStatus !== 'pending' && item.processingStatus !== 'processing') {
+    return false;
+  }
+  const since = item.processingStartedAt ?? item.updatedAt;
+  return Date.now() - since.getTime() > STALE_PROCESSING_MS;
 }

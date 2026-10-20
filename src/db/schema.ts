@@ -41,6 +41,9 @@ export const wardrobeItems = pgTable(
     description: text('description'), // AI-generated description
     metadata: jsonb('metadata'), // AI-extracted attributes (color, pattern, material, etc.)
     processingStatus: text('processing_status').default('not_requested'), // 'not_requested' | 'pending' | 'processing' | 'completed' | 'failed'
+    // When an Edge Function last claimed this item ('processing'). A claim older than the stale
+    // threshold is treated as abandoned (crashed/timed-out run), so the item can be reclaimed.
+    processingStartedAt: timestamp('processing_started_at', { withTimezone: true, mode: 'date' }),
     // 1536 dims = OpenAI text-embedding-3-small output size; intended for that model specifically.
     embedding: vector('embedding', { dimensions: 1536 }),
     aiModel: text('ai_model'), // e.g. 'gpt-4o-mini' — which model produced description/metadata

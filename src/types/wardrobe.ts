@@ -45,6 +45,7 @@ export type WardrobeItem = {
   description?: string; // AI-generated description
   metadata?: Record<string, unknown>; // AI-extracted attributes (color, pattern, material, etc.)
   processingStatus?: AiProcessingStatus;
+  processingStartedAt?: Date; // when an Edge Function last claimed the item for processing
 };
 
 export type NewWardrobeItem = Omit<

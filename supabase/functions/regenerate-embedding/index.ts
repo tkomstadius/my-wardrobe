@@ -1,6 +1,9 @@
 import { createClient } from 'npm:@supabase/supabase-js@2';
 import { corsHeaders } from '../_shared/cors.ts';
-import { validateEmbedding } from '../process-item/services/analysisValidationService.ts';
+import {
+  MAX_DESCRIPTION_LENGTH,
+  validateEmbedding,
+} from '../process-item/services/analysisValidationService.ts';
 import { embeddingGenerator } from '../process-item/services/embeddingGenerationService.ts';
 import { createPersistenceService } from '../process-item/services/persistenceService.ts';
 
@@ -68,6 +71,11 @@ Deno.serve(async (req) => {
   if (!itemId || !description || !description.trim()) {
     return jsonResponse({ error: 'itemId and a non-empty description are required' }, 400);
   }
+  // Same cap process-item enforces on generated descriptions — also bounds what one request can
+  // spend on the embeddings API.
+  if (description.length > MAX_DESCRIPTION_LENGTH) {
+    return jsonResponse({ error: `description exceeds ${MAX_DESCRIPTION_LENGTH} characters` }, 400);
+  }
 
   const persistence = createPersistenceService(supabase);
 
@@ -79,12 +87,18 @@ Deno.serve(async (req) => {
     return jsonResponse({ error: 'Item not found' }, 404);
   }
 
-  if (item.processing_status === 'processing') {
+  // Atomic check-and-set — see process-item/index.ts.
+  let claimed: boolean;
+  try {
+    claimed = await persistence.claimProcessing(itemId);
+  } catch (err) {
+    console.error(`[regenerate-embedding] Could not claim item ${itemId}:`, err instanceof Error ? err.message : err);
+    return jsonResponse({ status: 'failed', error: 'Could not start processing' }, 500);
+  }
+  if (!claimed) {
     console.log(`[regenerate-embedding] Item ${itemId} is already processing, skipping duplicate invocation`);
     return jsonResponse({ status: 'skipped', reason: 'already processing' }, 200);
   }
-
-  await persistence.setStatus(itemId, 'processing');
 
   try {
     const embedding = validateEmbedding(await embeddingGenerator.generate(description));

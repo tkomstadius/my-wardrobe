@@ -44,7 +44,7 @@ import { Text } from '../components/common/ui/Text';
 import { TextArea } from '../components/common/ui/TextArea';
 import { TextField } from '../components/common/ui/TextField';
 import type { OutfitRating } from '../types/outfit';
-import type { ItemCategory, WardrobeItem } from '../types/wardrobe';
+import type { ItemCategory } from '../types/wardrobe';
 import {
   clearItemAiAnalysis,
   triggerEmbeddingRegeneration,
@@ -56,7 +56,7 @@ import {
   getItemById,
   getItemStoragePath,
   removeItem,
-  saveItem,
+  updateItem,
 } from '../utils/storageCommands';
 import { getCurrentUserId } from '../utils/supabase';
 import { dataUrlToBlob, uploadItemImage } from '../utils/supabaseStorage';
@@ -135,8 +135,6 @@ export async function clientAction({ request, params }: ActionFunctionArgs) {
 
     const newInitialWearCount = initialWearCount ? Number.parseInt(initialWearCount, 10) : 0;
 
-    const totalWearCount = newInitialWearCount + existingItem.wearHistory.length;
-
     const normalizedDescription = aiDescription?.trim() || '';
     const previousDescription = existingItem.description?.trim() || '';
     // Compared before the full-pipeline reprocess path below can overwrite it — only meaningful
@@ -151,8 +149,9 @@ export async function clientAction({ request, params }: ActionFunctionArgs) {
     };
     const hasAiMetadata = Object.values(aiMetadataFields).some((value) => value.length > 0);
 
-    const updatedItem: WardrobeItem = {
-      ...existingItem,
+    // Only the form's own fields — wear history, wear count (derived in the DB) and processing
+    // status are left untouched so a stale copy can't overwrite concurrent changes to them.
+    await updateItem(id, {
       imageUrl: storagePath,
       notes: notes?.trim() || undefined,
       brand: brand?.trim() || undefined,
@@ -165,13 +164,9 @@ export async function clientAction({ request, params }: ActionFunctionArgs) {
       rating: rating ? (Number.parseInt(rating, 10) as OutfitRating) : undefined,
       purchaseDate: purchaseDate ? new Date(purchaseDate) : undefined,
       initialWearCount: newInitialWearCount,
-      wearCount: totalWearCount,
       description: normalizedDescription || undefined,
       metadata: hasAiMetadata ? aiMetadataFields : undefined,
-      updatedAt: new Date(),
-    };
-
-    await saveItem(updatedItem);
+    });
 
     let shouldWatchProcessing = false;
 

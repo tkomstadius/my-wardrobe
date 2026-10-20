@@ -16,6 +16,18 @@ interface RequestBody {
   avoidItemIds?: string[];
 }
 
+const MAX_MOOD_LENGTH = 100;
+const MAX_ID_LIST_LENGTH = 500;
+
+function isBoundedIdList(value: unknown): boolean {
+  return (
+    value == null ||
+    (Array.isArray(value) &&
+      value.length <= MAX_ID_LIST_LENGTH &&
+      value.every((id) => typeof id === 'string' && id.length <= 100))
+  );
+}
+
 function jsonResponse(body: unknown, status: number): Response {
   return new Response(JSON.stringify(body), {
     status,
@@ -63,8 +75,17 @@ Deno.serve(async (req) => {
     return jsonResponse({ error: 'Invalid JSON body' }, 400);
   }
 
+  // Bounds what a single request can put into the prompt (and so spend on OpenAI).
+  if (
+    (body.mood != null && (typeof body.mood !== 'string' || body.mood.length > MAX_MOOD_LENGTH)) ||
+    !isBoundedIdList(body.excludeItemIds) ||
+    !isBoundedIdList(body.avoidItemIds)
+  ) {
+    return jsonResponse({ error: 'Invalid mood or item id lists' }, 400);
+  }
+
   const weather = body.weather ?? null;
-  const mood = body.mood ?? null;
+  const mood = body.mood?.trim() || null;
   const excludeItemIds = body.excludeItemIds ?? [];
   const avoidItemIds = body.avoidItemIds ?? [];
 

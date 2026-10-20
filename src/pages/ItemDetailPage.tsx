@@ -23,7 +23,11 @@ import { Text } from '../components/common/ui/Text';
 import { TextField } from '../components/common/ui/TextField';
 import { useProcessingStatus } from '../hooks/useProcessingStatus';
 import type { ArchiveReason } from '../types/wardrobe';
-import { triggerItemProcessing } from '../utils/aiProcessing';
+import {
+  isProcessingStale,
+  triggerEmbeddingRegeneration,
+  triggerItemProcessing,
+} from '../utils/aiProcessing';
 import {
   formatDate,
   formatDateDisplay,
@@ -39,7 +43,6 @@ import {
   incrementWearCount,
   logWearOnDate,
   removeItem,
-  removeWear,
   removeWearByDate,
   unarchiveItem,
 } from '../utils/storageCommands';
@@ -105,9 +108,13 @@ export function ItemDetailPage() {
   const [forceWatchProcessing, setForceWatchProcessing] = useState(
     () => searchParams.get('justAdded') === 'true' || searchParams.get('reprocessing') === 'true',
   );
-  const processingStatus = useProcessingStatus(item?.id ?? '', item?.processingStatus, {
+  const polledStatus = useProcessingStatus(item?.id ?? '', item?.processingStatus, {
     forceWatch: forceWatchProcessing,
   });
+  // A run that died mid-way leaves the item 'pending'/'processing' forever — show it as failed so
+  // Retry is offered (the Edge Functions treat such a stale claim as reclaimable).
+  const processingStatus =
+    item && !forceWatchProcessing && isProcessingStale(item) ? 'failed' : polledStatus;
 
   const handleRetryProcessing = async () => {
     if (!item) return;
@@ -119,7 +126,13 @@ export function ItemDetailPage() {
       return;
     }
     setForceWatchProcessing(true);
-    triggerItemProcessing(item.id, storagePath);
+    // An existing analysis means what failed was re-embedding a manually edited description —
+    // process-item would skip such an item as already processed, so retry that step instead.
+    if (item.description && item.metadata) {
+      triggerEmbeddingRegeneration(item.id, item.description);
+    } else {
+      triggerItemProcessing(item.id, storagePath);
+    }
   };
 
   const handleDelete = async () => {
@@ -220,21 +233,21 @@ export function ItemDetailPage() {
     if (!item) return;
 
     const removedDate = item.wearHistory[wearIndex];
+    if (!removedDate) return;
     setDeletingWearIndex(wearIndex);
     try {
-      await removeWear(item.id, wearIndex);
+      // By date, not index — the index is into this page's possibly-stale copy of the history.
+      await removeWearByDate(item.id, removedDate);
       // Drop the optimistic count from "Worn Today" so the reloaded count is shown
       setNewWearCount(undefined);
       revalidator.revalidate(); // Reload data to show updated wear history
-      if (removedDate) {
-        showToast({
-          title: `Removed wear from ${formatDateDisplay(removedDate)}`,
-          onUndo: async () => {
-            await logWearOnDate(item.id, new Date(removedDate));
-            revalidator.revalidate();
-          },
-        });
-      }
+      showToast({
+        title: `Removed wear from ${formatDateDisplay(removedDate)}`,
+        onUndo: async () => {
+          await logWearOnDate(item.id, new Date(removedDate));
+          revalidator.revalidate();
+        },
+      });
     } catch (error) {
       console.error('Failed to remove wear:', error);
       showError('Could not remove wear. Please try again.');

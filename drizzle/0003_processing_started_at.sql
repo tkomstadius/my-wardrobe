@@ -1,0 +1,1 @@
+ALTER TABLE "wardrobe_items" ADD COLUMN "processing_started_at" timestamp with time zone;

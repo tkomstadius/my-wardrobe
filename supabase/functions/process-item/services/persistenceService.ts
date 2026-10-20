@@ -20,9 +20,18 @@ export interface ItemAnalysis {
   processedAt: string;
 }
 
+/** A 'processing' claim older than this is treated as abandoned — the run that made it crashed or
+ *  hit the Edge Function wall-clock limit before it could write 'completed'/'failed'. Comfortably
+ *  above the longest a real run can take, so a live run is never stolen. */
+export const STALE_PROCESSING_MS = 5 * 60 * 1000;
+
 export interface PersistenceService {
   /** Null if the item doesn't exist, or isn't the caller's — RLS makes those indistinguishable. */
   getItem(itemId: string): Promise<ItemRow | null>;
+  /** Atomically sets processing_status to 'processing' unless another run already holds a fresh
+   *  claim. Returns false if it didn't get the claim (a concurrent run is still in progress). A
+   *  single conditional UPDATE, so two simultaneous invocations can't both pass. */
+  claimProcessing(itemId: string): Promise<boolean>;
   setStatus(itemId: string, status: ProcessingStatus): Promise<void>;
   saveAnalysis(itemId: string, analysis: ItemAnalysis): Promise<void>;
   /** Updates only the embedding — used by regenerate-embedding when a manually-edited
@@ -48,6 +57,30 @@ export function createPersistenceService(supabase: SupabaseClient): PersistenceS
       }
 
       return data;
+    },
+
+    async claimProcessing(itemId: string): Promise<boolean> {
+      const now = new Date();
+      const staleBefore = new Date(now.getTime() - STALE_PROCESSING_MS).toISOString();
+      const { data, error } = await supabase
+        .from('wardrobe_items')
+        .update({
+          processing_status: 'processing' satisfies ProcessingStatus,
+          processing_started_at: now.toISOString(),
+        })
+        .eq('id', itemId)
+        // Not currently processing, or processing but the claim is missing/stale (abandoned run).
+        .or(
+          'processing_status.is.null,processing_status.neq.processing,' +
+            `processing_started_at.is.null,processing_started_at.lt.${staleBefore}`,
+        )
+        .select('id');
+
+      if (error) {
+        throw new Error(`Failed to claim item for processing: ${error.message}`);
+      }
+
+      return (data?.length ?? 0) > 0;
     },
 
     async setStatus(itemId: string, status: ProcessingStatus): Promise<void> {

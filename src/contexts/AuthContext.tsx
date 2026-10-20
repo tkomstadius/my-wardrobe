@@ -36,7 +36,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, []);
 
   const sendOtp = useCallback(async (email: string) => {
-    const { error } = await supabase.auth.signInWithOtp({ email });
+    // Existing accounts only — this is a personal app, and any account can invoke the AI Edge
+    // Functions (which spend OpenAI credits). Note this only stops the app's own UI: sign-ups
+    // must also be disabled in the Supabase Auth settings to block direct API calls.
+    const { error } = await supabase.auth.signInWithOtp({
+      email,
+      options: { shouldCreateUser: false },
+    });
     if (error) {
       return { error: error.message };
     }
