@@ -1,11 +1,11 @@
 .info {
-  color: var(--complimentary-color);
+  color: var(--color-text-secondary);
 }
 
 .quickStatsGrid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
-  gap: 0.5rem;
+  gap: var(--space-2);
 }
 
 .tabTrigger {
@@ -14,47 +14,46 @@
   border-bottom: 2px solid transparent;
   cursor: pointer;
   transition: all var(--transition-normal);
-  color: var(--text-secondary);
-  font-weight: 500;
-  padding: 0.5rem 0;
+  color: var(--color-text-secondary);
+  font-weight: var(--weight-medium);
+  padding: var(--space-2) 0;
 }
 
 .tabTrigger[data-state="active"] {
-  color: var(--complimentary-color);
-  border-bottom-color: var(--complimentary-color);
+  color: var(--color-text);
+  border-bottom-color: var(--color-accent);
 }
 
 .tabContent {
-  padding-top: 0.5rem;
+  padding-top: var(--space-2);
 }
 
 .tabDescription {
-  margin-bottom: 1rem;
+  margin-bottom: var(--space-4);
   text-align: center;
 }
 
 .emptySection {
-  background: var(--gradient-accent);
-  padding: 2rem;
+  background: var(--color-surface-raised);
+  padding: var(--space-8);
   text-align: center;
-  border-radius: var(--border-radius);
-  box-shadow: var(--shadow-sm);
+  border-radius: var(--radius-md);
 }
 
 .itemWrapper {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: var(--space-2);
 }
 
 .itemsGrid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: 0.75rem;
+  gap: var(--space-3);
 }
 
 .suggestButton {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--space-2);
 }

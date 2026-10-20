@@ -1,69 +1,69 @@
 .backdrop {
   position: fixed;
   inset: 0;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: var(--color-overlay);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   z-index: 1000;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 1rem;
+  padding: var(--space-4);
 }
 
 .content {
-  background-color: rgba(34, 29, 40, 0.95);
-  border: 1px solid var(--border-color);
-  border-radius: var(--border-radius);
-  padding: 1.5rem;
+  background-color: var(--color-popover);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-6);
   max-width: 500px;
   width: 100%;
   max-height: 85dvh;
   overflow-y: auto;
   position: relative;
-  box-shadow: var(--shadow-lg);
+  box-shadow: var(--shadow-popover);
 }
 
 .title {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: var(--text-color);
-  margin: 0 0 0.5rem 0;
+  font-size: var(--text-2xl);
+  font-weight: var(--weight-bold);
+  color: var(--color-text);
+  margin: 0 0 var(--space-2) 0;
 }
 
 .description {
-  font-size: 0.875rem;
-  color: var(--text-secondary);
-  margin: 0 0 1rem 0;
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  margin: 0 0 var(--space-4) 0;
 }
 
 .descriptionSm {
-  font-size: 0.75rem;
+  font-size: var(--text-xs);
 }
 
 .descriptionLg {
-  font-size: 1rem;
+  font-size: var(--text-md);
 }
 
 .closeButton {
   position: absolute;
   top: 1rem;
   right: 1rem;
-  padding: 0.5rem;
+  padding: var(--space-2);
   background: transparent;
   border: none;
-  color: var(--text-secondary);
+  color: var(--color-text-secondary);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 0.25rem;
+  border-radius: var(--radius-xs);
   transition: all var(--transition-fast);
 }
 
 @media (hover: hover) {
   .closeButton:hover {
-    background-color: var(--accent-action-color);
-    color: var(--text-color);
+    background-color: var(--color-surface-hover);
+    color: var(--color-text);
   }
 }

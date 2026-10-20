@@ -5,25 +5,25 @@
 .moodOptions {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
+  gap: var(--space-2);
 }
 
 .group {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: var(--space-2);
 }
 
 .groupLabel {
-  color: var(--text-secondary);
-  font-weight: 500;
+  color: var(--color-text-secondary);
+  font-weight: var(--weight-medium);
   text-transform: uppercase;
   letter-spacing: 0.02em;
 }
 
 .groupItems {
   display: flex;
-  gap: 0.5rem;
+  gap: var(--space-2);
   flex-wrap: wrap;
 }
 
@@ -36,8 +36,7 @@
   width: 72px;
   height: 72px;
   object-fit: cover;
-  border-radius: var(--border-radius);
-  box-shadow: var(--shadow-sm);
+  border-radius: var(--radius-md);
   transition: transform var(--transition-fast);
 }
 
@@ -48,5 +47,5 @@
 .logWearButton {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--space-2);
 }

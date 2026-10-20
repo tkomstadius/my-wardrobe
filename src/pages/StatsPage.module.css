@@ -1,29 +1,29 @@
 .container {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
-  padding-bottom: 2rem;
+  gap: var(--space-6);
+  padding-bottom: var(--space-8);
   overflow-x: hidden;
 }
 
 .header {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: var(--space-1);
 }
 
 .emptyState {
-  padding: 2rem;
+  padding: var(--space-8);
   text-align: center;
-  background-color: var(--gray-3);
-  border: 1px dashed var(--gray-6);
-  border-radius: var(--radius-3);
+  background-color: var(--color-surface-raised);
+  border: 1px dashed var(--color-border-strong);
+  border-radius: var(--radius-sm);
 }
 
 .content {
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  gap: var(--space-8);
   min-width: 0;
 }
 

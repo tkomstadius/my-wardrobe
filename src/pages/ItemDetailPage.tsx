@@ -18,6 +18,7 @@ import { Button } from '../components/common/ui/Button';
 import { Flex } from '../components/common/ui/Flex';
 import { Grid } from '../components/common/ui/Grid';
 import { Heading } from '../components/common/ui/Heading';
+import { IconButton } from '../components/common/ui/IconButton';
 import { Text } from '../components/common/ui/Text';
 import { TextField } from '../components/common/ui/TextField';
 import { useProcessingStatus } from '../hooks/useProcessingStatus';
@@ -90,6 +91,7 @@ export function ItemDetailPage() {
   const [isArchiving, setIsArchiving] = useState(false);
   const [isUnarchiving, setIsUnarchiving] = useState(false);
   const [deletingWearIndex, setDeletingWearIndex] = useState<number | null>(null);
+  const [confirmingWearIndex, setConfirmingWearIndex] = useState<number | null>(null);
   const [showAllWears, setShowAllWears] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [selectedDate, setSelectedDate] = useState('');
@@ -192,9 +194,12 @@ export function ItemDetailPage() {
   const handleRemoveWear = async (wearIndex: number) => {
     if (!item) return;
 
+    setConfirmingWearIndex(null);
     setDeletingWearIndex(wearIndex);
     try {
       await removeWear(item.id, wearIndex);
+      // Drop the optimistic count from "Worn Today" so the reloaded count is shown
+      setNewWearCount(undefined);
       revalidator.revalidate(); // Reload data to show updated wear history
     } catch (error) {
       console.error('Failed to remove wear:', error);
@@ -370,6 +375,7 @@ export function ItemDetailPage() {
                   </TextField.Root>
                   <Flex gap="2" justify="end">
                     <Button
+                      variant="outline"
                       onClick={() => {
                         setShowDatePicker(false);
                         setSelectedDate('');
@@ -433,12 +439,31 @@ export function ItemDetailPage() {
                           {formatItemAge(date)}
                         </Text>
                       </div>
-                      <Button
-                        onClick={() => handleRemoveWear(actualIndex)}
-                        disabled={deletingWearIndex === actualIndex}
-                      >
-                        {deletingWearIndex === actualIndex ? 'Removing...' : <IoTrashOutline />}
-                      </Button>
+                      {confirmingWearIndex === actualIndex ? (
+                        <Flex gap="2">
+                          <Button variant="outline" onClick={() => setConfirmingWearIndex(null)}>
+                            Cancel
+                          </Button>
+                          <Button
+                            variant="destructive"
+                            onClick={() => handleRemoveWear(actualIndex)}
+                          >
+                            Remove
+                          </Button>
+                        </Flex>
+                      ) : deletingWearIndex === actualIndex ? (
+                        <Text size="1" color="gray">
+                          Removing...
+                        </Text>
+                      ) : (
+                        <IconButton
+                          onClick={() => setConfirmingWearIndex(actualIndex)}
+                          ariaLabel="Remove this wear"
+                          className={styles.removeWearButton}
+                        >
+                          <IoTrashOutline />
+                        </IconButton>
+                      )}
                     </div>
                   );
                 })}

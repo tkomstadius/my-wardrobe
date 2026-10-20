@@ -1,28 +1,28 @@
 .card {
-  background: var(--accent-a3);
+  background: var(--color-surface);
   border: 1px solid transparent;
-  border-radius: var(--border-radius);
-  padding: 8px;
+  border-radius: var(--radius-md);
+  padding: var(--space-2);
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--space-2);
 }
 
 .image {
   width: 100%;
   aspect-ratio: 3 / 4;
-  border-radius: var(--border-radius);
+  border-radius: var(--radius-md);
 }
 
 .content {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  padding: 4px;
+  gap: var(--space-1);
+  padding: var(--space-1);
 }
 
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-  gap: 1rem;
+  gap: var(--space-4);
 }

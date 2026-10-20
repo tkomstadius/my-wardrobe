@@ -19,18 +19,18 @@ export function Heading({
   className = '',
 }: HeadingProps) {
   const sizeMap = {
-    '3': '1.125rem',
-    '4': '1.25rem',
-    '5': '1.5rem',
-    '6': '1.875rem',
-    '7': '2.25rem',
-    '8': '3rem',
+    '3': 'var(--text-lg)',
+    '4': 'var(--text-xl)',
+    '5': 'var(--text-2xl)',
+    '6': 'var(--text-3xl)',
+    '7': 'var(--text-4xl)',
+    '8': 'var(--text-5xl)',
   };
 
   const weightMap = {
-    regular: '400',
-    medium: '500',
-    bold: '700',
+    regular: 'var(--weight-regular)',
+    medium: 'var(--weight-medium)',
+    bold: 'var(--weight-semibold)',
   };
 
   return (
@@ -39,7 +39,7 @@ export function Heading({
       style={{
         fontSize: sizeMap[size],
         fontWeight: weightMap[weight],
-        color: 'var(--text-color)',
+        color: 'var(--color-text)',
         margin: 0,
         ...style,
       }}

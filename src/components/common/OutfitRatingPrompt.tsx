@@ -30,9 +30,9 @@ export function OutfitRatingPrompt({
 
     setIsSaving(true);
     try {
+      // onRate advances to the next outfit itself — also calling onDismiss here skipped one.
       await onRate(outfit.id, rating);
       markOutfitAsPrompted(outfit.id);
-      onDismiss();
     } catch (error) {
       console.error('Failed to save rating:', error);
     } finally {
@@ -66,9 +66,9 @@ export function OutfitRatingPrompt({
               style={{
                 maxWidth: '100%',
                 maxHeight: '200px',
-                borderRadius: '0.5rem',
+                borderRadius: 'var(--radius-sm)',
                 objectFit: 'contain',
-                background: 'var(--surface-color)',
+                background: 'var(--color-surface-raised)',
               }}
             />
           </Flex>
@@ -83,7 +83,7 @@ export function OutfitRatingPrompt({
           </div>
 
           <Flex gap="3" justify="end" style={{ marginTop: '0.5rem' }}>
-            <Button onClick={handleDismiss} disabled={isSaving}>
+            <Button variant="outline" onClick={handleDismiss} disabled={isSaving}>
               Skip
             </Button>
             <Button onClick={handleSave} disabled={rating === undefined || isSaving}>

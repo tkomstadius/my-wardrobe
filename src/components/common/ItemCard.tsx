@@ -23,7 +23,8 @@ export function ItemCard({ item }: ItemCardProps) {
   // where a freshly created/edited item's status is actually watched from.
   const processingStatus = useProcessingStatus(item.id, item.processingStatus);
 
-  const wornToday = isWornToday(item);
+  // A wear logged from this card won't show up in item.wearHistory until the list reloads.
+  const loggedToday = isWornToday(item) || newWearCount !== undefined;
   const missingAnalysis = !item.description && !ACTIVE_STATUSES.has(processingStatus ?? '');
 
   const handleQuickEdit = async (e: React.MouseEvent) => {
@@ -35,6 +36,7 @@ export function ItemCard({ item }: ItemCardProps) {
   const handleQuickWear = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    if (loggedToday) return;
     try {
       const newCount = await incrementWearCount(item.id);
       setNewWearCount(newCount);
@@ -83,10 +85,10 @@ export function ItemCard({ item }: ItemCardProps) {
             </button>
             <button
               type="button"
-              className={`${styles.quickWearButton} ${wornToday ? styles.disabled : ''}`}
+              className={`${styles.quickWearButton} ${loggedToday ? styles.disabled : ''}`}
               onClick={handleQuickWear}
-              disabled={!!newWearCount}
-              title={wornToday ? 'Already worn today' : 'Mark as worn'}
+              disabled={loggedToday}
+              title={loggedToday ? 'Already worn today' : 'Mark as worn'}
             >
               <IoAddOutline />
             </button>

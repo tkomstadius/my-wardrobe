@@ -1,11 +1,11 @@
 .textarea {
   width: 100%;
-  padding: 0.5rem 1rem;
-  background-color: var(--surface-color);
-  border: 1px solid var(--border-color);
-  border-radius: 0.5rem;
-  color: var(--text-color);
-  font-size: 1rem;
+  padding: var(--space-2) var(--space-4);
+  background-color: var(--color-surface-raised);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  color: var(--color-text);
+  font-size: var(--text-md);
   font-family: inherit;
   resize: vertical;
   min-height: 80px;
@@ -13,12 +13,12 @@
 }
 
 .textarea:focus {
-  border-color: var(--accent-color);
-  outline: 2px solid rgba(var(--accent-rgb), 0.2);
+  border-color: var(--color-accent);
+  outline: 2px solid var(--color-accent-subtle);
 }
 
 .textarea::placeholder {
-  color: var(--text-secondary);
+  color: var(--color-text-secondary);
 }
 
 .textarea:disabled {

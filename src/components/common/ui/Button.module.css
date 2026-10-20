@@ -3,16 +3,16 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
-  border-radius: 10px;
-  padding: 0.75rem 0.5rem;
-  font-weight: 600;
-  font-size: 0.875rem;
+  gap: var(--space-2);
+  border-radius: var(--radius-pill);
+  padding: var(--space-3) var(--space-4);
+  font-weight: var(--weight-semibold);
+  font-size: var(--text-sm);
   border: 1px solid transparent;
   transition:
-    opacity var(--transition-fast),
-    transform var(--transition-fast),
-    box-shadow var(--transition-fast);
+    background-color var(--transition-fast),
+    border-color var(--transition-fast),
+    transform var(--transition-fast);
 }
 
 .button:disabled {
@@ -20,28 +20,38 @@
   cursor: not-allowed;
 }
 
-@media (hover: hover) {
-  .button:hover:not(:disabled) {
-    opacity: 0.9;
-  }
-}
-
 .button:active:not(:disabled) {
   transform: scale(0.97);
 }
 
 .default {
-  background-color: var(--accent-color);
-  color: var(--accent-contrast);
+  background-color: var(--color-accent);
+  color: var(--color-on-accent);
 }
 
 .outline {
   background-color: transparent;
-  border: 1px solid var(--accent-color);
+  border-color: var(--color-border-strong);
+  color: var(--color-text);
 }
 
 .destructive {
-  background-color: var(--destructive-color);
+  background-color: var(--color-danger-subtle);
+  color: var(--color-danger);
+}
+
+@media (hover: hover) {
+  .default:hover:not(:disabled) {
+    background-color: var(--color-accent-hover);
+  }
+
+  .outline:hover:not(:disabled) {
+    background-color: var(--color-surface-raised);
+  }
+
+  .destructive:hover:not(:disabled) {
+    border-color: var(--color-danger);
+  }
 }
 
 .wornButton {

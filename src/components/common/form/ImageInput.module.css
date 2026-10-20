@@ -3,7 +3,7 @@
   display: block;
   width: 100%;
   aspect-ratio: 16 / 9;
-  border-radius: var(--border-radius);
+  border-radius: var(--radius-md);
   overflow: hidden;
 }
 
@@ -29,15 +29,15 @@
   width: 100%;
   height: 100%;
   object-fit: contain;
-  border: 1px solid var(--border-color);
-  border-radius: var(--border-radius);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
 }
 
 .placeholder {
   width: 100%;
   height: 100%;
-  background-color: var(--gray-3);
-  border-radius: var(--border-radius);
+  background-color: var(--color-surface-raised);
+  border-radius: var(--radius-md);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -47,22 +47,22 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--space-2);
 }
 
 .placeholderIcon {
-  color: var(--gray-9);
+  color: var(--color-text-tertiary);
 }
 
 .placeholderText {
-  font-size: 1rem;
-  font-weight: 600;
-  color: var(--gray-11);
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
+  color: var(--color-text-secondary);
 }
 
 .placeholderSubtext {
-  font-size: 0.875rem;
-  color: var(--gray-9);
+  font-size: var(--text-sm);
+  color: var(--color-text-tertiary);
 }
 
 .fileInput {
@@ -75,14 +75,15 @@
   right: 12px;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 0.75rem;
-  background: var(--items-color);
-  border-radius: var(--border-radius);
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  background: var(--color-glass);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-radius: var(--radius-pill);
   cursor: pointer;
-  box-shadow: var(--shadow-md);
   transition: all var(--transition-normal);
-  color: var(--accent-contrast);
+  color: var(--color-text);
 
   &:hover,
   &:active {
@@ -91,6 +92,6 @@
 }
 
 .changeLabel {
-  font-size: 0.875rem;
-  font-weight: 500;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
 }

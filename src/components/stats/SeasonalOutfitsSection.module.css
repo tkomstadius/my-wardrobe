@@ -1,43 +1,42 @@
 .section {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: var(--space-6);
   min-width: 0;
 }
 
 .sectionTitle {
-  color: var(--gray-12);
-  padding-bottom: 0.5rem;
-  border-bottom: 1px solid var(--gray-6);
+  color: var(--color-text);
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--color-border);
 }
 
 .subsection {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: var(--space-4);
   min-width: 0;
 }
 
 .subsectionTitle {
-  color: var(--gray-11);
+  color: var(--color-text-secondary);
 }
 
 .seasonGrid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 0.5rem;
+  gap: var(--space-2);
 }
 
 .seasonCard {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.25rem;
-  padding: 1rem 0.5rem;
-  background: var(--gradient-surface);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-3);
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+  gap: var(--space-1);
+  padding: var(--space-4) var(--space-2);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
   text-align: center;
   cursor: pointer;
   transition: all var(--transition-fast);
@@ -57,18 +56,16 @@
 }
 
 .seasonCardActive {
-  border-color: var(--accent-9);
-  box-shadow:
-    0 0 0 1px var(--accent-9),
-    0 2px 8px rgba(0, 0, 0, 0.25);
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 1px var(--color-accent);
 }
 
 /* Outfit Strip */
 .outfitStrip {
   display: flex;
-  gap: 0.75rem;
+  gap: var(--space-3);
   overflow-x: auto;
-  padding-bottom: 0.25rem;
+  padding-bottom: var(--space-1);
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
 }
@@ -81,10 +78,10 @@
   flex-shrink: 0;
   width: 80px;
   height: 80px;
-  border-radius: var(--radius-3);
+  border-radius: var(--radius-sm);
   overflow: hidden;
-  background: var(--gray-4);
-  border: 1px solid var(--border-color);
+  background: var(--color-surface-hover);
+  border: 1px solid var(--color-border);
 }
 
 .outfitThumb img {
@@ -99,5 +96,5 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--gray-3);
+  background: var(--color-surface-raised);
 }

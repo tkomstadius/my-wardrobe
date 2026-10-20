@@ -5,23 +5,23 @@
   align-items: center;
   justify-content: space-between;
   border: none;
-  border-bottom: 1px solid var(--items-color);
-  color: var(--items-color);
-  padding: 8px 0;
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-text);
+  padding: var(--space-2) 0;
 }
 
 .accordionContent {
-  padding-top: 16px;
+  padding-top: var(--space-4);
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: 8px;
+  gap: var(--space-2);
 }
 
 .selectionMode {
-  padding-top: 16px;
+  padding-top: var(--space-4);
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
+  gap: var(--space-2);
 }
 
 @media (max-width: 360px) {
@@ -42,11 +42,11 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
-  padding: 4px;
-  border-radius: var(--border-radius);
+  gap: var(--space-3);
+  padding: var(--space-1);
+  border-radius: var(--radius-md);
   cursor: pointer;
-  background-color: var(--accent-a3);
+  background-color: var(--color-surface);
   border: 2px solid transparent;
   position: relative;
   transition:
@@ -56,8 +56,7 @@
 
 @media (hover: hover) {
   .selectableItem:hover:not(.disabled) {
-    border-color: var(--items-color);
-    box-shadow: 0 0 12px rgba(var(--accent-rgb), 0.15);
+    border-color: var(--color-accent);
   }
 }
 
@@ -73,12 +72,12 @@
   transform: translate(-50%, -50%);
   width: 50px;
   height: 50px;
-  background-color: var(--text-color);
+  background-color: var(--color-text);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--accent-action-color);
+  color: var(--color-surface-hover);
 
   & svg {
     width: 20px;
@@ -90,5 +89,5 @@
   width: 100%;
   aspect-ratio: 1;
   object-fit: cover;
-  border-radius: var(--border-radius);
+  border-radius: var(--radius-md);
 }

@@ -9,13 +9,13 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 60px 20px;
+  padding: var(--space-16) var(--space-5);
   text-align: center;
-  gap: 16px;
+  gap: var(--space-4);
 }
 
 .imageContainer {
-  margin-top: 1rem;
+  margin-top: var(--space-4);
 }
 
 .imageSection {
@@ -23,9 +23,9 @@
   max-width: 500px;
   margin: 0 auto;
   aspect-ratio: 3 / 4;
-  border-radius: var(--border-radius);
-  border: 1px solid var(--border-color);
-  background-color: var(--surface-color);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  background-color: var(--color-surface-raised);
   overflow: hidden;
 }
 
@@ -40,8 +40,8 @@
 }
 
 .divider {
-  border-bottom: 1px solid var(--border-color);
-  margin: 16px 0;
+  border-bottom: 1px solid var(--color-border);
+  margin: var(--space-4) 0;
 }
 
 .rating {
@@ -49,7 +49,7 @@
 }
 
 .category {
-  font-weight: 500;
+  font-weight: var(--weight-medium);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
@@ -60,51 +60,51 @@
 }
 
 .priceText {
-  color: var(--green-11);
-  font-weight: 500;
+  color: var(--color-success);
+  font-weight: var(--weight-medium);
 }
 
 .costPerWear {
-  color: var(--blue-11);
+  color: var(--color-accent);
 }
 
 .attributes {
-  margin-bottom: 1rem;
+  margin-bottom: var(--space-4);
 }
 
 .datePickerContainer {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  padding: 16px;
-  border: 1px solid var(--border-color);
-  border-radius: var(--border-radius);
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
 }
 
 /* AI Analysis Section */
 .aiAnalysisSection {
-  padding: 20px 0;
-  border-top: 1px solid var(--border-color);
+  padding: var(--space-5) 0;
+  border-top: 1px solid var(--color-border);
 }
 
 .aiDescription {
   display: block;
   line-height: 1.6;
-  margin-bottom: 12px;
+  margin-bottom: var(--space-3);
 }
 
 .metadataList {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--space-1);
 }
 
 .metadataRow {
   display: flex;
   justify-content: space-between;
-  gap: 12px;
-  padding: 6px 0;
-  border-bottom: 1px solid var(--border-color);
+  gap: var(--space-3);
+  padding: var(--space-2) 0;
+  border-bottom: 1px solid var(--color-border);
 }
 
 .metadataRow:last-child {
@@ -113,47 +113,45 @@
 
 /* Wear History Section */
 .wearHistorySection {
-  padding: 20px 0;
-  border-top: 1px solid var(--border-color);
+  padding: var(--space-5) 0;
+  border-top: 1px solid var(--color-border);
 }
 
 .sectionHeading {
-  margin-bottom: 1rem;
+  margin-bottom: var(--space-4);
 }
 
 .wearHistoryList {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: var(--space-2);
 }
 
 .wearHistoryItem {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.75rem;
-  background: var(--gradient-surface);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-2);
+  padding: var(--space-3);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
   transition: all 0.2s ease;
 }
 
 @media (hover: hover) {
   .wearHistoryItem:hover {
-    border-color: var(--border-color);
-    background: var(--gradient-surface);
-    box-shadow: var(--shadow-sm);
+    background: var(--color-surface-raised);
   }
 }
 
 .wearDate {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: var(--space-1);
 }
 
 .showMoreContainer {
-  margin-top: 0.75rem;
+  margin-top: var(--space-3);
   display: flex;
   justify-content: center;
 }
@@ -162,31 +160,31 @@
 .outfitSection {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  padding: 20px 0;
-  border-top: 1px solid var(--border-color);
+  gap: var(--space-4);
+  padding: var(--space-5) 0;
+  border-top: 1px solid var(--color-border);
 }
 
 .outfitHeading {
   margin: 0;
-  color: var(--gray-12);
+  color: var(--color-text);
 }
 
 .outfitGrid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: 16px;
+  gap: var(--space-4);
 }
 
 .outfitCard {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--space-2);
   text-decoration: none;
   color: inherit;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   overflow: hidden;
-  background: var(--gradient-surface);
+  background: var(--color-surface);
   transition:
     transform 0.2s ease,
     box-shadow 0.2s ease;
@@ -195,8 +193,7 @@
 
 @media (hover: hover) {
   .outfitCard:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-md);
+    opacity: 0.9;
   }
 }
 
@@ -208,24 +205,24 @@
   width: 100%;
   aspect-ratio: 3 / 4;
   object-fit: cover;
-  background: var(--gray-4);
-  border-radius: var(--border-radius);
+  background: var(--color-surface-hover);
+  border-radius: var(--radius-md);
 }
 
 .outfitPlaceholder {
   width: 100%;
   aspect-ratio: 1;
-  background: var(--gray-4);
+  background: var(--color-surface-hover);
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .outfitInfo {
-  padding: 8px 12px 12px;
+  padding: var(--space-2) var(--space-3) var(--space-3);
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--space-1);
 }
 
 .outfitNotes {
@@ -239,11 +236,11 @@
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 12px;
-  padding: 14px 16px;
-  background-color: var(--amber-2, #fffbeb);
-  border: 1px solid var(--amber-6, #f5c842);
-  border-radius: var(--border-radius);
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background-color: var(--color-warning-subtle);
+  border: 1px solid var(--color-warning);
+  border-radius: var(--radius-md);
 }
 
 .archiveBannerInfo {
@@ -260,9 +257,9 @@
 /* Bottom Actions */
 .bottomActions {
   display: flex;
-  gap: 12px;
-  padding-top: 24px;
-  border-top: 1px solid var(--border-color);
+  gap: var(--space-3);
+  padding-top: var(--space-6);
+  border-top: 1px solid var(--color-border);
 }
 
 .editButton {
@@ -280,7 +277,7 @@
 /* Mobile adjustments */
 @media (max-width: 900px) {
   .costPerWearCard {
-    padding: 20px;
+    padding: var(--space-5);
   }
 
   .buttonGroup {
@@ -290,4 +287,8 @@
   .wornButton {
     width: 100%;
   }
+}
+
+.removeWearButton {
+  color: var(--color-text-tertiary);
 }

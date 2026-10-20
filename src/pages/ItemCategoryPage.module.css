@@ -1,10 +1,10 @@
 .categoryRow {
   display: flex;
   flex-wrap: nowrap;
-  gap: 6px;
+  gap: var(--space-2);
   overflow-x: auto;
   scrollbar-width: none;
-  margin-bottom: 12px;
+  margin-bottom: var(--space-3);
 }
 
 .categoryRow::-webkit-scrollbar {
@@ -21,13 +21,13 @@
 .categoryChip {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 5px 10px;
-  border: 1px solid var(--gray-6);
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-2);
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-pill);
-  color: var(--text-secondary);
-  font-size: 12px;
-  font-weight: 500;
+  color: var(--color-text-secondary);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
   white-space: nowrap;
   text-decoration: none;
   flex-shrink: 0;
@@ -36,16 +36,16 @@
 
 @media (hover: hover) {
   .categoryChip:hover {
-    background-color: var(--gray-4);
-    border-color: var(--gray-7);
-    color: var(--text-color);
+    background-color: var(--color-surface-hover);
+    border-color: var(--color-border-strong);
+    color: var(--color-text);
   }
 }
 
 .categoryChipActive {
-  background-color: var(--accent-9);
-  color: var(--accent-contrast);
-  border-color: var(--accent-9);
+  background-color: var(--color-text);
+  color: var(--color-bg);
+  border-color: var(--color-text);
 }
 
 @media (hover: hover) {
@@ -55,15 +55,15 @@
 }
 
 .count {
-  font-size: 11px;
+  font-size: var(--text-2xs);
   opacity: 0.8;
-  font-weight: 400;
+  font-weight: var(--weight-regular);
 }
 
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: 12px;
+  gap: var(--space-3);
 }
 
 .noResultsState {
@@ -71,7 +71,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 60px 20px;
+  padding: var(--space-16) var(--space-5);
   text-align: center;
 }
 
@@ -81,10 +81,10 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 60px 20px;
+  padding: var(--space-16) var(--space-5);
   text-align: center;
 }
 
 .addItemLink {
-  margin-top: 16px;
+  margin-top: var(--space-4);
 }

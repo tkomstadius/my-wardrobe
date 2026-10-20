@@ -4,30 +4,31 @@
   right: 1.5rem;
   width: 56px;
   height: 56px;
-  border-radius: 50%;
-  background-color: var(--items-color);
-  color: var(--accent-contrast);
-  box-shadow: var(--shadow-md);
+  border-radius: var(--radius-lg);
+  background-color: var(--color-accent);
+  color: var(--color-on-accent);
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s ease;
+  box-shadow: var(--shadow-popover);
+  transition:
+    background-color var(--transition-normal),
+    transform var(--transition-normal);
   z-index: 50;
 }
 
 @media (hover: hover) {
   .button:hover {
-    background-color: var(--accent-hover);
-    transform: scale(1.1);
+    background-color: var(--color-accent-hover);
   }
 }
 
 .button:active {
-  transform: scale(1.05);
+  transform: scale(0.95);
 }
 
 .icon {
   width: 28px;
   height: 28px;
-  color: var(--accent-contrast);
+  color: var(--color-on-accent);
 }

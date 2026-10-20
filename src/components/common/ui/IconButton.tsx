@@ -7,6 +7,7 @@ interface IconButtonProps {
   size?: '1' | '2' | '3' | '4';
   type?: 'button' | 'submit' | 'reset';
   className?: string;
+  ariaLabel?: string;
 }
 
 export function IconButton({
@@ -15,12 +16,14 @@ export function IconButton({
   size = '3',
   type = 'button',
   className = '',
+  ariaLabel,
 }: IconButtonProps) {
   return (
     <button
       type={type}
       className={`${styles.iconButton} ${styles[`size${size}`]} ${className}`}
       onClick={onClick}
+      aria-label={ariaLabel}
     >
       {children}
     </button>

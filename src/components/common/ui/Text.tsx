@@ -22,27 +22,27 @@ export function Text({
   className = '',
 }: TextProps) {
   const sizeMap = {
-    '1': '0.75rem',
-    '2': '0.875rem',
-    '3': '1rem',
-    '4': '1.125rem',
-    '5': '1.25rem',
+    '1': 'var(--text-xs)',
+    '2': 'var(--text-sm)',
+    '3': 'var(--text-md)',
+    '4': 'var(--text-lg)',
+    '5': 'var(--text-xl)',
   };
 
   const weightMap = {
-    regular: '400',
-    medium: '500',
-    bold: '700',
+    regular: 'var(--weight-regular)',
+    medium: 'var(--weight-medium)',
+    bold: 'var(--weight-semibold)',
   };
 
   const colorMap = {
-    default: 'var(--text-color)',
-    gray: 'var(--text-secondary)',
-    secondary: 'var(--text-secondary)',
-    red: 'var(--error-color)',
-    blue: 'var(--accent-color)',
-    green: 'var(--success-color)',
-    orange: 'var(--warning-color)',
+    default: 'var(--color-text)',
+    gray: 'var(--color-text-secondary)',
+    secondary: 'var(--color-text-secondary)',
+    red: 'var(--color-danger)',
+    blue: 'var(--color-accent)',
+    green: 'var(--color-success)',
+    orange: 'var(--color-warning)',
   };
 
   return (

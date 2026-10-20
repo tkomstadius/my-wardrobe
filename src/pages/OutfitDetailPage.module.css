@@ -2,7 +2,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1rem;
+  margin-bottom: var(--space-4);
 }
 
 .notFound {
@@ -10,7 +10,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 1rem;
+  gap: var(--space-4);
   min-height: 50vh;
   text-align: center;
 }
@@ -18,7 +18,7 @@
 .content {
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  gap: var(--space-8);
 }
 
 .outfitPhoto {
@@ -26,9 +26,9 @@
   max-width: 500px;
   margin: 0 auto;
   aspect-ratio: 3 / 4;
-  border-radius: var(--border-radius);
-  border: 1px solid var(--border-color);
-  background-color: var(--surface-color);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  background-color: var(--color-surface-raised);
   overflow: hidden;
 }
 
@@ -39,37 +39,36 @@
 }
 
 .divider {
-  border-bottom: 1px solid var(--complimentary-color);
-  margin: 16px 0;
+  border-bottom: 1px solid var(--color-border);
+  margin: var(--space-4) 0;
 }
 
 .itemsSection {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: var(--space-3);
 }
 
 .itemsGrid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: 0.75rem;
+  gap: var(--space-3);
 }
 
 .emptyState {
-  padding: 2rem;
+  padding: var(--space-8);
   text-align: center;
-  background: var(--gradient-surface);
-  border: 1px dashed var(--border-color);
-  border-radius: var(--radius-3);
-  box-shadow: var(--shadow-sm);
+  background: var(--color-surface);
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-sm);
 }
 
 .bottomActions {
   display: flex;
-  gap: 12px;
-  padding-top: 32px;
-  margin-top: 16px;
-  border-top: 1px solid var(--complimentary-color);
+  gap: var(--space-3);
+  padding-top: var(--space-8);
+  margin-top: var(--space-4);
+  border-top: 1px solid var(--color-border);
 }
 
 .editButton {

@@ -13,19 +13,19 @@ export function ItemDetailSkeleton() {
       <Skeleton className={styles.image} />
 
       <div className={styles.actions}>
-        <Skeleton width="48%" height={44} borderRadius="var(--small-border-radius)" />
-        <Skeleton width="48%" height={44} borderRadius="var(--small-border-radius)" />
+        <Skeleton width="48%" height={44} borderRadius="var(--radius-sm)" />
+        <Skeleton width="48%" height={44} borderRadius="var(--radius-sm)" />
       </div>
 
       <div className={styles.stats}>
-        <Skeleton width="30%" height={48} borderRadius="var(--border-radius)" />
-        <Skeleton width="30%" height={48} borderRadius="var(--border-radius)" />
-        <Skeleton width="30%" height={48} borderRadius="var(--border-radius)" />
+        <Skeleton width="30%" height={48} borderRadius="var(--radius-md)" />
+        <Skeleton width="30%" height={48} borderRadius="var(--radius-md)" />
+        <Skeleton width="30%" height={48} borderRadius="var(--radius-md)" />
       </div>
 
       <div className={styles.details}>
-        <Skeleton width="100%" height={60} borderRadius="var(--border-radius)" />
-        <Skeleton width="100%" height={60} borderRadius="var(--border-radius)" />
+        <Skeleton width="100%" height={60} borderRadius="var(--radius-md)" />
+        <Skeleton width="100%" height={60} borderRadius="var(--radius-md)" />
       </div>
     </div>
   );

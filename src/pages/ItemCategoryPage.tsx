@@ -84,7 +84,8 @@ export function ItemCategoryPage() {
 
   const sortedItems = useMemo(() => {
     return [...filteredItems].sort((a, b) => {
-      return b.updatedAt.getTime() - a.updatedAt.getTime();
+      // Newest first. Not updatedAt: logging a wear bumps it, which made items jump to the top.
+      return b.createdAt.getTime() - a.createdAt.getTime();
     });
   }, [filteredItems]);
 

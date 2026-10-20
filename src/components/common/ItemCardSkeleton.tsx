@@ -6,7 +6,7 @@ const SKELETON_KEYS = ['a', 'b', 'c'] as const;
 export function ItemCardSkeleton() {
   return (
     <div className={styles.card}>
-      <Skeleton width={70} height={70} borderRadius="var(--border-radius)" />
+      <Skeleton width={70} height={70} borderRadius="var(--radius-md)" />
       <div className={styles.content}>
         <Skeleton width="60%" height={14} />
         <Skeleton width="40%" height={12} />

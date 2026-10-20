@@ -6,15 +6,11 @@
 }
 
 .card {
-  background: var(--gradient-surface);
-  border-radius: var(--border-radius);
-  border: 1px solid var(--border-color);
-  overflow: hidden;
   cursor: pointer;
   width: 100%;
   display: flex;
   flex-direction: column;
-  box-shadow: var(--shadow-sm);
+  gap: var(--space-2);
   transition: transform var(--transition-fast);
 }
 
@@ -26,15 +22,16 @@
   width: 100%;
   aspect-ratio: 4 / 5;
   overflow: hidden;
-  background: var(--surface-color);
+  background: var(--color-surface-raised);
+  border-radius: var(--radius-md);
   flex-shrink: 0;
   position: relative;
 }
 
 .statusBadge {
   position: absolute;
-  top: 8px;
-  left: 8px;
+  top: var(--space-2);
+  left: var(--space-2);
   z-index: 1;
 }
 
@@ -48,8 +45,8 @@
 .footer {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 10px 12px;
+  gap: var(--space-2);
+  padding: 0 var(--space-1);
 }
 
 .info {
@@ -61,19 +58,19 @@
 }
 
 .brand {
-  font-size: 13px;
-  font-weight: 600;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
   margin: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  color: var(--text-color);
+  color: var(--color-text);
 }
 
 .meta {
-  font-size: 11px;
+  font-size: var(--text-xs);
   margin: 0;
-  color: var(--gray-11);
+  color: var(--color-text-tertiary);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -82,41 +79,48 @@
 .actions {
   flex-shrink: 0;
   display: flex;
-  gap: 6px;
+  gap: var(--space-1);
   align-items: center;
 }
 
 .quickWearButton,
 .quickEditButton {
-  background: var(--items-color);
-  color: var(--accent-contrast);
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  box-shadow: var(--shadow-sm);
   transition:
     background var(--transition-fast),
+    color var(--transition-fast),
     transform var(--transition-fast);
+}
+
+.quickEditButton {
+  color: var(--color-text-secondary);
+}
+
+.quickWearButton {
+  background: var(--color-accent-subtle);
+  color: var(--color-accent);
 }
 
 .quickWearButton:active,
 .quickEditButton:active {
-  background: var(--complimentary-color);
-  color: var(--accent-action-color);
+  background: var(--color-accent);
+  color: var(--color-on-accent);
   transform: scale(0.92);
 }
 
 .quickWearButton:disabled,
 .quickWearButton.disabled {
   cursor: not-allowed;
-  background: var(--gray-8);
+  background: var(--color-surface-raised);
+  color: var(--color-text-tertiary);
 }
 
 .quickWearButton.disabled:hover {
   transform: none;
-  background: var(--gray-8);
 }

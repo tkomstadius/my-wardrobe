@@ -101,7 +101,7 @@ function App() {
           alignItems: 'center',
           justifyContent: 'center',
           minHeight: '100vh',
-          backgroundColor: 'var(--background-color)',
+          backgroundColor: 'var(--color-bg)',
         }}
       >
         <Spinner size="4" />

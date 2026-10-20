@@ -1,6 +1,6 @@
 .layout {
   min-height: 100vh;
-  background-color: var(--background-color);
+  background-color: var(--color-bg);
 }
 
 @supports (min-height: 100dvh) {
@@ -13,12 +13,12 @@
   position: sticky;
   top: 0;
   z-index: 100;
-  background-color: rgba(27, 23, 32, 0.75);
+  background-color: var(--color-glass);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  padding: 1rem;
-  color: var(--text-color);
-  border-bottom: 1px solid rgba(var(--warm-white-rgb), 0.04);
+  padding: var(--space-4);
+  color: var(--color-text);
+  border-bottom: 1px solid var(--color-border);
   overflow: hidden;
 }
 
@@ -27,7 +27,7 @@
   bottom: 0;
   left: 0;
   height: 2px;
-  background: var(--items-color);
+  background: var(--color-accent);
   animation: progress 1.5s ease-in-out infinite;
 }
 
@@ -47,20 +47,17 @@
 }
 
 .name {
-  font-size: 1.3rem;
-  font-weight: 500;
-  font-style: italic;
+  font-size: var(--text-lg);
+  font-weight: var(--weight-semibold);
 }
 
 .weatherPill {
-  background: var(--surface-color);
-  border: 1px solid var(--border-color);
-  border-radius: 20px;
-  padding: 0.375rem 0.75rem;
+  background: var(--color-surface-raised);
+  border-radius: var(--radius-pill);
+  padding: var(--space-1) var(--space-3);
 }
 
 .weatherText {
-  color: var(--complimentary-color);
   white-space: nowrap;
 }
 
@@ -69,7 +66,7 @@
   width: 100%;
   max-width: 768px;
   margin: 0 auto;
-  padding: 1rem;
+  padding: var(--space-4);
   padding-bottom: calc(8rem + env(safe-area-inset-bottom));
   position: relative;
 }

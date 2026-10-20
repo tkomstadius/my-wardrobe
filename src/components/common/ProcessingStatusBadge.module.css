@@ -1,22 +1,22 @@
 .badge {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 4px 10px;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-2);
   border-radius: var(--radius-pill);
-  font-size: 12px;
-  font-weight: 500;
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
   width: fit-content;
 }
 
 .active {
-  background: var(--accent-a3);
-  color: var(--complimentary-color);
+  background: var(--color-surface);
+  color: var(--color-accent);
 }
 
 .failed {
-  background: rgba(239, 68, 68, 0.12);
-  color: var(--error-color);
+  background: var(--color-danger-subtle);
+  color: var(--color-danger);
 }
 
 .retryButton {
@@ -25,8 +25,8 @@
   padding: 0;
   margin: 0;
   color: inherit;
-  font-weight: 600;
+  font-weight: var(--weight-semibold);
   text-decoration: underline;
   cursor: pointer;
-  font-size: 12px;
+  font-size: var(--text-xs);
 }

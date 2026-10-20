@@ -2,9 +2,9 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1.5rem;
+  margin-bottom: var(--space-6);
   flex-wrap: wrap;
-  gap: 1rem;
+  gap: var(--space-4);
 }
 
 .sortTrigger {
@@ -13,34 +13,31 @@
 
 .emptyState {
   text-align: center;
-  padding: 3rem 1rem;
+  padding: var(--space-12) var(--space-4);
   min-height: 50vh;
 }
 
 .emptyIcon {
   width: 64px;
   height: 64px;
-  color: var(--gray-8);
-  margin-bottom: 0.5rem;
+  color: var(--color-text-tertiary);
+  margin-bottom: var(--space-2);
 }
 
 .emptyButton {
-  margin-top: 1rem;
+  margin-top: var(--space-4);
 }
 
 .outfitsGrid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-  gap: 1rem;
+  gap: var(--space-4);
 }
 
 .outfitCard {
-  background: var(--accent-a3);
-  border: 1px solid transparent;
-  border-radius: var(--border-radius);
+  border-radius: var(--radius-md);
   overflow: hidden;
   cursor: pointer;
-  padding: 8px;
   transition: all var(--transition-normal);
   text-decoration: none;
   color: inherit;
@@ -48,7 +45,7 @@
 
 @media (hover: hover) {
   .outfitCard:hover {
-    border-color: var(--text-color);
+    opacity: 0.9;
   }
 }
 
@@ -60,17 +57,17 @@
   position: relative;
   width: 100%;
   aspect-ratio: 3 / 4;
-  background: var(--accent-a3);
+  background: var(--color-surface);
   overflow: hidden;
-  border-radius: var(--border-radius);
-  margin-bottom: 0.5rem;
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-2);
 }
 
 .outfitImage img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  background: var(--accent-a3);
+  background: var(--color-surface);
 }
 
 .noImage {
@@ -79,7 +76,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--text-color);
+  color: var(--color-text);
 }
 
 .outfitNotes {

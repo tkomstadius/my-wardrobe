@@ -98,6 +98,7 @@ export function HomePage() {
     <>
       {currentOutfit && (
         <OutfitRatingPrompt
+          key={currentOutfit.id}
           outfit={currentOutfit}
           onRate={handleRateOutfit}
           onDismiss={handleDismissRating}
