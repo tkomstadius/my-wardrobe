@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { compressImage } from '../utils/imageCompression';
+import { showError } from '../utils/toast';
 
 interface UseImageUploadOptions {
   onError?: (error: string) => void;
@@ -31,7 +32,7 @@ export function useImageUpload(options: UseImageUploadOptions = {}) {
           if (onError) {
             onError(errorMessage);
           } else {
-            alert(errorMessage);
+            showError(errorMessage);
           }
         } finally {
           setIsUploading(false);
@@ -43,7 +44,7 @@ export function useImageUpload(options: UseImageUploadOptions = {}) {
         if (onError) {
           onError(errorMessage);
         } else {
-          alert(errorMessage);
+          showError(errorMessage);
         }
         setIsUploading(false);
       };
@@ -55,7 +56,7 @@ export function useImageUpload(options: UseImageUploadOptions = {}) {
       if (onError) {
         onError(errorMessage);
       } else {
-        alert(errorMessage);
+        showError(errorMessage);
       }
       setIsUploading(false);
     }

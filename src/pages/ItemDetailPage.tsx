@@ -40,8 +40,11 @@ import {
   logWearOnDate,
   removeItem,
   removeWear,
+  removeWearByDate,
   unarchiveItem,
 } from '../utils/storageCommands';
+import { showError, showToast } from '../utils/toast';
+import { getItemLabel } from '../utils/wardrobeFilters';
 import styles from './ItemDetailPage.module.css';
 
 export async function loader({ params }: LoaderFunctionArgs) {
@@ -91,7 +94,6 @@ export function ItemDetailPage() {
   const [isArchiving, setIsArchiving] = useState(false);
   const [isUnarchiving, setIsUnarchiving] = useState(false);
   const [deletingWearIndex, setDeletingWearIndex] = useState<number | null>(null);
-  const [confirmingWearIndex, setConfirmingWearIndex] = useState<number | null>(null);
   const [showAllWears, setShowAllWears] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [selectedDate, setSelectedDate] = useState('');
@@ -129,7 +131,7 @@ export function ItemDetailPage() {
       navigate(`/items/${item.category}`);
     } catch (error) {
       console.error('Failed to delete item:', error);
-      alert('Failed to delete item. Please try again.');
+      showError('Could not delete item. Please try again.');
       setIsDeleting(false);
     }
   };
@@ -141,9 +143,16 @@ export function ItemDetailPage() {
     try {
       await archiveItem(item.id, reason, notes || undefined);
       navigate(`/items/${item.category}`);
+      showToast({
+        title: `Archived ${getItemLabel(item)}`,
+        onUndo: async () => {
+          await unarchiveItem(item.id);
+          revalidator.revalidate();
+        },
+      });
     } catch (error) {
       console.error('Failed to archive item:', error);
-      alert('Failed to archive item. Please try again.');
+      showError('Could not archive item. Please try again.');
       setIsArchiving(false);
     }
   };
@@ -157,7 +166,7 @@ export function ItemDetailPage() {
       revalidator.revalidate();
     } catch (error) {
       console.error('Failed to unarchive item:', error);
-      alert('Failed to unarchive item. Please try again.');
+      showError('Could not unarchive item. Please try again.');
     } finally {
       setIsUnarchiving(false);
     }
@@ -166,13 +175,22 @@ export function ItemDetailPage() {
   const handleMarkAsWorn = async () => {
     if (!item) return;
 
+    const wornAt = new Date();
     try {
-      const newCount = await incrementWearCount(item.id);
+      const newCount = await incrementWearCount(item.id, wornAt);
       setNewWearCount(newCount);
       revalidator.revalidate();
+      showToast({
+        title: 'Logged as worn today',
+        onUndo: async () => {
+          await removeWearByDate(item.id, wornAt);
+          setNewWearCount(undefined);
+          revalidator.revalidate();
+        },
+      });
     } catch (error) {
       console.error('Failed to mark as worn:', error);
-      alert('Failed to update wear count. Please try again.');
+      showError('Could not log wear. Please try again.');
     }
   };
 
@@ -185,25 +203,41 @@ export function ItemDetailPage() {
       setShowDatePicker(false);
       setSelectedDate('');
       revalidator.revalidate(); // Reload data to show updated wear history
+      showToast({
+        title: `Logged wear on ${formatDateDisplay(date)}`,
+        onUndo: async () => {
+          await removeWearByDate(item.id, date);
+          revalidator.revalidate();
+        },
+      });
     } catch (error) {
       console.error('Failed to log wear:', error);
-      alert('Failed to log wear. Please try again.');
+      showError('Could not log wear. Please try again.');
     }
   };
 
   const handleRemoveWear = async (wearIndex: number) => {
     if (!item) return;
 
-    setConfirmingWearIndex(null);
+    const removedDate = item.wearHistory[wearIndex];
     setDeletingWearIndex(wearIndex);
     try {
       await removeWear(item.id, wearIndex);
       // Drop the optimistic count from "Worn Today" so the reloaded count is shown
       setNewWearCount(undefined);
       revalidator.revalidate(); // Reload data to show updated wear history
+      if (removedDate) {
+        showToast({
+          title: `Removed wear from ${formatDateDisplay(removedDate)}`,
+          onUndo: async () => {
+            await logWearOnDate(item.id, new Date(removedDate));
+            revalidator.revalidate();
+          },
+        });
+      }
     } catch (error) {
       console.error('Failed to remove wear:', error);
-      alert('Failed to remove wear. Please try again.');
+      showError('Could not remove wear. Please try again.');
     } finally {
       setDeletingWearIndex(null);
     }
@@ -439,25 +473,13 @@ export function ItemDetailPage() {
                           {formatItemAge(date)}
                         </Text>
                       </div>
-                      {confirmingWearIndex === actualIndex ? (
-                        <Flex gap="2">
-                          <Button variant="outline" onClick={() => setConfirmingWearIndex(null)}>
-                            Cancel
-                          </Button>
-                          <Button
-                            variant="destructive"
-                            onClick={() => handleRemoveWear(actualIndex)}
-                          >
-                            Remove
-                          </Button>
-                        </Flex>
-                      ) : deletingWearIndex === actualIndex ? (
+                      {deletingWearIndex === actualIndex ? (
                         <Text size="1" color="gray">
                           Removing...
                         </Text>
                       ) : (
                         <IconButton
-                          onClick={() => setConfirmingWearIndex(actualIndex)}
+                          onClick={() => handleRemoveWear(actualIndex)}
                           ariaLabel="Remove this wear"
                           className={styles.removeWearButton}
                         >

@@ -344,7 +344,11 @@ export async function loadArchivedItems(): Promise<WardrobeItem[]> {
   }
 }
 
-export async function incrementWearCount(itemId: string): Promise<number> {
+/** `wornAt` is caller-supplied so the exact entry can be passed to removeWearByDate (undo). */
+export async function incrementWearCount(
+  itemId: string,
+  wornAt: Date = new Date(),
+): Promise<number> {
   const userId = await getCurrentUserId();
   const { data, error } = await supabase
     .from('wardrobe_items')
@@ -359,7 +363,7 @@ export async function incrementWearCount(itemId: string): Promise<number> {
 
   const now = new Date();
   const currentHistory = Array.isArray(data.wear_history) ? (data.wear_history as string[]) : [];
-  const newHistory = [...currentHistory, now.toISOString()];
+  const newHistory = [...currentHistory, wornAt.toISOString()];
   const initialCount = (data.initial_wear_count as number) ?? 0;
   const newWearCount = initialCount + newHistory.length;
 
@@ -415,6 +419,20 @@ export async function logWearOnDate(itemId: string, date: Date): Promise<void> {
 }
 
 export async function removeWear(itemId: string, wearIndex: number): Promise<void> {
+  await removeWearWhere(itemId, () => wearIndex);
+}
+
+/** Removes the wear logged at exactly `date` — used to undo a just-logged wear. */
+export async function removeWearByDate(itemId: string, date: Date): Promise<void> {
+  await removeWearWhere(itemId, (history) =>
+    history.map((entry) => new Date(entry).getTime()).lastIndexOf(date.getTime()),
+  );
+}
+
+async function removeWearWhere(
+  itemId: string,
+  findIndex: (history: string[]) => number,
+): Promise<void> {
   const userId = await getCurrentUserId();
   const { data, error } = await supabase
     .from('wardrobe_items')
@@ -431,6 +449,7 @@ export async function removeWear(itemId: string, wearIndex: number): Promise<voi
     ? [...(data.wear_history as string[])]
     : [];
 
+  const wearIndex = findIndex(currentHistory);
   if (wearIndex < 0 || wearIndex >= currentHistory.length) {
     throw new Error('Invalid wear index');
   }

@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { IoAddOutline, IoPencilOutline } from 'react-icons/io5';
-import { Link, useNavigate } from 'react-router';
+import { Link, useNavigate, useRevalidator } from 'react-router';
 import { useProcessingStatus } from '../../hooks/useProcessingStatus';
 import type { WardrobeItem } from '../../types/wardrobe';
-import { incrementWearCount } from '../../utils/storageCommands';
-import { isWornToday } from '../../utils/wardrobeFilters';
+import { incrementWearCount, removeWearByDate } from '../../utils/storageCommands';
+import { showError, showToast } from '../../utils/toast';
+import { getItemLabel, isWornToday } from '../../utils/wardrobeFilters';
 import styles from './ItemCard.module.css';
 import { MissingAnalysisBadge } from './MissingAnalysisBadge';
 import { ProcessingStatusBadge } from './ProcessingStatusBadge';
@@ -17,6 +18,7 @@ interface ItemCardProps {
 
 export function ItemCard({ item }: ItemCardProps) {
   const navigate = useNavigate();
+  const revalidator = useRevalidator();
   const [newWearCount, setNewWearCount] = useState<number>();
   // Shows a badge if this item happens to already be mid-processing (e.g. browsing back to the
   // list while something's still running) — no force-watch here, since the item detail page is
@@ -37,11 +39,21 @@ export function ItemCard({ item }: ItemCardProps) {
     e.preventDefault();
     e.stopPropagation();
     if (loggedToday) return;
+    const wornAt = new Date();
     try {
-      const newCount = await incrementWearCount(item.id);
+      const newCount = await incrementWearCount(item.id, wornAt);
       setNewWearCount(newCount);
+      showToast({
+        title: `Logged ${getItemLabel(item)} as worn`,
+        onUndo: async () => {
+          await removeWearByDate(item.id, wornAt);
+          setNewWearCount(undefined);
+          revalidator.revalidate();
+        },
+      });
     } catch (err) {
       console.error('Failed to increment wear count:', err);
+      showError('Could not log wear. Please try again.');
     }
   };
 

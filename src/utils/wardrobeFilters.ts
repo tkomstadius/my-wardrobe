@@ -26,6 +26,13 @@ export function isWornToday(item: WardrobeItem): boolean {
 }
 
 /**
+ * Short human-readable name for an item, e.g. in toasts
+ */
+export function getItemLabel(item: WardrobeItem): string {
+  return item.brand || item.subCategory || 'item';
+}
+
+/**
  * Get items worn in a date range with wear counts
  */
 export function getItemsWornInPeriod(

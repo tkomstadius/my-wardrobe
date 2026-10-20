@@ -30,6 +30,7 @@ import { formatDate } from '../utils/dateFormatter';
 import { addOutfit, generateId, loadItems } from '../utils/storageCommands';
 import { getCurrentUserId } from '../utils/supabase';
 import { dataUrlToBlob, uploadOutfitPhoto } from '../utils/supabaseStorage';
+import { showError } from '../utils/toast';
 import styles from './CreateOutfitPage.module.css';
 
 export async function loader() {
@@ -69,7 +70,7 @@ export async function action({ request }: ActionFunctionArgs) {
     return redirect('/outfits');
   } catch (error) {
     console.error('Failed to save outfit:', error);
-    alert('Failed to save outfit. Please try again.');
+    showError('Could not save outfit. Please try again.');
   }
 }
 

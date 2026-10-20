@@ -34,6 +34,7 @@ import { formatDate } from '../utils/dateFormatter';
 import { getOutfitById, loadItems, removeOutfit, updateOutfit } from '../utils/storageCommands';
 import { getCurrentUserId } from '../utils/supabase';
 import { dataUrlToBlob, uploadOutfitPhoto } from '../utils/supabaseStorage';
+import { showError } from '../utils/toast';
 import styles from './EditOutfitPage.module.css';
 
 export async function loader({ params }: LoaderFunctionArgs) {
@@ -124,7 +125,7 @@ export function EditOutfitPage() {
       navigate('/outfits');
     } catch (error) {
       console.error('Failed to delete outfit:', error);
-      alert('Failed to delete outfit. Please try again.');
+      showError('Could not delete outfit. Please try again.');
       setIsDeleting(false);
     }
   };

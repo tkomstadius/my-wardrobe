@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
 import { IoCheckmarkOutline, IoRefreshOutline } from 'react-icons/io5';
-import { Link } from 'react-router';
+import { Link, useRevalidator } from 'react-router';
 import type { WeatherData } from '../../contexts/WeatherContext';
 import type { WardrobeItem } from '../../types/wardrobe';
 import { CATEGORIES } from '../../utils/categories';
 import { requestOutfitSuggestion } from '../../utils/outfitAiSuggestion';
-import { incrementWearCount } from '../../utils/storageCommands';
+import { incrementWearCount, removeWearByDate } from '../../utils/storageCommands';
+import { showError, showToast } from '../../utils/toast';
 import styles from './OutfitSuggestionDialog.module.css';
 import { Button } from './ui/Button';
 import { Dialog } from './ui/Dialog';
@@ -35,6 +36,7 @@ export function OutfitSuggestionDialog({
   items,
   weatherData,
 }: OutfitSuggestionDialogProps) {
+  const revalidator = useRevalidator();
   const [state, setState] = useState<LoadState>('mood');
   const [mood, setMood] = useState<string | null>(null);
   const [suggestedItemIds, setSuggestedItemIds] = useState<string[]>([]);
@@ -99,11 +101,22 @@ export function OutfitSuggestionDialog({
 
   const handleLogWear = async () => {
     setIsLogging(true);
+    const itemIds = suggestedItemIds;
+    const wornAt = new Date();
     try {
-      await Promise.all(suggestedItemIds.map((id) => incrementWearCount(id)));
+      await Promise.all(itemIds.map((id) => incrementWearCount(id, wornAt)));
       onOpenChange(false);
+      revalidator.revalidate();
+      showToast({
+        title: `Logged ${itemIds.length} ${itemIds.length === 1 ? 'item' : 'items'} as worn`,
+        onUndo: async () => {
+          await Promise.all(itemIds.map((id) => removeWearByDate(id, wornAt)));
+          revalidator.revalidate();
+        },
+      });
     } catch (err) {
       console.error('Failed to log wear:', err);
+      showError('Could not log wear. Please try again.');
     } finally {
       setIsLogging(false);
     }

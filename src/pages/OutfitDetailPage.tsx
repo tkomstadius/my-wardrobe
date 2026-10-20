@@ -11,6 +11,7 @@ import { Heading } from '../components/common/ui/Heading';
 import { Text } from '../components/common/ui/Text';
 import { formatDate } from '../utils/dateFormatter';
 import { getOutfitById, loadItems, removeOutfit } from '../utils/storageCommands';
+import { showError } from '../utils/toast';
 import styles from './OutfitDetailPage.module.css';
 
 export async function loader({ params }: LoaderFunctionArgs) {
@@ -54,7 +55,7 @@ export function OutfitDetailPage() {
       navigate('/outfits');
     } catch (error) {
       console.error('Failed to delete outfit:', error);
-      alert('Failed to delete outfit. Please try again.');
+      showError('Could not delete outfit. Please try again.');
       setIsDeleting(false);
     }
   };
