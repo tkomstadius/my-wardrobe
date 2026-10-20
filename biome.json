@@ -14,7 +14,8 @@
       "!**/build",
       "!**/.vite",
       "!**/tsconfig*.json",
-      "!supabase/functions"
+      "!supabase/functions",
+      "!drizzle/meta"
     ]
   },
   "formatter": {
