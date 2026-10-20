@@ -60,6 +60,7 @@ import {
 } from '../utils/storageCommands';
 import { getCurrentUserId } from '../utils/supabase';
 import { dataUrlToBlob, uploadItemImage } from '../utils/supabaseStorage';
+import { showError } from '../utils/toast';
 import styles from './EditItemPage.module.css';
 
 type ActionData = {
@@ -231,9 +232,10 @@ export function EditItemPage() {
     setIsDeleting(true);
     try {
       await removeItem(item.id);
-      navigate('/');
+      navigate('/', { replace: true });
     } catch (err) {
       console.error('Failed to delete item:', err);
+      showError('Could not delete item. Please try again.');
       setIsDeleting(false);
     }
   };
@@ -252,7 +254,7 @@ export function EditItemPage() {
           </Text>
         </div>
       ) : (
-        <Form method="post" className={styles.form}>
+        <Form method="post" replace className={styles.form}>
           <fieldset className={styles.fieldSection}>
             <ImageInput originalImageUrl={item.imageUrl} />
           </fieldset>

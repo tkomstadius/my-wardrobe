@@ -122,7 +122,7 @@ export function EditOutfitPage() {
     setIsDeleting(true);
     try {
       await removeOutfit(outfit.id);
-      navigate('/outfits');
+      navigate('/outfits', { replace: true });
     } catch (error) {
       console.error('Failed to delete outfit:', error);
       showError('Could not delete outfit. Please try again.');
@@ -161,7 +161,7 @@ export function EditOutfitPage() {
         />
       </div>
 
-      <Form method="post" className={styles.form}>
+      <Form method="post" replace className={styles.form}>
         <ImageInput originalImageUrl={outfit.photo} />
 
         <Flex direction="column" gap="1">

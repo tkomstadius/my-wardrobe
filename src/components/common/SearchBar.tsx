@@ -11,6 +11,7 @@ interface SearchBarProps {
   onClear: () => void;
   placeholder?: string;
   resultCount?: number;
+  autoFocus?: boolean;
 }
 
 export function SearchBar({
@@ -19,6 +20,7 @@ export function SearchBar({
   onClear,
   placeholder = 'category, brand, notes, tags...',
   resultCount,
+  autoFocus,
 }: SearchBarProps) {
   return (
     <Flex direction="column" gap="1">
@@ -30,6 +32,7 @@ export function SearchBar({
           placeholder={placeholder}
           value={value}
           onChange={(e) => onChange(e.target.value)}
+          autoFocus={autoFocus}
         />
         {value && (
           <TextField.Slot>

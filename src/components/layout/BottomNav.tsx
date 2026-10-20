@@ -2,8 +2,10 @@ import { useEffect, useState } from 'react';
 import {
   IoArchiveOutline,
   IoBarChartOutline,
+  IoCalendarOutline,
   IoEllipsisHorizontalOutline,
   IoHomeOutline,
+  IoHourglassOutline,
   IoLayersOutline,
   IoOptionsOutline,
   IoSettingsOutline,
@@ -19,7 +21,9 @@ export function BottomNav() {
   const isOnItemsOrCategoryPage =
     (currentPath === '/items' || currentPath.startsWith('/items/')) &&
     currentPath !== '/items/archived';
-  const isOnMoreSection = currentPath === '/settings' || currentPath === '/items/archived';
+  const isOnMoreSection = ['/calendar', '/neglected', '/items/archived', '/settings'].includes(
+    currentPath,
+  );
 
   // Close menu on navigation
   // biome-ignore lint/correctness/useExhaustiveDependencies: pathname is the trigger, not a closure dep
@@ -39,6 +43,24 @@ export function BottomNav() {
 
       {showMore && (
         <div className={styles.moreMenu} role="menu">
+          <Link
+            to="/calendar"
+            className={styles.moreMenuItem}
+            role="menuitem"
+            onClick={() => setShowMore(false)}
+          >
+            <IoCalendarOutline className={styles.moreMenuIcon} />
+            <span className={styles.moreMenuLabel}>Calendar</span>
+          </Link>
+          <Link
+            to="/neglected"
+            className={styles.moreMenuItem}
+            role="menuitem"
+            onClick={() => setShowMore(false)}
+          >
+            <IoHourglassOutline className={styles.moreMenuIcon} />
+            <span className={styles.moreMenuLabel}>Neglected Items</span>
+          </Link>
           <Link
             to="/items/archived"
             className={styles.moreMenuItem}

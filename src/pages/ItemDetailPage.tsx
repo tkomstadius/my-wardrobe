@@ -128,7 +128,7 @@ export function ItemDetailPage() {
     setIsDeleting(true);
     try {
       await removeItem(item.id);
-      navigate(`/items/${item.category}`);
+      navigate(`/items/${item.category}`, { replace: true });
     } catch (error) {
       console.error('Failed to delete item:', error);
       showError('Could not delete item. Please try again.');
@@ -142,7 +142,7 @@ export function ItemDetailPage() {
     setIsArchiving(true);
     try {
       await archiveItem(item.id, reason, notes || undefined);
-      navigate(`/items/${item.category}`);
+      navigate(`/items/${item.category}`, { replace: true });
       showToast({
         title: `Archived ${getItemLabel(item)}`,
         onUndo: async () => {

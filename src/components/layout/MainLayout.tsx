@@ -1,6 +1,6 @@
-import { Outlet, useNavigation } from 'react-router';
+import { Outlet, ScrollRestoration, useNavigation } from 'react-router';
 import { useWeather } from '../../contexts/WeatherContext';
-import { ScrollToTop } from '../common/ScrollToTop';
+import { useTrackHistory } from '../../hooks/useBackNavigation';
 import { ErrorBoundary } from '../common/ui/ErrorBoundary';
 import { Flex } from '../common/ui/Flex';
 import { Text } from '../common/ui/Text';
@@ -11,10 +11,12 @@ export function MainLayout() {
   const navigation = useNavigation();
   const { weatherData, isLoading } = useWeather();
   const isNavigating = navigation.state === 'loading';
+  useTrackHistory();
 
   return (
     <Flex direction="column" className={styles.layout}>
-      <ScrollToTop />
+      {/* Top of page on new navigations, previous position when going back */}
+      <ScrollRestoration />
       <header className={styles.header}>
         {isNavigating && <div className={styles.progressBar} />}
         <Flex justify="between" align="center">

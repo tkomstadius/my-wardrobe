@@ -105,7 +105,7 @@ export function CreateOutfitPage() {
         <Heading size="6">Create Outfit</Heading>
       </div>
 
-      <Form method="post" className={styles.form}>
+      <Form method="post" replace className={styles.form}>
         <ImageInput />
 
         <Flex direction="column" gap="1">

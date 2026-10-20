@@ -3,7 +3,8 @@ import type { WardrobeItem } from '../types/wardrobe';
 
 /**
  * Custom hook for searching wardrobe items
- * Searches across: category, brand, notes, and tags (thrifted, casual, handmade)
+ * Searches across: category, subcategory, brand, notes, AI description/metadata, and tags
+ * (thrifted, casual, handmade)
  * Supports multi-keyword search (e.g., "tops nike blue")
  */
 export function useItemSearch(items: WardrobeItem[]) {
@@ -22,8 +23,12 @@ export function useItemSearch(items: WardrobeItem[]) {
       // Create searchable text from item properties
       const searchableText = [
         item.category,
+        item.subCategory,
         item.brand,
         item.notes,
+        // AI analysis, so e.g. "black trousers" or "wool" matches
+        item.description,
+        ...Object.values(item.metadata ?? {}).filter((value) => typeof value === 'string'),
         item.isSecondHand ? 'thrifted secondhand' : '',
         item.isDogCasual ? 'casual dogcasual' : '',
         item.isHandmade ? 'handmade' : '',

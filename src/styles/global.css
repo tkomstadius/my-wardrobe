@@ -145,6 +145,8 @@ html {
 /* Better button touch targets for mobile */
 button {
   all: unset;
+  /* `all: unset` also resets the global border-box sizing */
+  box-sizing: border-box;
   cursor: pointer;
 }
 

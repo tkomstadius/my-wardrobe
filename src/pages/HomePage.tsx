@@ -1,28 +1,18 @@
 import { useEffect, useMemo, useState } from 'react';
 import { IoSparklesOutline } from 'react-icons/io5';
 import { useLoaderData } from 'react-router';
-import { CategoryItemsAccordion } from '../components/common/CategoryItemsAccordion';
 import { ItemCard } from '../components/common/ItemCard';
 import { OutfitRatingPrompt } from '../components/common/OutfitRatingPrompt';
 import { OutfitSuggestionDialog } from '../components/common/OutfitSuggestionDialog';
-import { StatsCard } from '../components/common/StatsCard';
 import { Button } from '../components/common/ui/Button';
 import { Flex } from '../components/common/ui/Flex';
-import { Tabs } from '../components/common/ui/Tabs';
 import { Text } from '../components/common/ui/Text';
-import { WearCalendar } from '../components/common/WearCalendar';
+import { WearAgainSection } from '../components/common/WearAgainSection';
 import { useWeather } from '../contexts/WeatherContext';
 import type { Outfit, OutfitRating } from '../types/outfit';
-import { NEGLECTED_ITEMS_THRESHOLD_DAYS, THIS_WEEK_DAYS } from '../utils/config';
-import { getDaysAgo } from '../utils/dateFormatter';
 import { findUnratedOutfits } from '../utils/outfitRatingPrompt';
-import { calculateQuickStats } from '../utils/statsCalculations';
 import { loadItems, loadOutfits, updateOutfit } from '../utils/storageCommands';
-import {
-  getItemsWornInPeriod,
-  getItemsWornToday,
-  getNeglectedItems,
-} from '../utils/wardrobeFilters';
+import { getItemsWornToday } from '../utils/wardrobeFilters';
 import styles from './HomePage.module.css';
 
 export async function loader() {
@@ -46,13 +36,6 @@ export function HomePage() {
   const [suggestionDialogOpen, setSuggestionDialogOpen] = useState(false);
 
   const todayItems = useMemo(() => getItemsWornToday(items), [items]);
-  const weekItems = useMemo(() => getItemsWornInPeriod(items, getDaysAgo(THIS_WEEK_DAYS)), [items]);
-  const neglectedItems = useMemo(
-    () => getNeglectedItems(items, NEGLECTED_ITEMS_THRESHOLD_DAYS),
-    [items],
-  );
-
-  const quickStats = useMemo(() => calculateQuickStats(items), [items]);
 
   // Find unrated outfits when component mounts or outfits change
   useEffect(() => {
@@ -119,94 +102,32 @@ export function HomePage() {
           </Text>
         ) : (
           <>
+            <WearAgainSection items={items} />
+
             <Flex justify="between" align="center" wrap="wrap" gap="2">
               <Text size="2" className={styles.info}>
-                {items.length} {items.length === 1 ? 'item' : 'items'} total
+                Need an idea?
               </Text>
-              <Button onClick={handleSuggestItem} className={styles.suggestButton}>
+              <Button
+                variant="outline"
+                onClick={handleSuggestItem}
+                className={styles.suggestButton}
+              >
                 <IoSparklesOutline size={18} />
-                Suggest
+                Suggest an outfit
               </Button>
             </Flex>
 
-            <Flex direction="column" gap="4">
-              <section>
-                <div className={styles.quickStatsGrid}>
-                  <StatsCard title="Total Wears" value={quickStats.totalWears} />
-                  <StatsCard title="Avg per Item" value={quickStats.averageWears.toFixed(1)} />
-                  {quickStats.avgCostPerWear !== null && (
-                    <StatsCard title="Avg Cost/Wear" value={quickStats.avgCostPerWear.toFixed(2)} />
-                  )}
+            {todayItems.length > 0 && (
+              <section className={styles.todaySection}>
+                <h2 className={styles.sectionTitle}>Worn today</h2>
+                <div className={styles.itemsGrid}>
+                  {todayItems.map((item) => (
+                    <ItemCard item={item} key={item.id} />
+                  ))}
                 </div>
               </section>
-
-              <Tabs.Root defaultValue="today">
-                <Tabs.List className={styles.tabsList}>
-                  <Tabs.Trigger value="today" className={styles.tabTrigger}>
-                    Today
-                  </Tabs.Trigger>
-                  <Tabs.Trigger value="week" className={styles.tabTrigger}>
-                    This Week
-                  </Tabs.Trigger>
-                  <Tabs.Trigger value="neglected" className={styles.tabTrigger}>
-                    Neglected
-                  </Tabs.Trigger>
-                  <Tabs.Trigger value="calendar" className={styles.tabTrigger}>
-                    Calendar
-                  </Tabs.Trigger>
-                </Tabs.List>
-
-                <Tabs.Content value="today" className={styles.tabContent}>
-                  {todayItems.length === 0 ? (
-                    <div className={styles.emptySection}>
-                      <Text size="1" as="p">
-                        No items worn today yet.
-                      </Text>
-                      <Text size="1" as="p">
-                        Mark items as worn to track what you're wearing!
-                      </Text>
-                    </div>
-                  ) : (
-                    <div className={styles.itemsGrid}>
-                      {todayItems.map((item) => (
-                        <ItemCard item={item} key={item.id} />
-                      ))}
-                    </div>
-                  )}
-                </Tabs.Content>
-
-                <Tabs.Content value="week" className={styles.tabContent}>
-                  {weekItems.length === 0 ? (
-                    <div className={styles.emptySection}>
-                      <Text size="1" as="p">
-                        No items worn in the last 7 days.
-                      </Text>
-                      <Text size="1" as="p">
-                        Mark items as worn to track your wardrobe usage!
-                      </Text>
-                    </div>
-                  ) : (
-                    <CategoryItemsAccordion items={weekItems.map((entry) => entry.item)} />
-                  )}
-                </Tabs.Content>
-
-                <Tabs.Content value="neglected" className={styles.tabContent}>
-                  {neglectedItems.length === 0 ? (
-                    <div className={styles.emptySection}>
-                      <Text size="2" color="gray">
-                        Great job! All your items have been worn recently.
-                      </Text>
-                    </div>
-                  ) : (
-                    <CategoryItemsAccordion items={neglectedItems} />
-                  )}
-                </Tabs.Content>
-
-                <Tabs.Content value="calendar" className={styles.tabContent}>
-                  <WearCalendar items={items} outfits={outfits ?? []} />
-                </Tabs.Content>
-              </Tabs.Root>
-            </Flex>
+            )}
           </>
         )}
       </Flex>

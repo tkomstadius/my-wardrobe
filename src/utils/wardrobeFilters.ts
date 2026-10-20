@@ -1,6 +1,6 @@
 import { isSameDay } from 'date-fns';
 import type { WardrobeItem } from '../types/wardrobe';
-import { countWearsInRange, getDaysAgo } from './dateFormatter';
+import { countWearsInRange, getDaysAgo, getLastWornDate } from './dateFormatter';
 
 function getItemsWornOnDate(items: WardrobeItem[], targetDate: Date): WardrobeItem[] {
   return items.filter(({ wearHistory }) => {
@@ -30,6 +30,19 @@ export function isWornToday(item: WardrobeItem): boolean {
  */
 export function getItemLabel(item: WardrobeItem): string {
   return item.brand || item.subCategory || 'item';
+}
+
+/**
+ * Items last worn on or after `since`, most recently worn first
+ */
+export function getRecentlyWornItems(items: WardrobeItem[], since: Date): WardrobeItem[] {
+  return items
+    .map((item) => ({ item, lastWorn: getLastWornDate(item.wearHistory) }))
+    .filter((entry): entry is { item: WardrobeItem; lastWorn: Date } =>
+      Boolean(entry.lastWorn && new Date(entry.lastWorn) >= since),
+    )
+    .sort((a, b) => new Date(b.lastWorn).getTime() - new Date(a.lastWorn).getTime())
+    .map(({ item }) => item);
 }
 
 /**

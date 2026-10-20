@@ -52,7 +52,7 @@ export function OutfitDetailPage() {
     setIsDeleting(true);
     try {
       await removeOutfit(outfit.id);
-      navigate('/outfits');
+      navigate('/outfits', { replace: true });
     } catch (error) {
       console.error('Failed to delete outfit:', error);
       showError('Could not delete outfit. Please try again.');

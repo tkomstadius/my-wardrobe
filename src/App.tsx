@@ -9,6 +9,7 @@ import {
   clientLoader as addItemLoader,
 } from './pages/AddItemPage';
 import { ArchivedItemsPage, loader as archivedItemsLoader } from './pages/ArchivedItemsPage';
+import { CalendarPage, loader as calendarLoader } from './pages/CalendarPage';
 import {
   CreateOutfitPage,
   action as createOutfitAction,
@@ -28,7 +29,7 @@ import { HomePage, loader as homeLoader } from './pages/HomePage';
 import { ItemCategoryPage, loader as itemCategoryLoader } from './pages/ItemCategoryPage';
 import { ItemDetailPage, loader as itemDetailLoader } from './pages/ItemDetailPage';
 import { LoginPage } from './pages/LoginPage';
-import { MorePage } from './pages/MorePage';
+import { NeglectedItemsPage, loader as neglectedItemsLoader } from './pages/NeglectedItemsPage';
 import { OutfitDetailPage, loader as outfitDetailLoader } from './pages/OutfitDetailPage';
 import { OutfitsPage, loader as outfitsLoader } from './pages/OutfitsPage';
 import { SettingsPage, loader as settingsLoader } from './pages/SettingsPage';
@@ -84,8 +85,9 @@ const router = createBrowserRouter([
         action: editOutfitAction,
       },
       { path: 'stats', element: <StatsPage />, loader: statsLoader },
+      { path: 'calendar', element: <CalendarPage />, loader: calendarLoader },
+      { path: 'neglected', element: <NeglectedItemsPage />, loader: neglectedItemsLoader },
       { path: 'settings', element: <SettingsPage />, loader: settingsLoader },
-      { path: 'more', element: <MorePage /> },
     ],
   },
 ]);

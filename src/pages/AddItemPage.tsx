@@ -146,7 +146,7 @@ export function AddItemPage() {
         <div className={styles.spacer} />
       </div>
 
-      <Form method="post" className={styles.form}>
+      <Form method="post" replace className={styles.form}>
         <fieldset className={styles.fieldSection}>
           <ImageInput />
         </fieldset>
