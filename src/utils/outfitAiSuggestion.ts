@@ -15,11 +15,13 @@ interface SuggestOutfitResponse {
 
 /** Calls the suggest-outfit Edge Function and returns a suggested outfit, or null if the
  *  wardrobe currently has no eligible candidates. Unlike the fire-and-forget helpers in
- *  aiProcessing.ts, this is awaited — the UI needs the result to render the suggestion. */
+ *  aiProcessing.ts, this is awaited — the UI needs the result to render the suggestion.
+ *  `excludeItemIds` are never suggested; `avoidItemIds` are only made less likely. */
 export async function requestOutfitSuggestion(
   weatherData: WeatherData | null,
   mood: string | null = null,
   excludeItemIds: string[] = [],
+  avoidItemIds: string[] = [],
 ): Promise<OutfitSuggestionResult | null> {
   const weather = weatherData
     ? {
@@ -30,7 +32,7 @@ export async function requestOutfitSuggestion(
     : null;
 
   const { data, error } = await supabase.functions.invoke<SuggestOutfitResponse>('suggest-outfit', {
-    body: { weather, mood, excludeItemIds },
+    body: { weather, mood, excludeItemIds, avoidItemIds },
   });
 
   if (error) {

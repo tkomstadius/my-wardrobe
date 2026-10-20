@@ -13,6 +13,7 @@ interface RequestBody {
   weather?: OutfitWeather | null;
   mood?: string | null;
   excludeItemIds?: string[];
+  avoidItemIds?: string[];
 }
 
 function jsonResponse(body: unknown, status: number): Response {
@@ -65,18 +66,22 @@ Deno.serve(async (req) => {
   const weather = body.weather ?? null;
   const mood = body.mood ?? null;
   const excludeItemIds = body.excludeItemIds ?? [];
+  const avoidItemIds = body.avoidItemIds ?? [];
 
   // --- Stateless: no processing_status to track, nothing is persisted ------------------------
   try {
-    const candidates = await createCandidateGatheringService(supabase).gather(excludeItemIds);
+    const pool = await createCandidateGatheringService(supabase).gather({
+      excludeItemIds,
+      avoidItemIds,
+    });
 
-    if (candidates.length === 0) {
+    if (pool.candidates.length === 0) {
       console.log(`[suggest-outfit] No candidate items for user ${userId}`);
       return jsonResponse({ status: 'no_candidates' }, 200);
     }
 
-    const candidateIds = new Set(candidates.map((c) => c.id));
-    const composed = await outfitComposer.compose(candidates, weather, mood);
+    const candidateIds = new Set(pool.candidates.map((c) => c.id));
+    const composed = await outfitComposer.compose(pool, weather, mood);
     const { itemIds, rationale } = validateSuggestion(composed, candidateIds);
 
     console.log(`[suggest-outfit] Suggested ${itemIds.length} items for user ${userId}`);

@@ -38,14 +38,26 @@ export function OutfitSuggestionDialog({
   const [state, setState] = useState<LoadState>('mood');
   const [mood, setMood] = useState<string | null>(null);
   const [suggestedItemIds, setSuggestedItemIds] = useState<string[]>([]);
+  // Everything shown earlier in this session, so "Try another" keeps moving on instead of
+  // bouncing back to the previous-but-one suggestion.
+  const [seenItemIds, setSeenItemIds] = useState<string[]>([]);
   const [rationale, setRationale] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [isLogging, setIsLogging] = useState(false);
 
-  const fetchSuggestion = async (moodValue: string | null, excludeItemIds: string[] = []) => {
+  const fetchSuggestion = async (
+    moodValue: string | null,
+    excludeItemIds: string[] = [],
+    avoidItemIds: string[] = [],
+  ) => {
     setState('loading');
     try {
-      const result = await requestOutfitSuggestion(weatherData, moodValue, excludeItemIds);
+      const result = await requestOutfitSuggestion(
+        weatherData,
+        moodValue,
+        excludeItemIds,
+        avoidItemIds,
+      );
       if (!result) {
         setState('empty');
         return;
@@ -64,6 +76,7 @@ export function OutfitSuggestionDialog({
     if (open) {
       setState('mood');
       setMood(null);
+      setSeenItemIds([]);
     }
   }, [open]);
 
@@ -79,7 +92,9 @@ export function OutfitSuggestionDialog({
   })).filter((group) => group.items.length > 0);
 
   const handleTryAnother = () => {
-    fetchSuggestion(mood, suggestedItemIds);
+    const avoid = seenItemIds.filter((id) => !suggestedItemIds.includes(id));
+    setSeenItemIds([...avoid, ...suggestedItemIds]);
+    fetchSuggestion(mood, suggestedItemIds, avoid);
   };
 
   const handleLogWear = async () => {
